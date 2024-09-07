@@ -1,6 +1,8 @@
 # Software Engineering
 
-Material for Software Engineering lectures. Lecture material is based on jupyter notebooks, so some sort of editor is needed to view them effectively.
+Software Engineering lecture material.
+
+Material is in Jupyter Notebook format `ipynb`, because it allows to blend formatted code with the executable code. `ipynb` itself is a `json` format document, which is best read in an editor with dedicated support. Recommendation is to use VS Code with a few extensions as described in the section.
 
 ## Notebook usage
 
@@ -12,10 +14,10 @@ Suggested approach is to use [VS Code](https://code.visualstudio.com/) with the 
 ## Contributing
 
 Pull requests are welcome. Few things to keep in mind when contributing:
-- Don't change the general lecture structure like order of the lectures or top-level parts of the notebooks.
+- Do not change the general lecture structure like order of the lectures or top-level parts of the notebooks.
 - Text should be in passive tense where possible.
 - Use mermaid diagrams instead of image diagrams if possible.
-- It should be possible to use notebooks as slides using `nbconvert`. It relies on correct slide type assigned to each cell as well as on cell being *relatively* small. If the cell is impractical to be displayed as a slide on project, consider splitting it into smaller cells instead.
+- It should be possible to use notebooks as slides using `nbconvert`. It relies on correct slide type assigned to each cell as well as content in cell being *relatively* small. If the cell is too big to be displayed as a slide on screen, then consider splitting it into smaller cells instead.
 - Do not commit cell output.
 - Prefer open source examples and tools where possible.
 
