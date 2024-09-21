@@ -23,3 +23,8 @@ Pull requests are welcome. Few things to keep in mind when contributing:
 
 ## Launching the slides:
 `jupyter nbconvert <notebook file name> --to slides --post serve --no-input --no-prompt`
+
+## Not committing output
+
+Add the following filter to git config:
+`git config filter.strip-notebook-output.clean 'jupyter nbconvert --ClearOutputPreprocessor.enabled=True --to=notebook --stdin --stdout --log-level=ERROR'`
