@@ -1,2 +1,5 @@
 # Do not track auto generated slides HTML files
 **/*.html
+
+# Used for some examples
+test.txt
