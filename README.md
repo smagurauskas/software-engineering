@@ -2,7 +2,7 @@
 
 Software Engineering lecture material.
 
-Material is in Jupyter Notebook format `ipynb`, because it allows to blend formatted code with the executable code. `ipynb` itself is a `json` format document, which is best read in an editor with dedicated support. Recommendation is to use VS Code with a few extensions as described in the section.
+Material is based on Polyglot notebooks is in Jupyter Notebook format `ipynb`. It allows to blend formatted text with the executable code. `ipynb` itself is a `json` format document, which is best read in an editor with dedicated support. Recommendation is to use VS Code with a few extensions as described in the section. Read more about this here https://github.com/dotnet/interactive/blob/main/docs/FAQ.md.
 
 ## Notebook usage
 
@@ -22,7 +22,15 @@ Pull requests are welcome. Few things to keep in mind when contributing:
 - Prefer open source examples and tools where possible.
 
 ## Launching the slides:
-`jupyter nbconvert <notebook file name> --to slides --post serve --no-input --no-prompt`
+
+To launch the notebook in slide mode use this command:
+```
+jupyter nbconvert <notebook file name> --to slides --post serve --no-input --no-prompt
+```
+
+However this relies that all the cells would have proper slide type assigned to them. If slide does not have a slide type assigned, then whole notebook conversion might fail in interesting ways.
+
+It is known that mermaid diagrams not always convert to slides properly on the first go. Refreshing the browser at location of the slide for few times usually helps.
 
 ## Not committing output
 
