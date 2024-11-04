@@ -13,6 +13,8 @@ Suggested approach is to use [VS Code](https://code.visualstudio.com/) with the 
 
 ## Contributing
 
+If you would like to contribute but unsure on what exactly: take a look at Issues section on GitHub - https://github.com/smagurauskas/software-engineering/issues. Here are the currently relevant issues are tracked. If you would like to start working one, then post about it in the issue comments.
+
 Pull requests are welcome. Few things to keep in mind when contributing:
 - Do not change the general lecture structure like order of the lectures or top-level parts of the notebooks.
 - Text should be in passive tense where possible.
