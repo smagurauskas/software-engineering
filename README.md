@@ -27,7 +27,7 @@ Pull requests are welcome. Few things to keep in mind when contributing:
 
 To launch the notebook in slide mode use this command:
 ```
-jupyter nbconvert <notebook file name> --to slides --post serve --no-input --no-prompt
+jupyter nbconvert <slide file> --to slides --post serve --template reveal
 ```
 
 However this relies that all the cells would have proper slide type assigned to them. If slide does not have a slide type assigned, then whole notebook conversion might fail in interesting ways.
