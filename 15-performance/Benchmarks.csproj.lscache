@@ -72,6 +72,7 @@ obj/Debug/net9.0/
  Benchmarks.GlobalUsings.g.cs
 Program.cs
 Simd1.cs
+Simd2.cs
 
 [metadataReferences]
 <NUGET>/
