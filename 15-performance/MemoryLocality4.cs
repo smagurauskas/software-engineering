@@ -1,5 +1,3 @@
-using System.Runtime.Versioning;
-
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 
