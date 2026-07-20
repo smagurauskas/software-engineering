@@ -1,0 +1,615 @@
+---
+title: "Web Services in ASP.NET"
+verify: none # no executable cells
+---
+
+ASP.NET is a framework for development of web applications. Using ASP.NET (or similar other web frameworks) allows to quickly develop web applications by providing abstractions and helpers for common use cases. These use cases are like shorthands for writing HTTP methods handlers, helpers for serializing and deserializing HTTP requests to various formats, providing authorization middleware and more.
+
+When ASP.NET is mentioned here, it refers to ASP.NET Core, the open source framework, not to be mistaken with older ASP.NET based on .NET Framework 4.* and older.
+
+While ASP.NET allows building fully fledged web applications as well, this article will focus solely on APIs.
+
+[Trends of tags on stackoverflow.co](https://insights.stackoverflow.com/trends?tags=soap%2Crest%2Cgraphql%2Cgrpc).
+
+There are lots of great resources online that do a better job of explaining how to use ASP.NET or other web frameworks. Goal of this article is to provide "cheat sheet" or a "quick reference" guide to quickly get started working with web services.
+
+Refer to the more extensive guides online at:
+- https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis
+- https://learn.microsoft.com/en-us/aspnet/mvc/overview/older-versions-1/controllers-and-routing/aspnet-mvc-controllers-overview-cs
+- https://www.apollographql.com/tutorials/intro-hotchocolate/03-hot-chocolate
+
+## ASP.NET Minimal API
+
+To create a new project use:
+```
+dotnet new web -n {name}
+```
+
+This will create a Web API project with the least amount of boilerplate code.
+
+Alternatively, to create project with a bit more boilerplate:
+```
+dotnet new webapi -n {name}
+```
+
+### Creating endpoint
+
+To create the simplest `GET` endpoint:
+```csharp
+app.MapGet("/", () => "Hello World!");
+```
+
+`MapGet` accepts 2 arguments:
+1. Route pattern.
+2. Handler delegate.
+
+Similar methods exist for other HTTP verbs as well:
+```csharp
+app.MapPost("/", () => "This is a POST request!");
+app.MapDelete("/", () => "This is a DELETE request!");
+app.MapPut("/", () => "This is a PUT request!");
+app.MapPatch("/", () => "This is a PATCH request!");
+```
+
+Delegates can be expanded to facilitate more complex implementations:
+
+```csharp
+app.MapGet("/", () => {
+    var text = "This is some text";
+    return text;
+});
+
+```
+
+More complex types can be returned from delegate:
+
+```csharp
+app.MapGet("/", () => {
+    return new ComplexType
+    {
+        Id = 1,
+        Name = "Name",
+    };
+});
+
+class ComplexType
+{
+    public required int Id { get; init; }
+    public required string Name { get; init; }
+}
+```
+
+Delegate could also be made `async` to facilitate asynchronous method calls:
+
+```csharp
+app.MapGet("/", async () => {
+    await Task.Delay(1000);
+    return "This was delayed";
+});
+```
+
+### Using route params
+
+Route parameters can be specified between `{}` in the route pattern. ASP.NET will try to map them to corresponding types as best it can and pass them as arguments into the delegate.
+
+```csharp
+app.MapGet("/{id}", (int id) => $"id was passed: {id}");
+```
+
+Route parameters can be of any simple type:
+```csharp
+app.MapGet("/{id}", (string id) => $"id could be string as well: {id}");
+```
+
+If the parameter cannot be parsed into the requested type, it will result into 400 status code:
+```csharp
+app.MapGet("/{boolean}", (bool boolean) => $"If this value cannot bet parsed it will be 400.");
+```
+
+More complex patterns can be used as well:
+```csharp
+app.MapGet("/{id1}/deeper/{id2}/more", (int id1, int id2) => $"{id1}, {id2}");
+```
+
+Wildcards `*` can be used to capture more complex patterns:
+```csharp
+app.MapGet("/complex/{*complex}", (string complex) => $"This is the rest of pattern: {complex}");
+```
+
+Params could be specified as optional using the `?`:
+```csharp
+app.MapGet("/{id?}", (int? id) => $"id was maybe passed: {id}");
+```
+
+Different name route argument can be bound via attribute:
+```csharp
+using Microsoft.AspNetCore.Mvc;
+
+app.MapGet("/{id}", ([FromRoute(Name = "id")] int customName) => $"id was passed: {customName}");
+```
+
+### Using query params
+
+Query parameters can be specified similarly to route parameters, but without having the corresponding pattern in route:
+
+```csharp
+app.MapGet("/", (int id) => $"id was passed as query param: {id}");
+```
+
+Query parameters can be mixed with route params:
+```csharp
+app.MapGet("/{id1}", (int id1, int id2) => $"id1, id2: {id1}, {id2}");
+```
+
+Query parameters can be optional:
+```csharp
+app.MapGet("/", (int? id) => $"Maybe there is id: {id}");
+```
+
+Different names can be bound explicitly using attributes:
+```csharp
+using Microsoft.AspNetCore.Mvc;
+
+app.MapGet("/", ([FromQuery(Name = "name")] int id) => $"id was passed as query param: {id}");
+```
+
+### Working with response status codes
+
+Only status code can be returned using `Results.StatusCode` method:
+```csharp
+app.MapGet("/", () => {
+    return Results.StatusCode(418);
+});
+```
+
+Status code alongside a response body can be returned using the `TypedResults` class:
+```csharp
+app.MapGet("/", () => {
+    return TypedResults.Problem("There as a problem");
+});
+```
+
+### Consuming request body
+
+Verbs like `POST` can have a request body. Body can be consumed by specifying complex type as an argument to handler delegate:
+
+```csharp
+app.MapPost("/", (ComplexType complexType) => {
+    return $"id: {complexType.Id}, name: {complexType.Name}";
+});
+
+class ComplexType
+{
+    public required int Id { get; init; }
+    public required string Name { get; init; }
+}
+```
+
+Names of complex type properties can be changed using special attribute `JsonPropertyName`:
+```csharp
+app.MapPost("/", (ComplexType complexType) => {
+    return $"id: {complexType.Id}, name: {complexType.Name}";
+});
+
+class ComplexType
+{
+    [JsonPropertyName("notid")]
+    public required int Id { get; init; }
+    public required string Name { get; init; }
+}
+```
+
+### Configuring formatters
+
+By default ASP.NET now used JSON serializer out of the box. JSON it can be configured by changing `JsonOptions` registration inside of dependency injection container:
+
+```csharp
+using System.Text.Json;
+
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.KebabCaseUpper;
+});
+```
+
+### Using dependency injection
+
+Dependency injection can be used to inject types that handle application logic.
+
+Types should be first registered within dependency injection container:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<EventsRepository>();
+
+var app = builder.Build();
+
+class EventsRepository
+{
+    public void Save(Event eventModel)
+    {
+        // Save the event
+    }
+
+    public Event[] Get()
+    {
+        return [
+            new Event { Id = 1, Name = "Event 1" },
+            new Event { Id = 2, Name = "Event 2" }
+        ];
+    }
+}
+
+class Event 
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+```
+
+The registered service can then be injected into handler delegates:
+```csharp
+app.MapGet("/events", (EventsRepository repository) => repository.Get());
+```
+
+Injected services can be differentiated from route params, query param or other type of arguments using the attribute:
+```csharp
+app.MapGet("/events", ([FromServices] EventsRepository repository) => repository.Get());
+```
+
+### Splitting endpoints into different files
+
+Number of endpoints can quickly escalate and it might become cumbersome to have them all in single file. `WebApplication app` can be passed to other methods or classes where it can be used to register endpoints in different place than `Program.cs`.
+
+```csharp
+// EventEndpoints.cs
+using Microsoft.AspNetCore.Mvc;
+
+static class EventEndpoints
+{
+    public static WebApplication MapEventEndpoints(this WebApplication app)
+    {
+        app.MapGet("/events", (EventsRepository repository) => repository.Get());
+        app.MapPost("/events", ([FromBody] Event eventModel, [FromServices] EventsRepository repository) => 
+        {
+            repository.Save(eventModel);
+            return Results.Created($"/events/{eventModel.Id}", eventModel);
+        });
+
+        return app;
+    }
+}
+
+// Program.cs
+app.MapEventEndpoints();
+```
+
+### API documentation
+
+Good practice is to enable API documentation tool that other engineers can use to figure out how to use the API. Most common standard expose API documentation now is [OpenAPI](https://www.openapis.org/).
+
+ASP.NET has package implementation for Swagger to automatically generate documentation page using provided OpenAPI specification.
+
+Package has to be added to project to enable Swagger:
+```
+dotnet add package Microsoft.AspNetCore.OpenApi
+dotnet add package Swashbuckle.AspNetCore
+```
+
+Then services and middleware has to be registered for it to work:
+
+```csharp
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+```
+
+```csharp
+app.UseSwagger();
+app.UseSwaggerUI();
+```
+
+Now upon navigating to `http://localhost:{port}/swagger` a pretty UI documenting API endpoints will be returned.
+
+## ASP.NET API with Controllers
+
+Instead of custom classes for endpoint registration, a more traditional approach of `Controller` classes can be used. Controllers wraps a group of similar actions into similar class and allows to reuse code in isolated context.
+
+To create a new controller class, a `dotnet` CLI can be used:
+
+```
+dotnet new apicontroller -n EventsController
+```
+
+### Creating actions in controllers
+
+Controller class must be of `public` accessibility to be properly discovered by ASP.NET.
+
+`public` methods inside Controller class are assumed to be HTTP actions.
+
+`IActionResult` interface can be used as a versatile type that will support most of use cases for HTTP of actions.
+A generic type of `ActionResult<T>` can be used to achieve similar effect but with better documentation generation because of known return type.
+
+```csharp
+[Route("api/[controller]")]
+[ApiController]
+class EventsController : ControllerBase
+{
+    [HttpGet]
+    public IActionResult GetEvent()
+    {
+        return Ok("This is a GET request!");
+    }
+}
+```
+
+HTTP verb is specified using one of the following attributes:
+- `[HttpGet]`
+- `[HttpPost]`
+- `[HttpDelete]`
+- etc.
+
+Route is specified similarly using the `[Route("pattern")]` attribute on method. Final route is constructed recursively taking `[Route]` attribute on the controller into consideration as well.
+
+Controllers gain access to some useful methods by inheriting `ControllerBase` class.
+
+```csharp
+[HttpGet]
+public IActionResult GetEvent()
+{
+    return Ok("This is a GET request!");
+}
+```
+
+Method `Ok` that was inherited from `ControllerBase` class is used here to return 200 status code along whatever content that is passed in argument to the requester.
+
+### Dependency injection with Controllers
+
+Services have to be injected into the class constructor as an argument when using controllers.
+
+It is best to assign injected services to `private readonly` field, and then use the value from that field inside methods.
+
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+
+namespace EventsApi;
+
+[Route("api/[controller]")]
+[ApiController]
+class EventsController : ControllerBase
+{
+    private readonly EventsRepository _eventsRepository;
+
+    public EventsController(EventsRepository eventsRepository)
+    {
+        _eventsRepository = eventsRepository;
+    }
+
+    [HttpGet]
+    public IActionResult GetEvents()
+    {
+        return Ok(_eventsRepository.Get());
+    }
+}
+```
+
+## GraphQL in ASP.NET
+
+Implementation for GraphQL does not come in ASP.NET out of the box. A 3rd party package implementation has to be used instead.
+
+`HotChocolate.AspNetCore` package will be used in this guide.
+
+To get started, a new `web` project be needed:
+
+`dotnet new web`
+
+Then the `HotChocolate.AspNetCore` should be added:
+
+`dotnet add package HotChocolate.AspNetCore`
+
+This should results in having an empty project with all the required packages ready.
+
+Add required GraphQL services:
+
+`builder.Services.AddGraphQLServer();`
+
+Register middlewares:
+
+`app.MapGraphQL();`
+
+Verify that upon starting the application and navigating to `http://localhost:{port}/graphql/` a tool called `Banana Cake Pop` is shown.
+
+### Creating query graphs and types
+
+Create an `Event` class and `Participant` class. In the situation modelled, let's assume that `Event` can have many `Participants`.
+
+```csharp
+// Event.cs
+public class Event
+{
+    public string Name { get; set; }
+    public DateOnly Date { get; set; }
+    public Participant[] Participant { get; set; }
+}
+
+// Participant.cs
+public class Participant
+{
+    public string Name { get; set; }
+}
+```
+
+
+Create a class that represents the Queries:
+
+```csharp
+// EventType.cs
+public class EventType
+{
+    public string Name { get; set; }
+    public DateOnly Date { get; set; }
+
+    public ParticipantType[] Participants()
+    {
+        return new[] { new ParticipantType { Name = "neim" } };
+    }
+}
+
+// ParticipantType.cs
+public class ParticipantType
+{
+    public string Name { get; set; }
+}
+
+// EventsQueries.cs
+public class EventsQueries
+{
+    public EventType[] GetEvents() =>
+        new [] { 
+            new EventType
+            {
+                Name = "sample event",
+                Date = DateOnly.Parse("2024-10-10"),
+            }
+        };
+}
+```
+
+Newly created types now should be added to the dependency injection container:
+```csharp
+builder.Services
+    .AddGraphQLServer()
+    .AddType<EventType>()
+    .AddType<ParticipantType>()
+    .AddQueryType<EventsQueries>();
+```
+
+Upon starting the application and going to Banana Cake Pop, a sample query can be created that should return the stubbed values:
+```gql
+query {
+  events {
+    date
+    name
+    participants {
+        name
+    }
+  }
+}
+```
+
+### Accepting arguments
+
+Arguments can be accepted via `[GraphQLName]` attribute.
+
+```csharp
+public class EventsQueries
+{
+    public EventType GetEvent([GraphQLName("name")] string name) =>
+        new EventType
+        {
+            Name = name,
+            Date = DateOnly.Parse("2024-10-10"),
+        };
+}
+```
+
+### Creating mutations
+
+Mutations will typically require a payload class, that allows to accept more complex content types:
+
+```csharp
+// CreateEventInput.cs
+
+public class CreateEventInput
+{
+    public string Name { get; set; }
+    public DateOnly Date { get; set; }
+}
+```
+
+Create the class that has actual mutations:
+```csharp
+public class EventsMutations
+{
+    public EventType CreateEvent(CreateEventInput input) =>
+        new EventType
+        {
+            Name = input.Name,
+            Date = input.Date,
+        };
+}
+```
+
+Register the mutation in the DI container:
+```csharp
+builder.Services
+    .AddGraphQLServer()
+    .AddType<EventType>()
+    .AddType<ParticipantType>()
+    .AddQueryType<EventsQueries>()
+    .AddMutationType<EventsMutations>();
+```
+
+Upon running the application the following mutation should be possible to run:
+```gql
+mutation {
+    createEvent(input: {
+        name: "hey",
+        date: "2024-10-10"
+    })
+    {
+        name
+    }
+}
+```
+
+### Injecting services
+
+Services can be injected into Query or Mutation handler methods via `[Service]` attribute. For example:
+
+```csharp
+public class EventsQueries
+{
+    public EventType[] GetEvents([Service] EventsRepository repository) =>
+        new [] { 
+            new EventType
+            {
+                Name = "sample event",
+                Date = DateOnly.Parse("2024-10-10"),
+            }
+        };
+}
+```
+
+### Batch loading
+
+N+1 problem can circumvented using `BatchDataLoader`.
+
+```csharp
+using HotChocolate.Resolvers;
+
+public async Task<ParticipantType[]> Participants(
+    IResolverContext context
+)
+{
+    return await context
+        .BatchDataLoader<string, ParticipantType[]>(
+            async (keys, ct) =>
+            {
+                var certificates = new[] {
+                    new ParticipantType
+                    {
+                        Name = "name",
+                    }
+                };
+
+                return keys.ToDictionary(
+                    key => key,
+                    key => certificates.ToArray()
+                );
+            }
+        )
+        .LoadAsync(Name);
+}
+```

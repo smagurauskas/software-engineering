@@ -1,0 +1,219 @@
+── cell 1 ──
+── cell 2 ──
+── cell 3 ──
+── cell 4 ──
+── cell 5 ──
+10.1
+10.000001
+10
+── cell 6 ──
+10.00000000000001
+10.000000000000002
+── cell 7 ──
+10.000000000000001
+10.000000000000000000000000001
+── cell 8 ──
+── cell 9 ──
+── cell 10 ──
+── cell 11 ──
+── cell 12 ──
+── cell 13 ──
+No value
+Has value
+── cell 14 ──
+── cell 15 ──
+── cell 16 ──
+a + b = 30
+a - b = -10
+a * b = 200
+a / b = 0
+a % b = 10
+a: 10
+a: 11
+b: 21── cell 17 ──
+a: 10
+── cell 18 ──
+a: 30
+── cell 19 ──
+a: -10
+── cell 20 ──
+a: 200
+── cell 21 ──
+a: 0
+── cell 22 ──
+a: 10
+── cell 23 ──
+a: 10
+a: 10
+── cell 24 ──
+<<= 40
+>>= 10
+&= 0
+|= 20
+^= 0
+── cell 25 ──
+a == b: False
+a != b: True
+a > b: False
+a < b: True
+a >= b: False
+a <= b: True
+── cell 26 ──
+a && b: False
+a || b: True
+!a: False
+── cell 27 ──
+MethodA
+MethodB
+── cell 28 ──
+MethodB
+── cell 29 ──
+MethodA
+── cell 30 ──
+MethodB
+MethodA
+── cell 31 ──
+a & b: 2
+a | b: 3
+a ^ b: 1
+~a: -3
+a << 1: 4
+a >> 1: 1
+── cell 32 ──
+── cell 33 ──
+10
+20
+── cell 34 ──
+30
+-10
+── cell 35 ──
+Not equal
+Equal
+── cell 36 ──
+C
+A
+── cell 37 ──
+Two
+── cell 38 ──
+Two or more
+── cell 39 ──
+0
+1
+2
+3
+4
+── cell 40 ──
+── cell 41 ──
+0
+1
+2
+3
+4
+── cell 42 ──
+0
+1
+2
+3
+4
+── cell 43 ──
+1
+2
+3
+4
+5
+── cell 44 ──
+0
+1
+2
+── cell 45 ──
+0
+1
+2
+4
+── cell 46 ──
+── cell 47 ──
+False
+True
+── cell 48 ──
+Internal class
+Private protected class
+── cell 49 ──
+── cell 50 ──
+True
+── cell 51 ──
+True
+False
+── cell 52 ──
+True
+── cell 53 ──
+10
+20
+── cell 54 ──
+── cell 55 ──
+── cell 56 ──
+Default method
+Overridden method
+── cell 57 ──
+── cell 58 ──
+Interface A method
+Interface B method
+── cell 59 ──
+Method
+Method
+Method
+── cell 60 ──
+── cell 61 ──
+1
+── cell 62 ──
+Write
+True
+False
+── cell 63 ──
+Method A
+Method B
+── cell 64 ──
+── cell 65 ──
+── cell 66 ──
+Setting property
+Getting property
+20
+── cell 67 ──
+── cell 68 ──
+5
+── cell 69 ──
+── cell 70 ──
+Custom exception
+── cell 71 ──
+Custom exception
+── cell 72 ──
+Exception caught
+── cell 73 ──
+Finally block
+Don't want any errors to slip into notebook
+── cell 74 ──
+Finally block
+Custom exception
+── cell 75 ──
+Exception caught
+── cell 76 ──
+Custom exception caught
+── cell 77 ──
+── cell 78 ──
+5
+aaaaa
+── cell 79 ──
+── cell 80 ──
+── cell 81 ──
+── cell 82 ──
+── cell 83 ──
+── cell 84 ──
+── cell 85 ──
+── cell 86 ──
+── cell 87 ──
+<volatile output masked>
+── cell 88 ──
+10
+── cell 89 ──
+── cell 90 ──
+── cell 91 ──
+<null>

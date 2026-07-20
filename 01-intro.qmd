@@ -1,0 +1,321 @@
+---
+title: "Software Engineering I"
+verify: none # no executable cells
+---
+
+## Intro lecture
+
+All the course material (including these notebooks) can be found at https://github.com/smagurauskas/software-engineering.
+
+Lectures will be held in English.
+
+## What is Software Engineering?
+
+Software engineering can be described *programming over time*.
+
+Software engineering deals with such topics as:
+- How to scale development efforts
+- How to ensure that the project is maintainable for as long as it is needed
+- Making trade-offs in the system design
+- How to ensure the quality of software being built
+- And many more...
+
+***
+
+IEEE defines software engineering as:
+
+> the application of a systematic, disciplined, quantifiable approach to the development, operation, and maintenance of software; that is, the application of engineering to software
+
+***
+
+Older definitions were:
+
+> the practical application of scientific knowledge to the design and construction of computer programs and the associated documentation required to develop, operate, and maintain them
+
+and
+
+> the technological and managerial discipline concerned with systematic production and maintenance of software products that are developed and modified on time and within cost estimates
+
+***
+
+The word "*engineering*" itself is defined as:
+
+> engineering is about applying that knowledge to solve real-world problems with limited resources cost-effectively
+
+and
+
+> In engineering, science and practice are applied to generate potential solutions to the real-world problem, and engineering economics is used to identify the most cost-effective one
+
+## Today's lecture agenda
+
+1. Information about the course and lectures
+2. What the lab classes will look like
+3. Quick intro into Pull Requests
+4. Quick intro into .NET and C#
+
+## Course material
+
+All these notebooks are versioned and placed here https://github.com/smagurauskas/software-engineering.
+
+Pull requests for changes are welcome!
+
+Additional lecture material will also be placed at [https://emokymai.vu.lt](https://emokymai.vu.lt).
+
+*If you were not added as a member of the course in emokymai/VMA/moodle - write me an email and I will add you.*
+
+## Lecture format
+
+- Lectures are 3 *academic* hours long.
+- That means ~2 hour long lectures.
+- Will try to have break sometime in the middle of lecture.
+
+The course is worth 10 ECTS credits. Most of it comes from individual work.
+
+## Purpose of the course unit
+
+> To get acquainted with software development methods using C# programming language and .NET Core framework, to consolidate knowledge of object-oriented programming.
+
+### Learning outcomes of the course unit
+
+- Design, implement and develop applied programs, apply code reviews;
+- Apply knowledge of software systems engineering, make qualified design and architectural decisions while expanding the functionality of the developed system;
+- Combine theory and practice using .NET framework technologies and developing OO application systems;
+- Develop the knowledge about data types, named and optional arguments as well as other new features of C# programming language;
+- Program in C# independently and in a team, applying basic OO design templates using C# programming environment;
+- Recognize the need for continuous learning and will have the initial skills;
+- Work in the team - on site and remotely.
+
+Although course is heavily based on C# and .NET, it is not the primary goal of the course to teach these technologies.
+
+Primary goal is to teach the general principles in modern software engineering, that could be applied when working with any other technology. C# and .NET is just a tool in doing this. Most of the concepts taught in this course have equivalents in other software language and ecosystems, so the knowledge acquired during this course should be more universal than specific.
+
+## Main ideas behind the course
+
+- Code is a liability.
+- Initial development effort is only the most obviously visible part of the cost.
+- Code is read more often than it is written.
+- *Learning to learn* a technology is more important than *learning a technology*.
+
+## Planned lecture topics
+
+These are general guidelines on what the lecture are going to be about. It is possible that if the topics might shift a bit during the semester.
+
+Course is organized to get students up to speed with the lab assignments first, and then circle back and dive deeper into C# and software engineering topics. Because of this first few lectures might look a bit complicated and disjointed from the rest of lectures.
+
+For example if there is specific interest in topic, then more time might be dedicated to it during the lectures, so the subsequent topics might shift a bit further. Analogously if the topic is covered very quickly and there are no questions on it - a topic that was scheduled for later lecture might be shifted earlier.
+
+### Lecture 2
+
+- Web services: 
+    - What are the web services?
+    - What is HTTP(S)?
+    - What are REST, GraphQL, SOAP and gRPC?
+- Developing web services using ASP.NET
+
+### Lecture 3
+
+- Building graphical web UIs with ASP.NET
+- Intro into Agile software development
+
+### Lecture 4
+
+- .NET data types
+- Classes and structs in C#
+- Generic types and methods
+- Type conversions
+- Standard .NET interfaces
+- Creation of objects and object lifecycle
+- SOLID
+
+### Lecture 5
+
+- Working with persistent data
+- Reading and write the data
+- Collections
+- Delegates, anonymous methods and lambda expressions
+
+### Lecture 6
+
+- Introduction to LINQ
+- Working with data
+- Extension methods
+- Dependency injection
+
+### Lecture 7
+
+- Unit and integration testing
+- Writing tests in .NET
+
+### Lecture 8
+
+- Working with databases
+- Introduction to ORMs and Entity Framework
+- Using LINQ when working with ORM
+
+### Lecture 9
+
+- Software system construction (SWEBOK)
+- Business needs analysis (BABOK)
+- Software modification and maintenance
+- More on generic types in C#
+
+### Lecture 10
+
+- Multi-threading in C#
+- `async` and `await` keywords and their usage
+- Concurrent collections
+
+### Lecture 11
+
+- User interfaces and user experience
+
+### Lecture 12
+
+- Improving the software development process
+- Automated tools for code quality assurance (static analysis)
+- Software deployment
+- Continuous integration and deployment
+
+### Lecture 13
+
+- Monitoring and observability
+
+### Lecture 14
+
+- Design patterns
+- Modern OO architectures overview
+
+### Lecture 15
+
+- Thinking about the performance in C#
+- Preparation for exam
+
+## Lab classes
+
+Students form teams of 4 students and develop a project together during the semester, based on one of the topics provided. Teams work in mini 1 week sprints and present the progress during the lab class each week.
+
+Students evaluate themselves and their team members each week according to the individual contributions that week. Final lab assignment grades depend on these self evaluations.
+
+***
+
+General requirements:
+- **Projects must be backend dominant**.
+- **All commits must be reviewed via pull requests**. 
+- Project must be versioned in GitHub.
+- Project must be a web application based on ASP.NET. UI layer framework/technology can be selected freely.
+- Requirements for lab assignments are meant to be implemented in C#.
+
+## 2025 Lab project topics
+
+General topic: collaborative entertainment apps. Entertainment should come in part from more people joining in on activity.
+
+Concrete suggestions:
+1. Live collaborative playlist builder or music jam session. *I.e. multiple people can contribute songs to the playlist, dynamic votes are invoked to shuffle it up etc.*
+2. Live trivia game. *I.e. some trivia automatically runs on timer in which people can participate. Rank brackets and similar extensions can be done, based on how well a user performs.*
+3. Mini arcade. *I.e. multiple simple games like tic-tac-toe or connect-4 are played in a gauntlet style match, until 1 winner remains.*
+4. Photo ccavenger hunt. *I.e. a specific task for what kind of photo to capture is provided and people have limited amount of time to upload such photo. Photo with the most votes wins.*
+
+## Evaluation
+
+- Exam in written form (max 5.0):
+    - Exam can be taken only if all 3 of the Lab assignments are settled
+    - Exam can be taken only when total amount of points collected during the semester is 3.0 or more
+    - Exam is considered to be passed if at least 1.5 out of 5 points are collected
+
+::: {.fragment}
+- Laboratory assignments (max 5.0)
+    - Three assignments (1.5 + 1.5 + 2.0)
+:::
+
+::: {.fragment}
+- Additional points (max 1.0):
+    - Contributing to these course notebooks.
+    - Bonus identified requirements - see Lab assignment #3. 
+    - Additional contributions or outstanding performance.
+    - *Might* be some quizzes during the lecture.
+:::
+
+::: {.fragment}
+Maximum available score from Laboratory assignments + Additional points is **5.5**.
+:::
+
+## Lab assignment #1
+
+Deadline: week 7.
+
+Official goal: to develop an web application using the material covered in 1-6 lectures.
+
+Unofficial goal: to develop an app in ASP.NET that has basic functionality of assigned APP. Understand the usage of GitHub, coding in team principles. Prepare foundation for future work. Learn to code review yourself and take the feedback when getting one.
+
+Points: 1.5
+
+1. Application can be interacted with using *some* sort of interface
+2. Creating and using your own class, struct, record and enum
+3. Property usage in struct and class
+4. Named and optional argument usage
+5. Extension method usage
+6. Iterating through collection the right way
+7. Using a stream to load data (can be from file, web service, socket etc.)
+8. Boxing and unboxing
+9. LINQ to Objects usage (methods or queries)
+10. Implement at least one of the standard .NET interfaces (IEnumerable, IComparable, IComparer, IEquatable, IEnumerator, etc.)
+
+## Lab assignment #2
+
+Deadline: week 11.
+
+Official goal: continue developing an app while working in groups while using material covered in 7-10 lectures.
+
+Unofficial goal: start using database and testing the project. Deepen the functionality of application while being creative.
+
+Points: 1.5
+
+1. Relational database and Entity Framework is used for storing all the data
+2. Create a generic type with generic method; define at least 2 generic constraints
+3. Create at least 1 exception type and throw it; meaningfully deal with it; (most of the exceptions are logged to a file or a server)
+4. Usage of async/await
+5. Use at least 1 concurrent collection
+6. Dependency Injection is used everywhere where reasonable
+7. Unit and integration tests coverage at least 50%
+
+## Lab assignment #3
+
+Deadline: week 15.
+
+Official goal: continue developing an app while working in groups while using material covered in 11-14 lectures.
+
+Unofficial goal: think about the end-user experience, deepen the functionality of application while being creative. Finish up an MVP version of your application.
+
+Points: 2.0
+
+1. Short video (4 to 6 minutes) is prepared, which showcases how the application works and it's features. Key architectural and code design decisions can also be shown. Must be uploaded to some public video hosting service (i.e. YouTube) or provided as a file. 
+2. Application is in a stable state. Additional user flows could be asked to be shown during the presentation.
+3. Value proposition of the application can be clearly articulated.
+4. Application is shown to solve the problem the students have defined.
+5. Unit and integration test coverage is at least 80%.
+6. Entity Framework migrations are used and run automatically.
+
+Bonus points 0.5:
+1. Application is hosted in some environment and is accessible through a public domain name. All students in the group must be able to explain how to the deployment setup works.
+
+## Exam
+
+Exam will be some combination of this:
+- Open ended questions on general software engineering principles, i.e. code reviews, unit and integration testing, design patterns etc.
+- Circle the correct answer(s) questions - snippet of C# code, what will be it's output?
+- Type in the answer - what will the code print out?
+- Complete the code - part of the C# code is missing, complete the code to get the desired result.
+- Pull request review - review the pull requests and provide the comments.
+
+## Literature
+
+### Official literature
+1. Software Engineering at Google: Lessons Learned from Programming Over Time.
+2. C# in Depth - Jon Skeet.
+3. The Pragmatic Programmer: your journey to mastery - Andy Hunt.
+4. The Art of Unit Testing: with examples in C# - Roy Osherove.
+
+and more... check the course description for the full info.
+
+#### Other highly recommended literature
+1. Accelerate: The Science of Lean Software and DevOps: Building and Scaling High Performing Technology Organizations. 

@@ -1,0 +1,124 @@
+---
+title: "Standard interfaces in .NET"
+verify: output
+---
+
+Some of the standard interfaces in .NET and what purpose they serve in .NET and C#. Most of such interface also have older, non-generic, versions, but the generic versions should be used where possible.
+
+## `IEquatable<T>`
+
+`IEquatable<T>` has methods to the object equality. It is used by some other classes in the .NET framework, like `Dictionary<T>` or `List<T>`.
+
+When implementing the `IEquatable<T>` interface, the `Equals` and `GetHashCode` methods, which are implicitly inherited from the `object` base class, should be overridden as well, to provide consistent behavior.
+
+```{.csharp}
+class Student : IEquatable<Student>
+{
+    public string Name { get; set; }
+    public string IdNumber { get; set; }
+
+    // Comes from IEquatable<Student>
+    public bool Equals(Student other)
+    {
+        if (other == null) return false;
+
+        // In this case, we say that if the IdNumber matches, then 2 student objects are identical
+        // Name does not matter in this case
+        return IdNumber.Equals(other.IdNumber);
+    }
+
+    // Overridden so the behavior would match that of Equals(Student)
+    public override int GetHashCode()
+    {
+        return IdNumber.GetHashCode();
+    }
+
+    // Overridden so the behavior would match that of Equals(Student) and use it as well
+    public override bool Equals(object obj)
+    {
+        if (obj == null) return false;
+
+        Student studentObj = obj as Student;
+        if (studentObj == null) return false;
+        else return Equals(studentObj);
+    }
+}
+```
+
+```{.csharp}
+// Student names differ, but Id matches:
+var student1 = new Student { Name = "John Doe", IdNumber = "12345" };
+var student2 = new Student { Name = "Jane Doe", IdNumber = "12345" };
+```
+
+```{.csharp}
+var list = new List<Student> { student1 };
+
+Console.WriteLine(list.Contains(student2));
+```
+
+```{.csharp}
+var dictionary = new Dictionary<Student, string> { { student1, "my value" } };
+
+// Dictionary uses the GetHashCode() method to check for key equality,
+// but it was overridden to use match Equals(Student) instead
+Console.WriteLine(dictionary.ContainsKey(student2));
+Console.WriteLine(dictionary[student2]);
+```
+
+```{.csharp}
+var hashSet = new HashSet<Student>();
+
+hashSet.Add(student1);
+hashSet.Add(student2);
+
+// HashSet uses GetHashCode(), but since it was overridden it works consistently with Equals()
+Console.WriteLine(hashSet.Count);
+```
+
+## `IComparable<T>`
+
+`IComparable<T>` allows to compare objects. It is used in cases like ordering in `Linq` or classes like `SortedList`.
+
+`IComparable<T>` defines method `public int CompareTo(T other)`, which return `int`.
+
+`int` shall have such return value:
+- `<0` when `this < other`
+- `=0` when `this == other`
+- `>0` when `this > other`
+
+```{.csharp}
+class Student : IComparable<Student>
+{
+    public string Name { get; set; }
+    public string IdNumber { get; set; }
+
+    // Comes from IComparable<Student> interface
+    public int CompareTo(Student other)
+    {
+        // In this case the students would be sorted by their names
+        return Name.CompareTo(other.Name);
+    }   
+}
+```
+
+```{.csharp}
+var student1 = new Student { Name = "John Doe", IdNumber = "12345" };
+var student2 = new Student { Name = "Adeline Doe", IdNumber = "22345" };
+var student3 = new Student { Name = "John Doe", IdNumber = "32345" };
+
+// J > A, so student1 is "greater" than student2
+Console.WriteLine(student1.CompareTo(student2));
+
+// And sensible reverse
+Console.WriteLine(student2.CompareTo(student1));
+
+// Same names, so 0
+Console.WriteLine(student1.CompareTo(student3));
+```
+
+```{.csharp}
+var list = new List<Student> { student1, student2, student3 };
+
+list.Order().DisplayTable();
+```

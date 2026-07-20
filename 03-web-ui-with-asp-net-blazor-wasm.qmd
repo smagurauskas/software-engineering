@@ -1,0 +1,416 @@
+---
+title: "Creating Web UI with ASP.NET Blazor WASM"
+verify: none # no executable cells
+---
+
+Purpose of this section is not to make the reader proficient in ASP.NET Blazor, but rather to provide the basic information needed to start building client side rendered web apps.
+
+The overarching goal is rather to teach ***how to learn*** to work with the Web UI frameworks. How to pick up pieces of relevant information when quick solutions are needed, and how to assemble them into some working prototype. 
+
+This notebook will focus on using Blazor to create web UIs, although there are other legitimate choices available.
+
+### Blazor high level overview
+
+Blazor allows to render `html` documents using "Razor components".
+
+Razor components allows to do scripting using using C#. Scripting can be used for assembling the `html` based on data, making `HTTP` calls to fetch the data dynamically or writing event handlers to give page additional interactions.
+
+In this example - C# is compiled into into web assembly (WASM) and executed on the client side. There are other rendering modes like hybrid or server side that can be used with Blazor.
+
+`App.razor` acts as a root component. It is executed initially and other components can be rendered recursively if they are referenced in the root component. In the default template there is `Routes.razor` component which add routing capability to the web application. It is added by adding `<Routes />` in the root component. Other components are added the same way.
+
+### Create Blazor project
+
+`dotnet new blazorwasm-empty -n <project name>`. There are other Blazor templates among the `dotnet new` templates. Other Blazor templates might have different rendering methods.
+
+### Rendering static data
+
+First create a file `EventsData.cs` in the root namespace of the solution as shown in the example. It will provide some static data that can be used to render into `html`.
+
+```csharp
+public class EventsData
+{
+    public static List<Event> Events { get; set; }
+
+    static EventsData()
+    {
+        Events = new List<Event>();
+
+        for (int i = 1; i <= 10; i++)
+        {
+            Events.Add(new Event
+            {
+                Id = i,
+                Title = $"Event {i}",
+                Description = $"Description for event {i}",
+                Date = DateTime.Now.AddDays(i)
+            });
+        }
+    }
+}
+
+public class Event
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public DateTime Date { get; set; }
+}
+```
+
+Then add a `EventList.razor` component in the `Pages/` directory.
+
+```csharp
+@page "/events"
+
+<div>
+    @foreach (var eventas in EventsData.Events)
+    {
+        <div>
+            <h5 class="card-title">@eventas.Title</h5>
+            <p class="card-text">@eventas.Description</p>
+        </div>
+    }
+</div>
+```
+
+Upon starting web app and navigating to to `/events` it should display a list of 10 events that were generated in the `EventsData` class.
+
+Alternatively code generating the events data can be placed inside the `EventsList.razor` component itself:
+
+```csharp
+@page "/events"
+
+<div>
+    @foreach (var eventas in events)
+    {
+        <div>
+            <h5 class="card-title">@eventas.Title</h5>
+            <p class="card-text">@eventas.Description</p>
+        </div>
+    }
+</div>
+
+
+@code
+{
+    private List<Event> events = new List<Event>();
+
+    protected override void OnInitialized()
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            events.Add(new Event
+                {
+                    Id = i,
+                    Title = $"Event {i}",
+                    Description = $"Description {i}"
+                });
+        }
+    }
+
+    class Event
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+    }
+}
+```
+
+### Loading static assets
+
+`wwwroot` directory contains static assets. These assets are not compiled or processed in other way, but just served as downloadable assets when the web app runs. Files like `css` stylesheets, `js` scripts or images typically placed in this directory.
+
+There is default `wwwroot/css/app.css` stylesheet which contains several default styles. To add an additional stylesheet first create a file and the add line in `wwwroot/index.html` `<head>` element:
+
+```css
+// wwwroot/css/app.css
+.card-title {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+```
+
+```html
+<!-- Added to wwwroot/index.html head element -->
+<link href="css/card.css" rel="stylesheet" />
+```
+
+Images can be added similarly: upon placing image `cheems_dancing.gif` to `wwwroot/cheems_dancing.gif` it can be referenced from the Razor components with simple `html` element: `<img src="/cheems_dancing.gif" alt="Cheems dancing" />`.
+
+### Navigating between pages
+
+In `html` navigation between components can be done via `<a>` element. In the `href` attribute of the `<a>` element the path to the page should be placed and upon clicking the children of the element browser will navigate to the page in `href` attribute.
+
+In the previous example a page was created with path `/events`. The path was specified in the `@page` annotation at the top of the file. By the adding `<a href="/events">Go to events</a>` line in the `Index.razor`, it will cause a link to appear in the root page of the web application. Upon clicking the link, the browser will navigate to the `/events` page.
+
+Alternatively navigation can be done dynamically from the C# code, using the `NavigationManager` class. 
+
+`NavigationManager` must be injected into the component using the `@inject` annotation at the top of the component:
+```@inject NavigationManager Navigation```
+
+A method in the `@code` block can then be created which uses `NavigateTo` method of `NavigationManager` class to invoke the navigation:
+```cs
+@code {
+    private void NavigateToEvents()
+    {
+        Navigation.NavigateTo("/events");
+    }
+}
+```
+
+Created `C#` method can then be bound to some `html` component like button:
+```html
+<button @onclick="NavigateToEvents">Go to events</button>
+```
+
+### Razor Components
+
+A component can be created that does not represent the whole page but rather an isolated part of the code. Create the file `Components/Event.razor`:
+```html
+<div>
+    <h5 class="card-title">Event name</h5>
+    <p class="card-text">Event description</p>
+</div>
+```
+
+Then in the page where you would like to use this component add:
+```cs
+@using <root namespace>.Components
+
+<Event />
+```
+
+Components can be made more sophisticated by passing them some properties. In this way we could upgrade the `Event.razor` component so it would not use static data for name and description, but would rather display the data that was passed to it.
+
+This is achieved by using `[Parameter]` attribute. Change `Event.razor` component to the following:
+```html
+<div>
+    <h5 class="card-title">@Title</h5>
+    <p class="card-text">@Description</p>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string Description { get; set; }
+}
+```
+
+Now it can be called like and it will display `Some description` and `Some title` that were passed here instead of hardcoded values:
+```csharp
+<Event Description="Some description" Title="Some title" />
+```
+
+Variables can also be passed like this using the standard `@` notation:
+```csharp
+<Event Description="@Description" Title="@Title" />
+```
+
+### Calling an API
+
+`HttpClient` can be used to make calls to APIs. In order to be able to inject `HttpClient` it should be first registered to the dependency injection container:
+
+```csharp
+// localhost:1111 should be replaced with the address of your API instead
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:1111") });
+```
+
+After this the `HttpClient` can be injected into the Component:
+```csharp
+@inject HttpClient HttpClient
+```
+
+After this the variable named `HttpClient` can be used in `@code` block to call the API.
+
+An example how the `EventsList.razor` page component can be modified to fetch events list from an API:
+
+```csharp
+@page "/events"
+@using EventsWebWasm.Components
+@inject HttpClient HttpClient
+
+@foreach (var @eventas in events)
+{
+    <Event Title="@eventas.Title" Description="@eventas.Description" />
+}
+
+@code
+{
+    private List<Event> events = new List<Event>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = await HttpClient.GetFromJsonAsync<List<Event>>("api/Events");
+    }
+
+    class Event
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+    }
+}
+```
+
+#### CORS
+
+After calling an API from the user's browser it is most likely going to be blocked by the browser's CORS policy. [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) is a security mechanism that prevents browser scripts to call APIs that do not specifically allow calls from that origin. 
+
+Using ASP.NET cross-origin requests can be enabled by doing the following **in the api API project**:
+1. Register the required services in Dependency Injection container: `builder.Services.AddCors();`.
+2. Registered the required middlewares:
+```csharp
+app.UseCors(builder =>
+{
+    // This should be full URL of WASM web application including the port
+    // I.e. "http://localhost:5199"
+    builder.WithOrigins("http://<wasm application url>");
+    builder.AllowAnyMethod();
+    builder.AllowAnyHeader();
+});
+```
+
+This in the example is a very permissive policy, but it can be narrowed down and be made more secure by using the `builder` variable (as named in the example).
+
+### Forms
+
+Up until this point we only dealt with only displaying the existing data. In practice the data will most likely have to be created by users, rather than automatically. This can be done using the forms. Forms in Blazor are based on standard html `<form>` element.
+
+Consider the following code:
+```csharp
+@page "/eventform"
+@inject HttpClient HttpClient
+
+<h1>Create Event</h1>
+
+<form @onsubmit="OnSubmit">
+    <label for="title">Title</label>
+    <input type="text" id="title" @bind="Model.Title" />
+    <br />
+    <label for="description">Description</label>
+    <input type="text" id="description" @bind="Model.Description" />
+    <br />
+    <button type="submit">Create</button>
+</form>
+
+@code {
+    private CreateEventInput? Model { get; set; } = new CreateEventInput();
+
+    private async Task OnSubmit() {
+        await HttpClient.PostAsJsonAsync("api/Events", new CreateEventInput { Title = "New Event", Description = "New Event Description" });
+        Model = new();
+    }
+
+    class CreateEventInput
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+    }
+}
+```
+
+`@inject HttpClient HttpClient` is being injected because the new created event will be sent to the API for processing. It is intended that the event later will be fetched from the API.
+
+`<form @onsubmit="OnSubmit">` is used to define `html` form. Instead of standard html submit behavior, a custom submit handler is registered via `@onsubmit` attribute, which calls `OnSubmit` method from `@code` block.
+
+Inputs from the form are bound to `Model` property using the `@bind` attributes on html `input` elements.
+
+### WebSockets
+
+An example of how to make use of WebSockets using `SignalR` package. Raw WebSockets can also be consumed using lower level classes available with ASP.NET, but in this case `SignalR` is used for the sake of simplicity.
+
+The example will do the following:
+- Server keeps pushing random string message every few seconds.
+- If the clients sends message to the server, the server will immediately send the same messaged uppercased back.
+
+In the separate ASP.NET WebApi project add: `dotnet add package Microsoft.AspNetCore.SignalR`.
+In the another separate Blazor WASM project add: `dotnet add package Microsoft.AspNetCore.SignalR.Client`.
+
+In the Blazor project add the code below. Keep in mind that it only accumulates the messages received into a private property. Using the examples above, make it so the messages would be displayed and `SendMesageAsync` would be bound to some button.
+
+```csharp
+@code {
+    private HubConnection? hubConnection;
+    private List<string> messages = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl("http://localhost:<port>/ws")
+        .Build();
+
+        hubConnection.On<string>("ReceiveMessage", async (msg) =>
+        {
+            messages.Add($"{msg}");
+            await InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public async Task SendMessageAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage", "Hello!");
+        }
+    }
+}
+```
+
+In the Web API project add this to send a message back when a client sends one to the server:
+
+```csharp
+/* ... */
+builder.Services.AddSignalR();
+
+/* ... */
+
+app.MapHub<WebSocketHub>("/ws");
+
+/* ... */
+
+public class WebSocketHub : Hub
+{
+    public async Task SendMessage(string message)
+    {
+        await Clients.All.SendAsync("ReceiveMessage", message.ToUpper());
+    }
+}
+```
+
+This should not work out of the box, because of CORS policies. Allow the client host to access Web API using the examples shown above.
+
+Next, to send a message periodically, a backround service should be used:
+
+```csharp
+builder.Services.AddHostedService<TimeBroadcastService>();
+
+public class TimeBroadcastService : BackgroundService
+{
+    private readonly IHubContext<WebSocketHub> _hubContext;
+
+    public TimeBroadcastService(IHubContext<WebSocketHub> hubContext)
+    {
+        _hubContext = hubContext;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            await _hubContext.Clients.All.SendAsync(
+                "ReceiveMessage",
+                $"The time is {DateTime.Now:T}",
+                cancellationToken: stoppingToken
+            );
+
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+        }
+    }
+}
+```

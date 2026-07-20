@@ -1,7 +1,31 @@
-# Do not track auto generated slides HTML files
+# Quarto
+/.quarto/
+/_site/
+/_freeze/
+
+# Rendered output (slides/pages are built by CI or locally, never committed)
 **/*.html
+
+# Verification scratch (generated .csx scripts and actual outputs)
+/.verify/
+
+# .NET
+bin/
+obj/
+*.user
+**.lscache
+
+# Jupyter (legacy notebooks)
+.ipynb_checkpoints/
+
+# Editors / OS
+.vs/
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
 
 # Used for some examples
 test.txt
 
-**.lscache
+**/*.quarto_ipynb

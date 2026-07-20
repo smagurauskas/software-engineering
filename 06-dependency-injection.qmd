@@ -1,0 +1,607 @@
+---
+title: "Dependency injection"
+verify: output # scripting assembly names are normalized by the verifier
+---
+
+Dependency injection (DI) is one of the ways to implement the dependency inversion principle.
+
+Dependency injection in practice means that the external types the class depends on are passed in from external source, instead of being create in the class itself.
+
+::: {.content-visible unless-format="revealjs"}
+Implementing DI helps by making the code more configurable, because only the type that is being injected can be changed in a single place, instead of the concrete instantiation everywhere.
+
+Another place where DI is helpful is in testing. DI makes the code more configurable so it is easier to pass fake class implementations to isolate the type under testing.
+:::
+
+***
+
+Dependency inversion as one of the SOLID principles:
+
+```{mermaid}
+graph LR
+    A[High-level Module] -->|depends on| B[Abstraction]
+    C[Low-level Module] -->|depends on| B[Abstraction]
+```
+
+## Example 1
+
+Let's say there is an interface `IStudentRepository` like this:
+
+```csharp
+interface IStudentRepository
+{
+    Task SaveStudentAsync(Student student);
+    Task<List<Student>> GetStudentsAsync();
+}
+```
+
+::: {.notes}
+The `IStudentRepository` interface does not specify how or where the students are stored, interface just deals with what it can do - store and retrieve the students. There are multiple legit ways how to interface can be implemented, so there are multiple possible classes to use in place of this interface.
+:::
+
+::: {.content-visible unless-format="revealjs"}
+For this example let's say there is a class `FileStudentRepository` which implements the interface `IStudentRepository` and saves as well as retrieves students from a file.
+
+Without using DI, an option how to acquire an instance of `IStudentRepository` int the class `StudentsController` controller class would be by simply manually instantiating `FileStudentRepository` inside the constructur.
+:::
+
+***
+
+```csharp
+public class StudentsController : ControllerBase
+{
+    private readonly IStudentRepository _repository;
+
+    public StudentsController()
+    {
+        _repository = new FileStudentRepository();
+    }
+
+    public async Task SaveStudent(StudentDto dto)
+    {
+        await _repository.SaveStudentAsync(new Student(dto));
+    } 
+}
+```
+
+::: {.content-visible unless-format="revealjs"}
+It is a fair argument to say, that this works pretty well if this is the only place where `IStudentRepository` is used.
+
+If we were certain that the alternative implementation of the interface would not be viable, then this would also work fine. The same goes if we were sure that the exact implementation wouldn't need to be switched during the runtime.
+:::
+
+::: {.content-visible unless-format="revealjs"}
+However, the acquisition of instance implementating `IStudentRepository` could be done differently. Specifically - using the dependency inection pattern. Using the DI, the construction of an instance would happen some place else, and the instance would be simply provided via one of few options, based on what DI framework is used.
+:::
+
+***
+
+`StudentsController` class with `IStudentRepository` injected via constructor:
+
+```csharp
+public class StudentsController : ControllerBase
+{
+    private readonly IStudentRepository _repository;
+
+    public StudentsController(IStudentRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task SaveStudent(StudentDto dto)
+    {
+        await _repository.SaveStudentAsync(new Student(dto));
+    } 
+}
+```
+
+::: {.content-visible unless-format="revealjs"}
+With injection like this, the `StudentsController` becomes more modular. Exact implementation can be swapped during the class construction time. Also, since the `StudentsController` doesn't know which exact implementation of `IStudentRepository` is used, one could argue that the abstractions are better isolated.
+:::
+
+## Example 2
+
+This example follows the idea from the Example 1, but takes a look at the problem from the different angle.
+
+Let's say we have a class which is responsible for calculating students grades:
+
+```csharp
+class GradesCalculator
+{
+    private readonly string _connectionStringFacultyA = "<something>";
+    private readonly string _connectionStringFacultyB = "<something>";
+
+    public int CalculateFinalGrade(string studentId)
+    {
+        List<int> grades;
+
+        if (studentId.EndsWith("A")) {
+            var dbContext = new FactultyADbContext(_connectionStringFacultyA);
+            grades = dbContext.Students.Where(x => x.Id == studentId).Select(x => x.Grades).ToList();
+        }
+        else if (studentId.EndsWith("B")) {
+            var dbContext = new FactultyBDbContext(_connectionStringFacultyB);
+            grades = dbContext.Grades.Where(x => x.StudentId == studentId).Select(x => x.Grades);
+        }
+
+        return grades.Average();
+    }
+}
+```
+
+::: {.notes}
+What is happening in the example class above:
+
+- Retrieval logic differs slightly based on which factuly the student is studying at.
+- Different classes are needed to access data based on faculty.
+- Different parameters are needed to create classes for data access.
+- Hypothetically if the `GradesCalcualtor` had more methods, which were working with students data, then the same `if/else` blocks could proliferate.
+:::
+
+::: {.notes}
+Note: the pattern of "if value A, then do thing X way, else if value is B, then do the same thing, but in Y way" is called "Strategy pattern".
+:::
+
+***
+
+What improvements could be done using DI in such case:
+
+1. Standardize the classes for data accessing using an interface:
+
+```csharp
+    interface IStudentDataRepository
+    {
+        List<int> GetGrades(string studentId);
+    }
+
+    class FactultyADbContext : IStudentDataRepository
+    {
+        // <..> some boilerplate and implementation details
+        
+        public List<int> GetGrades(string studentId)
+        {
+            return Students.Where(x => x.Id == studentId).Select(x => x.Grades).ToList();
+        }
+    }
+    
+    // Same for FactultyBDbContext
+```
+
+***
+
+2. Inject data access logic into the `GradesCalculator`:
+
+```csharp
+class GradesCalculator
+{
+    private readonly IStudentDataRepository _repository;
+
+    public GradesCalculator(IStudentDataRepository repository) {
+        _repository = repository
+    }
+
+    public int CalculateFinalGrade(string studentId)
+    {
+        List<int> grades = _repository.GetGrades(studentId);
+
+        return grades.Average();
+    }
+}
+```
+
+***
+
+3. Wire everything up in the DI framework config:
+
+```csharp
+// Program.cs
+// <...>
+builder.Services.AddScoped<ServiceA>();
+builder.Services.AddScoped<ServiceB>();
+// <...>
+builder.Services.AddScoped<Func<string, IStudentDataRepository>>(sp =>
+    key =>
+    {
+        return key switch
+        {
+            "A" => sp.GetRequiredService<FactultyADbContext>(),
+            "B" => sp.GetRequiredService<FactultyBDbContext>(),
+            _ => throw new ArgumentException("unknown key"),
+        };
+    }
+);
+// <...>
+app.MapGet(
+    "/grades/{studentId}",
+    (string studentId, Func<string, IService> serviceAccessor) =>
+    {
+        var calculator = new GradesCalculator(servicesAccessor(studentId));
+        return calculator.CalculateFinalGrade(studentId);
+    }
+);
+// <...>
+```
+
+### Was it worth it?
+
+When looking at `GradesCalculator` class in isolation, it did indeed became less complicated. On the other hand the `Program.cs` now has configuration logic that wasn't needed before. Depending on specific use case for which DI is being implemented for, varying amount and complexities of code can be removed or would have to be added.
+
+It is one of the responsibilities of a Software Engineer to figure out the right balance and decide if introducing some design pattern like DI into the solution is a net-positive or not.
+
+## Benefits of DI
+
+- Force the code be more testable (easier to pass some `Fake` implementation for the classes under testing).
+- Single instance can be reused by different classes in the same request scope.
+- Code can be more configurable and modular.
+
+## Problems with DI
+
+Main problem is not with the DI pattern itself, but that it has tendency to provoke overengineerng and indirection.
+
+While it is nice that you are not *forced to care* how exactly the dependency is implemented, but sometimes you *need* to know how that dependency works. DI provokes extra to jump through till you find the actual source.
+
+::: {.content-visible unless-format="revealjs"}
+## Further considerations
+
+Dependencies can be resolved recursively, which means that the `FileStudentRepository` class can be injecting dependencies it needs as well. The only nuance is that while the dependencies can be injected recursively, the top most class must be instantiated some other way. This is where the dependency injection frameworks comes into play.
+
+DI frameworks allows to configure the concrete implementations for injected types, their lifetimes and more. .NET has a `Microsoft` dependency injection framework, which is baked in into the ASP.NET and generic host applications, however there are alternative frameworks like `Autofac` and more.
+
+Next sections explores how to create simple dependency injection library yourself and how to use the standard Microsoft DI framework in ASP.NET.
+:::
+
+## Building a DI framework
+
+To create a simplest homemade DI framework there are 2 obvious problems that need to be solved:
+
+1. How to know what dependencies the class has?
+2. How to instantiate the top-most class in the tree?
+
+For the 1st problem a language feature "reflection" is typically used. Reflection allows to get the meta information about the types and assemblies during the runtime. It can also be used instantiate the type dynamically, just by knowing their assembly and name.
+
+For the 2nd problem a service locator pattern will be used. Service locator simply takes in a type as an argument and returns the instance that satisfies the type requirement for the given argument.
+
+### Reflection
+
+Types that are used for reflection are located in `System.Reflection` namespace.
+
+Reflection can be used to access the member information on the type, get the types in assembly, get the attributes and their values and more. Here we will focus on the essentials.
+
+```{.csharp}
+// Let's define a type that will be used to inspect using the reflection
+
+public class Person
+{
+    public string Name { get; init; }
+    public int Age { get; init; }
+
+    public Person(string name, int age)
+    {
+        Name = name;
+        Age = age;
+    }
+
+    public void SayHi()
+    {
+        Console.WriteLine($"Hi, my name is {Name} and I'm {Age} years old.");
+    }
+}
+```
+
+To start reflecting on the `Person` class a type of this class will have to be acquired first:
+
+```{.csharp}
+using System.Reflection;
+
+// Type can be be assigned during a compile time:
+var typeCompileTime = typeof(Person);
+
+// Or it can be assigned during a runtime:
+var typeRuntime = new Person("John", 30).GetType();
+
+// In any case, they are the same type
+Console.WriteLine(typeCompileTime == typeRuntime);
+```
+
+```{.csharp}
+// Just for brevity
+var type = typeCompileTime;
+
+// Get all the properties of the type
+var properties = type.GetProperties();
+
+Console.WriteLine($"Properties of the type {type.Name}:");
+foreach (var property in properties)
+{
+    Console.WriteLine(property.Name);
+}
+```
+
+```{.csharp}
+// In this example Person class has no public fields:
+var fields = type.GetFields();
+foreach (var field in fields)
+{
+    Console.WriteLine(field.Name);
+}
+```
+
+```{.csharp}
+// But we know that the it has properties, which should have private backing fields generated by the compiler.
+// To access them, some additional flags indicating that we want to access private members are required:
+var fieldsWithPrivate = type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
+foreach (var field in fieldsWithPrivate)
+{
+    Console.WriteLine(field.Name);
+}
+```
+
+Although we only defined the `SayHi` method, but class has more of them. Some of them come inherited implicitly from the `object` base class, others (like `get_*` and `set_*`) are created during the compilation time.
+
+```{.csharp}
+// Get all the methods of the type
+var methods = type.GetMethods();
+foreach (var method in methods)
+{
+    Console.WriteLine(method.Name);
+}
+```
+
+```{.csharp}
+// Reflection can be used call the methods as well:
+var instance = new Person("John", 30);
+var methodInfo = type.GetMethod("SayHi");
+
+// Second parameter is an array of arguments, which the SayHi method does not have
+methodInfo.Invoke(instance, null);
+```
+
+```{.csharp}
+// Similarly reflection can be used to get and set the property values
+
+// Get the property info
+var propertyInfo = type.GetProperty("Name");
+
+// Get the value of the property
+var value = propertyInfo.GetValue(instance);
+
+Console.WriteLine(value);
+
+// Set the value of the property
+propertyInfo.SetValue(instance, "Jane");
+
+Console.WriteLine(instance.Name);
+```
+
+```{.csharp}
+// Reflection can be used to obtain information about the types in assembly:
+var assembly = Assembly.GetExecutingAssembly();
+
+var types = assembly.GetTypes();
+
+Console.WriteLine($"Types in the assembly {assembly.FullName}:");
+foreach (var t in types)
+{
+    Console.WriteLine(t.Name);
+}
+
+// We know there is a Person type in this assembly, but because how the notebooks works,
+// we cannot simply find it, because it is nested within other class.
+```
+
+```{.csharp}
+// However we can see the type if it is defined in the same cell,
+// so there following examples will be verbose for them to work.
+
+public class Person
+{
+    public string Name { get; init; }
+    public int Age { get; init; }
+
+    public Person(string name, int age)
+    {
+        Name = name;
+        Age = age;
+    }
+
+    public void SayHi()
+    {
+        Console.WriteLine($"Hi, my name is {Name} and I'm {Age} years old.");
+    }
+}
+
+var assembly = Assembly.GetExecutingAssembly();
+
+var types = assembly.GetTypes();
+
+Console.WriteLine($"Types in the assembly {assembly.FullName}:");
+foreach (var t in types)
+{
+    Console.WriteLine(t.Name);
+}
+```
+
+```{.csharp}
+// Reflection can also be used to get the information about the constructors of the type
+
+public class Person
+{
+    public string Name { get; init; }
+    public int Age { get; init; }
+
+    public Person(string name, int age)
+    {
+        Name = name;
+        Age = age;
+    }
+
+    public void SayHi()
+    {
+        Console.WriteLine($"Hi, my name is {Name} and I'm {Age} years old.");
+    }
+}
+
+var constructors = typeof(Person).GetConstructors();
+
+Console.WriteLine($"Constructors of the type {type.Name}:");
+foreach (var constructor in constructors)
+{
+    Console.WriteLine(constructor);
+}
+```
+
+```{.csharp}
+// Reflection can be used to instantiate the type completely dynamically
+
+public class Person
+{
+    public string Name { get; init; }
+    public int Age { get; init; }
+
+    public Person(string name, int age)
+    {
+        Name = name;
+        Age = age;
+    }
+
+    public void SayHi()
+    {
+        Console.WriteLine($"Hi, my name is {Name} and I'm {Age} years old.");
+    }
+}
+
+var type = typeof(Person);
+
+var constructor = type.GetConstructors()[0];
+var instance = constructor.Invoke(new object[] { "John", 30 });
+
+var methodInfo = type.GetMethod("SayHi");
+methodInfo.Invoke(instance, null);
+```
+
+### DI framework implementation with Service Locator
+
+Service locator is a design pattern to which you pass the type and get the instance back.
+
+The simple interface for the pattern can look like this:
+
+```csharp
+public class ServiceLocator
+{
+    public T GetInstance<T>() { }
+}
+```
+
+For this example assume that there is an interface `IStudentRepository` and `FileStudentRepository` which implements the interface. Our DI library will be simple and convention based: it will search for a type defined in the same assembly that is assignable to the type requested by the constructor.
+
+```{.csharp}
+public class Student { }
+
+public interface IStudentRepository
+{
+    void Save(Student student);
+}
+
+public class StudentController
+{
+    private readonly IStudentRepository _studentRepository;
+
+    public StudentController(IStudentRepository studentRepository)
+    {
+        _studentRepository = studentRepository;
+    }
+
+    public void SaveStudent(Student student)
+    {
+        Console.WriteLine("Saving student in the controller");
+        _studentRepository.Save(student);
+    }
+}
+
+public class FileStudentRepository : IStudentRepository
+{
+    public void Save(Student student)
+    {
+        Console.WriteLine("Saving student to a file");
+    }
+}
+
+class ServiceLocator
+{
+    // Because the reflection happens at runtime, there is no way of being type safe then.
+    // This adds a generic layer and casting to convert the object to the desired type.
+    public T GetInstance<T>() where T : class
+    {
+        return (T)GetInstance(typeof(T));
+    }
+
+    private static object GetInstance(Type requestedType)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var types = assembly.GetTypes();
+
+        // Find the first class that is assignable to the requested type
+        var type = types.FirstOrDefault(x => x.IsClass && x.IsAssignableTo(requestedType));
+        if (type == null)
+        {
+            throw new InvalidOperationException($"Cannot locate implementation for type {requestedType}");
+        }
+
+        var ctors = type.GetConstructors();
+
+        // Just use the first constructor, might not work well if there were more than one
+        var ctor = ctors[0];
+        if (ctor.GetParameters().Length == 0) 
+        {
+            return Activator.CreateInstance(type);
+        }
+
+        // Constructor can require other type to be injected, so we need to resolve them recursively
+        var ctorParams = new List<object>();
+        foreach (var param in ctor.GetParameters())
+        {
+            ctorParams.Add(GetInstance(param.ParameterType));
+        }
+
+        return ctor.Invoke(ctorParams.ToArray());
+    }
+}
+
+
+// Test it out
+var serviceLocator = new ServiceLocator();
+var studentController = serviceLocator.GetInstance<StudentController>();
+studentController.SaveStudent(new Student());
+```
+
+## Usage of Microsoft DI in .NET
+
+The actual purpose built DI libraries are much more capable than the one in the example above. ASP.NET comes with Microsoft DI library out of the box and it is a solid choice to use for most scenarios.
+
+Since the controller or an endpoint definition are natural entry points for most cases in the ASP.NET application, there is no need to use things like service locators. To start using DI it is enough to create constructor with the required type (or add an argument when using endpoints).
+
+For DI framework to know which type will have to be injected, it will have to be manually registered.
+
+ASP.NET application will have templated code looking something like this:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// The builder is of WebApplicationBuilder or similar type.
+// It has property `.Services` with methods needed to register services to the container.
+
+builder.Services.AddSingleton<IStudentRepository, FileStudentRepository>();
+```
+
+In the example above there is everything that needs to be done to start injecting the `IStudentRepository` inside the controller.
+
+One important thing to know are the lifetimes of instances. They can be:
+- Singleton (`AddSingleton()`).
+- Scoped (`AddScoped()`).
+- Transient (`.AddTransient()`).
+
+Singletons use a single instance for all the injections within the application lifetime.
+
+Scoped uses a single instance for the single scope. In ASP.NET the single scope is 1 HTTP requests. However if this DI framework were to be used for console app, then the scopes could be manually configured to mean whatever makes sense in that case. From practical point of view in ASP.NET this will be mean that if several dependencies uses `ILogger`, then the exact same instance of `ILogger` would injected into them during the single request.
+
+Transient uses injects new instance for every single injection. This means that if there are couple of classes injected into constructor and they both require `ILogger`, then different instances will be injected to them.

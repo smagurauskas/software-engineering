@@ -1,0 +1,785 @@
+---
+title: "Design patterns"
+verify: output
+---
+
+Design patterns are reusable solutions to solve common problems.
+
+Point is that there **common problem** in programming, and because they are common enough, there are some **common patterns** created to solve these problems.
+
+## Why use design patterns?
+
+- Helps to communicate the problem that is being solved.
+- Code structure can be inferred only from the name.
+
+## Problems of using design patterns
+
+- Misapplication.
+- Unnecessary complexity.
+
+***
+
+Patterns are commonly divided into 3 broad categories. However there are no definitive guidelines for what makes a pattern fall into one and not the other category.
+
+```{mermaid}
+flowchart TD
+    A[Design Patterns] --> B[Creational Patterns]
+    A --> C[Structural Patterns]
+    A --> D[Behavioral Patterns]
+
+    %% Patterns
+    B --> B1[Builder]
+    C --> C1[Proxy]
+    C --> C2[Repository]
+    D --> D1[Specification]
+    D --> D2[Strategy]
+    D --> D3[Singleton]
+```
+
+## Strategy
+
+Most use Strategy pattern intuitively without even actively thinking that they are using a design pattern. Turns out creating an abstraction (an interface) and then deciding which implementation for an interface to use is a design pattern, - a *strategy* pattern.
+
+***
+
+```{mermaid}
+classDiagram
+    class JourneyPlanner {
+        + void SetRouteSearchStrategy(IRouteSearchStrategy strategy)
+        + void PlanJourney(string start, string end)
+    }
+
+    class IRouteSearchStrategy {
+        <<interface>>
+        + void SearchRoute(string start, string end)
+    }
+
+    class ShortestPathSearch {
+        + void SearchRoute(string start, string end)
+    }
+
+    class FastestPathSearch {
+        + void SearchRoute(string start, string end)
+    }
+
+    class ScenicPathSearch {
+        + void SearchRoute(string start, string end)
+    }
+
+    JourneyPlanner --> IRouteSearchStrategy : Uses
+    IRouteSearchStrategy <|-- ShortestPathSearch : Implements
+    IRouteSearchStrategy <|-- FastestPathSearch : Implements
+    IRouteSearchStrategy <|-- ScenicPathSearch : Implements
+
+```
+
+***
+
+To illustrate it with code, let's consider the example from the diagram above: 
+- We have a class responsible for "journey planning". It is basically a class that can plan a trip, but it is not only finding a path between 2 points, but can also be about adding some additional information about the journey, like disruptions, tolls, etc.
+- Path between 2 points can be found in many different ways, but optimizing for different criteria.
+- Depending on the purpose of the journey we are planning, we might want to prioritize different criteria. I.e. if we are planning leisurely bike ride, then we might want to avoid busy and polluted roads. However if we just need to get somewhere ASAP, then the shortest path might be the best option.
+
+***
+
+```{.csharp}
+interface IRouteSearchStrategy
+{
+    IEnumerable<string> SearchRoute(string start, string end);
+}
+
+class JourneyPlanner
+{
+    // Won't be able to initialize an object without setting the RouteSearchStrategy
+    // but it can be changed later
+    public required IRouteSearchStrategy RouteSearchStrategy { get; set; }
+
+    public IEnumerable<string> PlanJourney(string from, string to)
+    {
+        return RouteSearchStrategy.SearchRoute(from, to);
+    }
+}
+```
+
+***
+
+```{.csharp}
+class ShortestPathStrategy : IRouteSearchStrategy
+{
+    public IEnumerable<string> SearchRoute(string start, string end)
+    {
+        return new[] { start, end };
+    }
+}
+
+class FastestPathStrategy : IRouteSearchStrategy
+{
+    public IEnumerable<string> SearchRoute(string start, string end)
+    {
+        return new[] { start, end };
+    }
+}
+```
+
+***
+
+```{.csharp}
+var journeyPlanner = new JourneyPlanner
+{
+    RouteSearchStrategy = new ShortestPathStrategy()
+};
+
+var shortWalkJourney = journeyPlanner.PlanJourney("A", "B");
+
+journeyPlanner.RouteSearchStrategy = new FastestPathStrategy();
+
+var fastDriverJourney = journeyPlanner.PlanJourney("A", "B");
+```
+
+## Singleton
+
+Singleton pattern is used to ensure that only a single instance of the class is ever used.
+
+***
+
+```{.csharp}
+public class JourneyPlanner
+{
+    private JourneyPlanner() { }
+
+    private static JourneyPlanner _instance;
+    public static JourneyPlanner Instance
+    { 
+        get 
+        {
+            if (_instance == null)
+            {
+                _instance = new JourneyPlanner();
+            }
+
+            return _instance;
+        }
+    }
+}
+```
+
+***
+
+```{.csharp}
+// Using some ingenuity, we can make the generic wrapper for Singleton
+
+// Although it is one of those cases where the added benefit is questionable
+// but the added complexity is more obvious
+
+public class Singleton<T> where T : new()
+{
+    private Singleton() { }
+
+    private static T _instance;
+    public static T Instance
+    { 
+        get 
+        {
+            if (_instance == null)
+            {
+                _instance = new T();
+            }
+
+            return _instance;
+        }
+    }
+}
+```
+
+::: {.content-visible unless-format="revealjs"}
+```{.csharp}
+// Hack so the next cell would work
+dynamic builder = new System.Dynamic.ExpandoObject();
+builder.Services = new System.Dynamic.ExpandoObject();
+delegate void AddSingletonDelegate<T1, T2> ();
+AddSingletonDelegate<object, object> addSingleton = () => {};
+builder.Services.AddSingleton = addSingleton;
+
+public interface IService
+{
+    bool LogicMethod();
+}
+
+public class ServiceImplementation : IService
+{
+    public bool LogicMethod() => true;
+}
+```
+:::
+
+***
+
+```{.csharp}
+// In practice there are not that many reasons to
+// be using Singleton pattern via static methods
+// when you have dependency injection available.
+
+builder.Services.AddSingleton<IService, ServiceImplementation>();
+```
+
+::: {.fragment}
+```{.csharp}
+// This way code remains more easily testable
+
+public class FakeTestImplementation : IService
+{
+    public bool LogicMethod() => false;
+}
+```
+:::
+
+## Proxy
+
+Proxy pattern is used when you need to crete some intermediate between the caller and the real object.
+
+Instead of relation call chain being `A -> B`, it is changed to `A -> Proxy of B -> B`. In this case `Proxy of B` implements the interface of `B`, so the proxy usage is seamless.
+
+***
+
+```{mermaid}
+classDiagram
+    class IStudentsService {
+        <<interface>>
+        + List~Student~ GetStudents()
+    }
+
+    class StudentsService {
+        + List~Student~ GetStudents()
+    }
+
+    class StudentsServiceProxy {
+        - IStudentsService realService
+        - List~Student~ cache
+        + List~Student~ GetStudents()
+    }
+
+    IStudentsService <|-- StudentsService : Implements
+    IStudentsService <|-- StudentsServiceProxy : Implements
+    StudentsServiceProxy --> IStudentsService : Uses
+```
+
+***
+
+```{.csharp}
+public class Student { }
+
+public interface IStudentsService
+{
+    List<Student> GetStudents();
+}
+
+public class StudentsService : IStudentsService
+{
+    public List<Student> GetStudents()
+    {
+        // Imagine some expensive operation here to acquire the list of students
+        return new List<Student>();
+    }
+}
+
+// Now the class would be used like this
+IStudentsService studentsService = new StudentsService();
+var students = studentsService.GetStudents();
+```
+
+***
+
+```{.csharp}
+public class CachedStudentsServiceProxy : IStudentsService
+{
+    private readonly IStudentsService _studentsService;
+    private List<Student> _students;
+
+    public CachedStudentsServiceProxy(IStudentsService studentsService)
+    {
+        _studentsService = studentsService;
+    }
+
+    public List<Student> GetStudents()
+    {
+        if (_students == null)
+        {
+            _students = _studentsService.GetStudents();
+        }
+
+        return _students;
+    }
+}
+
+// Now the usage can be substituted with the proxy
+IStudentsService studentsService = new CachedStudentsServiceProxy(new StudentsService());
+var students = studentsService.GetStudents();
+```
+
+## Repository
+
+>Mediates between the domain and data mapping layers using a collection-like interface for accessing domain objects.
+
+<sub>Source: https://martinfowler.com/eaaCatalog/repository.html.</sub>
+
+When you don't want to be mixing your domain logic with the access logic, then you introduce a repository in the middle to abstract that access to the away.
+
+***
+
+```{mermaid}
+classDiagram
+    class IStudentRepository {
+        <<interface>>
+        + List<Student> GetAllStudents()
+        + void AddStudent(Student student)
+    }
+
+    class FileStudentRepository {
+        + List<Student> GetAllStudents()
+        + void AddStudent(Student student)
+    }
+
+    class DatabaseStudentRepository {
+        + List<Student> GetAllStudents()
+        + void AddStudent(Student student)
+    }
+
+    IStudentRepository <|.. FileStudentRepository : Implements
+    IStudentRepository <|.. DatabaseStudentRepository : Implements
+```
+
+***
+
+```{.csharp}
+// Let's say in this example we have data access logic mixed in with the business logic
+using System.IO;
+
+public class StudentsGrader
+{
+    public int GetFinalGrade(string studentId)
+    {
+        var grades = File.ReadAllLines("grades.txt");
+
+        // Fiddle with grades
+
+        return 0; // some carefully calculated final grade
+    }
+}
+
+// Now if we wanted to change storing of grades from file to database
+// we would have to change the StudentsGrader class, which is a bit inconvenient
+// since many classes might be using it as well.
+```
+
+***
+
+```{.csharp}
+// Repository introduces an abstraction layer between the data access logic and the business logic
+// so only single place would have to be changed when switching data source.
+// It also can help with separation of concerns and testing.
+
+public interface IGradesRepository
+{
+    string[] GetGrades();
+}
+
+public class FileGradesRepository : IGradesRepository
+{
+    public string[] GetGrades()
+    {
+        return System.IO.File.ReadAllLines("grades.txt");
+    }
+}
+
+public class StudentsGrader
+{
+    private readonly IGradesRepository _gradesRepository;
+
+    public StudentsGrader(IGradesRepository gradesRepository)
+    {
+        _gradesRepository = gradesRepository;
+    }
+
+    public int GetFinalGrade(string studentId)
+    {
+        var grades = _gradesRepository.GetGrades();
+
+        // Fiddle with grades
+
+        return 0; // some carefully calculated final grade
+    }
+}
+```
+
+***
+
+```{.csharp}
+// After adding the new repository, a single switch in DI container could suffice to change the data source
+
+public class DatabaseGradesRepository : IGradesRepository
+{
+    public string[] GetGrades()
+    {
+        // Connect to database and fetch grades
+        return new string[0];
+    }
+}
+```
+
+## Specification
+
+There are cases when business logic is contained within a predicate that is used multiple places throughout the codebase. The more places the predicate is repeated in, the bigger the chance that some place might not be properly updated if the predicate logic needs to be updated.
+
+Specification pattern wraps the predicate with a type and allows to used a typed expression instead.
+
+***
+
+```{.csharp}
+// Specification pattern can be expressed as a simple interface
+
+public interface ISpecification<T>
+{
+    bool IsSatisfiedBy(T item);
+}
+```
+
+***
+
+```{.csharp}
+public class Grade
+{
+    public int Value { get; set; }
+}
+
+public class Student 
+{
+    public string Id { get; set; }
+    public List<Grade> Grades { get; set; }
+}
+
+public class StudentGrader
+{
+    public List<Student> GetPassingStudents()
+    {
+        // Magically acquire list of all students from somewhere
+        var students = new List<Student>();
+
+        // Now all logic that describes if the student is passing is mixed in here
+        return students.Where(s => s.Grades.Count() > 4 && 
+            s.Grades.Average(g => g.Value) > 3 && 
+            s.Grades.MinBy(x => x.Value).Value > 1).ToList();
+    }
+}
+```
+
+***
+
+```{.csharp}
+// Predicate logic for passing student can be extracted into a specification
+public class PassingStudentSpecification : ISpecification<Student>
+{
+    public bool IsSatisfiedBy(Student student)
+    {
+        return student.Grades.Count() > 4 && 
+            student.Grades.Average(g => g.Value) > 3 && 
+            student.Grades.MinBy(x => x.Value).Value > 1;
+    }
+}
+```
+
+***
+
+```{.csharp}
+public class StudentGrader
+{
+    private readonly ISpecification<Student> _passingStudentSpecification;
+
+    public StudentGrader(ISpecification<Student> passingStudentSpecification)
+    {
+        _passingStudentSpecification = passingStudentSpecification;
+    }
+
+    public List<Student> GetPassingStudents()
+    {
+        // Magically acquire list of all students from somewhere
+        var students = new List<Student>();
+
+        // Inline predicate can be replaced with the specification
+        return students.Where(s => _passingStudentSpecification.IsSatisfiedBy(s)).ToList();
+    }
+}
+```
+
+## Observer
+
+Observer is pattern about notifying listeners that something has happened. Observer pattern is otherwise known as "PubSub". Widely used for event based modeling.
+
+```{mermaid}
+classDiagram
+    class Publisher {
+        +subscribe(subscriber: Subscriber)
+        +unsubscribe(subscriber: Subscriber)
+        +notify()
+    }
+
+    class ConcretePublisher {
+        -state: int
+        +getState() int
+        +setState(state: int)
+    }
+
+    class Subscriber {
+        <<interface>>
+        +update()
+    }
+
+    class ConcreteSubscriber {
+        -subscriberState: int
+        +update()
+    }
+
+    Publisher <|-- ConcretePublisher
+    Subscriber <|.. ConcreteSubscriber
+
+    Publisher --> Subscriber : "manages subscriptions to"
+    ConcretePublisher --> ConcreteSubscriber : "notifies subscribers"
+```
+
+***
+
+```{.csharp}
+interface ISubscriber
+{
+    void Notify(string message);
+}
+
+interface IPublisher
+{
+    void Subscribe(ISubscriber subscriber);
+}
+```
+
+***
+
+```{.csharp}
+class Button : IPublisher
+{
+    // Let's imagine UI click happens here
+    public void Click()
+    {
+        // Button logic
+
+        NotifySubscribers();
+    }
+
+    private List<ISubscriber> _subscribers = new List<ISubscriber>();
+
+    public void Subscribe(ISubscriber subscriber)
+    {
+        _subscribers.Add(subscriber);
+    }
+
+    private void NotifySubscribers()
+    {
+        foreach (var subscriber in _subscribers)
+        {
+            subscriber.Notify("Button clicked");
+        }
+    }
+}
+```
+
+***
+
+```{.csharp}
+class EmailSender : ISubscriber
+{
+    public void Notify(string message)
+    {
+        Console.WriteLine("Sending email about: " + message);
+    }
+}
+
+class MessageDisplayer : ISubscriber
+{
+    public void Notify(string message)
+    {
+        Console.WriteLine("Displaying message: " + message);
+    }
+}
+```
+
+***
+
+```{.csharp}
+var button = new Button();
+var emailSender = new EmailSender();
+var messageDisplayer = new MessageDisplayer();
+
+button.Subscribe(emailSender);
+button.Subscribe(messageDisplayer);
+
+// Let's imagine user clicked the button
+button.Click();
+```
+
+## Mediator
+
+Mediator pattern is about intercepting the direct communication between components and only allowing them to communicate via an intermediate `Mediator` class.
+
+Using Mediator pattern reduces the coupling between components, because instead of depending on, let's say, 3 other exact components, component would only have to depend on 1 Mediator type instead.
+
+The cost of Mediator is indirection, because it creates at least 1 extra layer between caller and handler, which makes it harder to trace what code exactly gets executed after method invocation.
+
+```{mermaid}
+classDiagram
+    class Mediator {
+        +send(string component, obj args)
+    }
+
+    class Handler {
+        +handle(obj args)
+    }
+
+    class ComponentA {
+    }
+
+    class ComponentB {
+    }
+
+    class ComponentC {
+    }
+
+    Mediator <|-- ComponentA
+    Mediator <|-- ComponentB
+    Mediator <|-- ComponentC
+
+    Handler <|.. ComponentA
+    Handler <|.. ComponentB
+    Handler <|.. ComponentC
+
+    Handler <|-- Mediator
+```
+
+***
+
+See examples:
+- https://github.com/LuckyPennySoftware/MediatR
+- https://github.com/martinothamar/Mediator
+
+## Builder
+
+Builder pattern simplifies the construction of an object by providing shorthand methods for complicated parts of an object.
+
+For example instead of manually setting every single property of an object for specific case, a builder pattern can be used to add a part of setup of an object for some predefined common cases.
+
+Think of `Program` class of ASP.NET application, a `WebApplicationBuilder` is one of the first lines there, and it is a place Builder pattern is used to setup the logic your web application.
+
+Units tests are another good case where the builder pattern can be useful.
+
+***
+
+```{mermaid}
+classDiagram
+    class Student {
+        + string Id
+        + double[] Grades
+    }
+
+    class StudentTestBuilder {
+        + StudentTestBuilder WithPassingGrades()
+        + StudentTestBuilder WithFailingGrades()
+        + StudentTestBuilder WithValidId()
+        + StudentTestBuilder WithInvalidId()
+        + Student Build()
+    }
+```
+
+***
+
+```{.csharp}
+public class Student
+{
+    public string Id { get; set; }
+    public List<double> Grades { get; set; }
+}
+
+public class StudentGraderTests
+{
+    public void GetPassingStudents_GivenStudentWithPassingGrades_ReturnsIt(List<Student> students)
+    {
+        // Arrange
+        var passingStudent = new Student { Id = "1", Grades = new List<double> { 4, 4, 4, 4, 4 } };
+        students.Add(passingStudent);
+
+        var passingStudentSpecification = new PassingStudentSpecification();
+        var studentGrader = new StudentGrader(passingStudentSpecification);
+
+        // Act
+        var passingStudents = studentGrader.GetPassingStudents();
+
+        // Assert
+        // Assert.Contains(passingStudent, passingStudents);
+    }
+}
+```
+
+***
+
+```{.csharp}
+// Introducing a test builder in hopes to simplify the test setup
+public class StudentTestBuilder
+{
+    private List<double> _grades = new List<double> { 4, 4, 4, 4, 4 };
+
+    public StudentTestBuilder WithPassingGrades()
+    {
+        _grades = new List<double> { 4, 4, 4, 4, 4 };
+        return this;
+    }
+
+    public StudentTestBuilder WithFailingGrades()
+    {
+        _grades = new List<double> { 2, 2, 2, 2, 2 };
+        return this;
+    }
+
+    public Student Build()
+    {
+        return new Student { Id = "123", Grades = _grades };
+    }
+}
+```
+
+***
+
+```{.csharp}
+public class StudentGraderTests
+{
+    public void GetPassingStudents_GivenStudentWithPassingGrades_ReturnsIt(List<Student> students)
+    {
+        // Arrange
+        var passingStudent = new StudentTestBuilder().WithPassingGrades().Build();
+        students.Add(passingStudent);
+
+        var passingStudentSpecification = new PassingStudentSpecification();
+        var studentGrader = new StudentGrader(passingStudentSpecification);
+
+        // Act
+        var passingStudents = studentGrader.GetPassingStudents();
+
+        // Assert
+        // Assert.Contains(passingStudent, passingStudents);
+    }
+}
+```
+
+## Exercises
+
+- Expand the `Specification` pattern so that it would return `Expression`, which could be used with Entity Framework, as well.
+
+::: {.content-visible unless-format="revealjs"}
+## References
+
+- https://refactoring.guru/design-patterns - nice catalog of design patterns.
+:::

@@ -1,0 +1,14 @@
+── cell 1 ──
+── cell 2 ──
+── cell 3 ──
+── cell 4 ──
+── cell 5 ──
+── cell 6 ──
+── cell 7 ──
+2 x 3
+3 x 3
+── cell 8 ──
+── cell 9 ──
+── cell 10 ──
+── cell 11 ──
+── cell 12 ──

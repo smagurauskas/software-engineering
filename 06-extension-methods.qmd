@@ -1,0 +1,113 @@
+---
+title: "Extension methods"
+verify: output
+---
+
+Extensions methods allows to add additional methods to an existing type without actually modifying or extending that type. The method is added to the different actual class, but the method can be used as being in the extended class.
+
+This is useful when dealing with `sealed` classes, the types that are coming from external libraries or when there is some shared behavior between group of types, that is not well represented in the inheritance hierarchy.
+
+Extension method is created by prepending `this` keyword to first argument to the `static` method in the `static` class. The first argument with the prepended `this` keyword indicates which to what type this extension method is being added to. Extension method can have any additional following arguments, just like any other regular method could.
+
+```{.csharp}
+internal sealed class SealedClass
+{
+    public void Method()
+    {
+        Console.WriteLine("Hello, World!");
+    }
+}
+```
+
+```{.csharp}
+// Imagine that the following commented out lines are actually uncommented.
+// Static classes must be defined at the top level. Because of how these interactive
+// notebooks work, there is already "hidden" class wrapping these cells, so it is not
+// possible to define a static class here.
+
+// The example with the uncommended class declaration would work perfectly fine in a
+// regular C# project.
+
+// internal static sealed class SealedStaticClass
+// {
+    public static void ExtensionMethod(this SealedClass sealedClass)
+    {
+        Console.WriteLine("Hello, World! (from extension method)");
+    }
+// }
+
+var sealedClass = new SealedClass();
+sealedClass.ExtensionMethod();
+```
+
+```{.csharp}
+// Basic types can be extended as well.
+
+public static int Increment(this int value)
+{
+    return value + 1;
+}
+
+int number = 5;
+int incrementedNumber = number.Increment();
+
+Console.WriteLine(incrementedNumber);
+```
+
+```{.csharp}
+// Extension method can be used on derived types as well.
+
+internal class TopLevelClass
+{
+    public void Method()
+    {
+        Console.WriteLine("Hello, World!");
+    }
+}
+
+internal class DerivedClass : TopLevelClass
+{
+}
+
+public static void ExtensionMethod(this DerivedClass derivedClass)
+{
+    Console.WriteLine("Hello, World! (from extension method)");
+}
+
+var derivedClass = new DerivedClass();
+derivedClass.ExtensionMethod();
+```
+
+```{.csharp}
+// Same would work by adding extension mehtod on the object class.
+
+public static void ExtensionMethod(this object obj)
+{
+    Console.WriteLine("Hello, World! (from extension method)");
+}
+
+var str = "Hello, World!";
+str.ExtensionMethod();
+```
+
+Extensions methods are also useful in cases only when an interface is shared between types, but there is no inheritance hierarchy. Interfaces are usually more lightweight than inheritance and it is easier to add them if needed. For example, let's say there was an interface `IGeometricShape`:
+
+```csharp
+interface IGeometricShape
+{
+    double[] GetSideLengths();
+}
+```
+
+There might be many different geometrical shapes, which might not have all that many behavior in common with each other for the inheritance hierarchy to make sense, but the small interface might be sensible.
+
+In such case a extension method could be added, that makes use of public methods available from that interface:
+```csharp
+public static class GeometricShapeExtensions
+{
+    public static double GetPerimeter(this IGeometricShape shape)
+    {
+        return shape.GetSideLengths().Sum();
+    }
+}
+```

@@ -1,0 +1,43 @@
+── cell 1 ──
+── cell 2 ──
+True
+── cell 3 ──
+Properties of the type Person:
+Name
+Age
+── cell 4 ──
+── cell 5 ──
+<Name>k__BackingField
+<Age>k__BackingField
+── cell 6 ──
+get_Name
+set_Name
+get_Age
+set_Age
+SayHi
+GetType
+ToString
+Equals
+GetHashCode
+── cell 7 ──
+Hi, my name is John and I'm 30 years old.
+── cell 8 ──
+John
+Jane
+── cell 9 ──
+Types in the assembly ℛ*<dynamic>, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null:
+Submission#8
+<<Initialize>>d__0
+── cell 10 ──
+Types in the assembly ℛ*<dynamic>, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null:
+Submission#9
+Person
+<<Initialize>>d__0
+── cell 11 ──
+Constructors of the type Person:
+Void .ctor(System.String, Int32)
+── cell 12 ──
+Hi, my name is John and I'm 30 years old.
+── cell 13 ──
+Saving student in the controller
+Saving student to a file

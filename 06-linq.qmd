@@ -1,0 +1,414 @@
+---
+title: "LINQ"
+verify: output
+---
+
+LINQ stands for Language Integrated Queries. LINQ is a set extensions methods and some special C# syntax that simplifies the work with collections.
+
+LINQ allows to do things like filtering items in collection, projecting them to new forms or aggregating items in a concise syntax. All of these things can also be accomplished using simple loops and temporary variables, but the need to do that in so frequent, that it warrants the need of a standard library for this purpose.
+
+```{.csharp}
+// Sample data set to be used throughout the notebook
+
+class Person
+{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public int Age { get; set; }
+}
+
+var data = new List<Person>
+{
+    new Person { FirstName = "John", LastName = "Doe", Age = 25 },
+    new Person { FirstName = "Jane", LastName = "Doe", Age = 26 },
+    new Person { FirstName = "John", LastName = "Smith", Age = 30 },
+    new Person { FirstName = "Jane", LastName = "Smith", Age = 31 },
+    new Person { FirstName = "John", LastName = "Johnson", Age = 35 },
+    new Person { FirstName = "Jane", LastName = "Johnson", Age = 36 },
+    new Person { FirstName = "John", LastName = "Williams", Age = 40 },
+    new Person { FirstName = "Jane", LastName = "Williams", Age = 41 },
+    new Person { FirstName = "John", LastName = "Brown", Age = 45 },
+    new Person { FirstName = "Jane", LastName = "Brown", Age = 46 },
+    new Person { FirstName = "Anthony", LastName = "Davis", Age = 50 },
+    new Person { FirstName = "Jessica", LastName = "Davis", Age = 51 },
+    new Person { FirstName = "Michael", LastName = "Davis", Age = 55 },
+    new Person { FirstName = "Michelle", LastName = "Davis", Age = 56 },
+    new Person { FirstName = "David", LastName = "Davis", Age = 60 },
+    new Person { FirstName = "Danielle", LastName = "Davis", Age = 61 },
+    new Person { FirstName = "Daniel", LastName = "Davis", Age = 65 },
+    new Person { FirstName = "Diana", LastName = "Davis", Age = 66 },
+    new Person { FirstName = "Dennis", LastName = "Davis", Age = 70 },
+};
+```
+
+## The problem
+
+Let's say we wanted to get all people from dataset, whose first name starts with the letter "D". An obvious approach would be to iterate though the collection, run some predicate on the items, and move items that match the predicate to some separate collection.
+
+```{.csharp}
+var results = new List<Person>();
+
+foreach (var person in data)
+{
+    if (person.FirstName.StartsWith("D"))
+    {
+        results.Add(person);
+    }
+}
+
+results.DisplayTable();
+```
+
+Similarly and average age post the people in the list can be calculated.
+
+```{.csharp}
+var ageTotal = 0;
+
+foreach (var person in data)
+{
+    ageTotal += person.Age;
+}
+
+var averageAge = ageTotal / data.Count;
+
+averageAge.Display();
+```
+
+Or concatenate the names of all the persons in data set.
+
+```{.csharp}
+var allNames = String.Empty;
+
+foreach (var person in data)
+{
+    allNames += $"{person.FirstName} {person.LastName}, ";
+}
+
+allNames = allNames.TrimEnd(',', ' ');
+
+allNames.Display();
+```
+
+The common pattern can be seen:
+1. Define some variable to accumulate the results.
+2. Check if the item in the collection matches the predicate.
+3. Update the result accumulator.
+
+Looking at the code, most of it is identical except a few custom bits.
+
+## Using the LINQ
+
+All of the LINQ methods are generic and will be type safe. This is needed to be able to reliably write predicates or projections.
+
+All of the LINQ extension methods reside in `System.Linq` namespace.
+
+### `.Where()`
+
+`.Where()` methods takes in an argument of predicate and returns the list of items in the original collection that matches the given predicate.
+
+```{.csharp}
+// Same example where we check if the first name starts with "D" using LINQ
+
+data.Where(p => p.FirstName.StartsWith("D")).DisplayTable();
+```
+
+### `.Select()`
+
+`.Select()` methods is used to project data in the collection to different form.
+
+```{.csharp}
+// Select all names from data collection into concatanated strings
+
+data.Select(p => $"{p.FirstName} {p.LastName}").DisplayTable();
+```
+
+### `.SelectMany()`
+
+`.SelectMany()` method is used to flatten the results. It works similarly to how `.Select()` works in terms of project the item form, but also perfoms flatterning at the same time. Flattening in this case means reducing the dimensions of the collection. I.e. if the item inside collection has another collection inside of it, flattening would extract the items from nested collection and place all these items into single collection.
+
+```{.csharp}
+class InnerCollection
+{
+    public List<int> Numbers { get; set; }
+}
+
+class OuterCollection
+{
+    public List<InnerCollection> Items { get; set; }
+}
+
+var outerCollection = new OuterCollection
+    {
+        Items = new List<InnerCollection>
+        {
+            new InnerCollection { Numbers = new List<int> { 1, 2, 3 } },
+            new InnerCollection { Numbers = new List<int> { 4, 5, 6 } },
+        },
+    };
+
+var flatNumbers = outerCollection.Items.SelectMany(i => i.Numbers);
+
+flatNumbers.Display();
+```
+
+### `.Aggregate()`
+
+`.Aggregate()` method reduces the number of value in collection into a single one. The resulting value must be of the same type as the original value.
+
+This time - `.Aggregate()` takes in a `Func` of 2 arguments as it's argument: 1st argument holds the aggregated value and the 2nd argument holds in current working item from the data set.
+
+```{.csharp}
+// Calculate the sum age of all persons in the data collection.
+// Because the aggregated type must be the same as the source type,
+// first the values have to be projected to in by Select'ing them.
+data.Select(x => x.Age).Aggregate((x, y) => x + y).Display();
+```
+
+### Other aggregates
+
+Based on the `.Aggregate()` method, there are various other aggregate-like methods for the most common use cases like sum, average etc.
+
+```{.csharp}
+// Calculate the sum of all ages in the data collection.
+data.Sum(p => p.Age).Display();
+
+// Calculate the average age of all persons in the data collection.
+data.Average(p => p.Age).Display();
+
+// Calculate the maximum age of all persons in the data collection.
+data.Max(p => p.Age).Display();
+
+// Calculate the minimum age of all persons in the data collection.
+data.Min(p => p.Age).Display();
+```
+
+### `.Any()` and `.All()`
+
+`.Any()` methods returns a boolean that indicates if any of the elements in the collection matches the given predicate. `.All()` methods return boolean that indicates if all the elements in the collection match the given predicate.
+
+```{.csharp}
+// Check if anyone in the collection is over the age of 90.
+data.Any(p => p.Age > 90).Display();
+```
+
+```{.csharp}
+// Check if everyone in the collection is over the age of 18.
+data.All(p => p.Age > 18).Display();
+```
+
+```{.csharp}
+// Check if everyone in the collection is over the age of 18.
+data.All(p => p.Age > 18).Display();
+```
+
+```{.csharp}
+// Check if everyone in the collection is over the age of 50.
+data.All(p => p.Age > 50).Display();
+```
+
+## `.Group()`
+
+`.Group()` allows to group the collection into several subgroups based on the given expression. `.Group`ing the collection will results in a collection of collections, with each of them having an additional `.Key` property that indicates the value by which it was grouped.
+
+```{.csharp}
+// Group the data by the first name of the person.
+data.GroupBy(x => x.FirstName).DisplayTable();
+```
+
+```{.csharp}
+// Group by, as well as any other LINQ method, can be chained, to get more specific results.
+data
+    .GroupBy(x => x.FirstName)
+    .Select(x => new { FirstName = x.Key, Count = x.Count() })
+    .OrderByDescending(x => x.Count)
+    .ThenBy(x => x.FirstName)
+    .DisplayTable();
+```
+
+### Selecting single element out of the collection
+
+There are a few options how to select single element out of the collection:
+- `First()` takes the first element out, throws if there are no elements.
+- `FirstOrDefault()` takes the first element out or default value for the type of there are no element in the collection.
+- `Single()` takes the single element out of th collection, throws if the element count in collection is different than 1.
+- `SingleOrDefault()` takes the single element out of the collection if there is only 1, returns default value for the type if there are none, throws if there are more than 1 element in the collection.
+
+```{.csharp}
+// First usage examples
+Console.WriteLine(data.First());
+```
+
+```{.csharp}
+// First but the collection is empty
+Console.WriteLine(new List<Person>().First());
+```
+
+```{.csharp}
+// FirstOrDefault on the empty collection
+Console.WriteLine(new List<Person>().FirstOrDefault());
+```
+
+```{.csharp}
+// Single on the empty collection
+Console.WriteLine(new List<Person>().Single());
+```
+
+```{.csharp}
+// SingleOrDefault on the empty collection
+Console.WriteLine(new List<Person>().SingleOrDefault());
+```
+
+```{.csharp}
+// SingleOrDefault on the collection with more than one element
+Console.WriteLine(data.SingleOrDefault());
+```
+
+### `.Take()` and `.Skip()`
+
+`.Take()` selects first `n` items from the given collection.
+
+Similarly `.Skip()` skips over first `n` element from the collection. it is typically used in conjunction with `.Take()` to implement things like pagination.
+
+```{.csharp}
+// Skip it and take the first 5 elements from the data collection.
+
+var orderedByName = data
+    .OrderBy(p => p.FirstName)
+    .ThenBy(p => p.LastName);
+
+orderedByName.DisplayTable();
+
+var skippedAndTaken = orderedByName
+    .Skip(2)
+    .Take(5);
+
+skippedAndTaken.DisplayTable();
+```
+
+## Query syntax
+
+The examples above used the extension method syntax. However C# also has the special query syntax for LINQ usage. It has SQL-like syntax, that is said to be more verbose and self explanatory than extension method syntax. The assumption is that it should be easier to read LINQ statement written in query syntax compared to extension method syntax.
+
+However query syntax is very different from the typical syntax seen in C-like languages, so it tends to look out of place. Query syntax also has more limitations than extension method syntax, because it has less methods to choose from, so in more complex scenarios if has to be used in conjunction with extension method syntax. Also because it is more verbose it tends to output more code to achieve the same result.
+
+```{.csharp}
+// Filter the the person whose name starts with "J" and age is greater than 30.
+
+var results = 
+    from person in data
+    where person.FirstName.StartsWith("J") && person.Age > 30
+    select person;
+
+results.DisplayTable();
+```
+
+```{.csharp}
+// Select the max age of the person whose name starts with "J".
+// Since there is no Max in query syntax, it leads to a mixed usage of query and method syntax.
+
+var maxAge = 
+    (from person in data
+    where person.FirstName.StartsWith("J")
+    select person.Age).Max();
+```
+
+```{.csharp}
+// Group the data by the last name of the person,
+// then select the first person in each group,
+// then select the first name of the person,
+// but only of the people whose age is greater than 30.
+
+var results = 
+    from person in data
+    group person by person.LastName into g
+    select g.First() into firstPerson
+    where firstPerson.Age > 30
+    select firstPerson.FirstName;
+
+results.DisplayTable();
+```
+
+## Homemade LINQ
+
+In this section we will explore an example how to create extension methods that provide similar functionality to the standard LINQ methods.
+
+```{.csharp}
+// All the methods are generic, so they would work with any type, while providing type safety.
+// All the methods are extension methods.
+// Arguments are Funcs, since they are either projection or predicate functions.
+// Usage of yield is optional, but it does provide better performance.
+// Methods should return enumerables, where appropriate, so they could be chained.
+
+public static IEnumerable<T> Where<T>(
+    this IEnumerable<T> source, 
+    Func<T, bool> predicate)
+{
+    Console.WriteLine("Where called");
+
+    foreach (var item in source)
+    {
+        if (predicate(item))
+        {
+            yield return item;
+        }
+    }
+}
+
+public static T FirstOrDefault<T>(
+    this IEnumerable<T> source,
+    Func<T, bool> predicate)
+{
+    Console.WriteLine("FirstOrDefault called");
+
+    foreach (var item in source)
+    {
+        if (predicate(item))
+        {
+            return item;
+        }
+    }
+
+    return default(T);
+}
+
+public static IEnumerable<TTarget> Select<TSource, TTarget>(
+    this IEnumerable<TSource> source,
+    Func<TSource, TTarget> projection
+)
+{
+    Console.WriteLine("Select called");
+
+    foreach (var item in source)
+    {
+        yield return projection(item);
+    }
+}
+
+// Trying out the above defined methods
+
+// Due to the way how notebook works, only the calls in this cell will use these custom methods.
+// In typical development scenario, these methods could be used by having the `using` directive
+// with the namespace of class where these methods are defined.
+
+data.Where(p => p.FirstName.StartsWith("D")).DisplayTable();
+
+// Chaining these methods
+data.Where(x => x.Age > 30).Select(x => x.FirstName).FirstOrDefault();
+```
+
+## Exercises to try out LINQ
+
+Using the `data` list defined in the first cell and `Linq` extension methods, try doing the exercises below. 
+
+*It may not be possible to complete every single exercise with absolutely pure single statement `Linq`.*
+
+1. Find the most common last name.
+2. Find the person whose first name and last name together are the longest.
+3. Find the oldest person by each last name. 
+4. Check if there is more than 1 person of the same age.
+5. Check if there is more than 1 person with the same first and last name combination.
+6. Find the average last name length.
+7. Return the `{FirstName} {LastName}` of the people with top 3 oldest ages (assume that there can be multiple people of the same age).
+8. Find the second oldest person.
+9. Calculate the occurrences of letters in people's names. 
+10. Construct the string of 5 most common first name letters ordered descending.

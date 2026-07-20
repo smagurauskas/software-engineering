@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # The lecture material must always render: broken markdown, a bad mermaid
+  # diagram or an invalid Quarto directive fails the build, not the lecture.
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: quarto-dev/quarto-actions/setup@v2
+      - name: Render site (pages + slides)
+        run: quarto render
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: _site
+          retention-days: 14
+
+  # The C# code inside the lectures must still work: every lecture with
+  # `verify: output` must produce exactly the committed expected/<name>.txt,
+  # and every `verify: run` lecture must execute without compile errors.
+  # See tools/verify_lectures.py and README.md for how this works.
+  verify-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Verify lecture code against expected outputs
+        run: python tools/verify_lectures.py
+      - name: Upload actual outputs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: actual-outputs
+          path: .verify

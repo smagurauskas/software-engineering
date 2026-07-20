@@ -1,0 +1,9 @@
+---
+title: "Articles"
+verify: none # no executable cells
+---
+
+This notebook contains links to various articles that I think are worth a read.
+
+- Overview of how the AI impacts the state of Software Engineering and what to think about it https://www.oreilly.com/radar/the-end-of-programming-as-we-know-it/.
+- ACM Code of Ethics and Professional Conduct https://www.acm.org/code-of-ethics

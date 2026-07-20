@@ -1,0 +1,537 @@
+---
+title: "Pull Requests"
+verify: none # no executable cells
+---
+
+## What are Pull Requests?
+
+Pull Requests is a collaborative process of reviewing code changes before they are merged into the main code branch.
+
+**Goal**: Increase code quality through peer review.
+
+::: {.fragment}
+*Note: Pull requests are usually just called simply "PRs" in spoken language. This abbreviated form will be used in the notebook.*
+:::
+
+***
+
+Code review is an important step of the overall software development process. Research published by Microsoft found that developers spend ~6 hours per week preparing code for PRs or reviewing others' PRs, amounting to around **~15% of total work time** being related to the code review process.
+
+::: {.notes}
+*Note: Pull requests may sometimes be called "Merge requests" or similar names, based on the platform used.*
+:::
+
+### Pull Request Process
+
+```{mermaid}
+flowchart LR
+    A[Create<br/>Branch] --> B[Make<br/>Changes]
+    B --> C[Open PR]
+    C --> D[Review]
+    D --> E{Comments?}
+    E -->|Yes| F[Fix Issues]
+    F --> D
+    E -->|No| G{Approved?}
+    G -->|No| F
+    G -->|Yes| H[Merge]
+    H --> I[Deploy]
+    
+    style A fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style H fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    style I fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style D fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+```
+
+## Why Pull Requests Matter
+
+Pull requests allow multiple engineers to review changes before they are merged into the main trunk. Multiple research studies show that performing code reviews decreases the defect count [3], among other benefits.
+
+**Goals and benefits:**
+- Get a second (or more) look at changes
+- Provide comments on potential improvements
+- Ensure code will be understood in the future
+- Encourage learning between team members
+
+### Code readability
+
+There is a popular quote in software engineering:
+
+> Code is read more than it is written
+
+While it's hard to trace the origin of this quote, the sentiment remains relevant today.
+
+After code is written, it will be read numerous times by the author and, more importantly, by other engineers. Ideas that aren't clearly expressed in code will be forgotten. Cryptic variable names will stop making sense over time. 
+
+Therefore, it's important to make code future-proof, so that people with little context about the prior history can understand it later.
+
+***
+
+Many articles and books have been written on code readability. This topic will be explored more throughout the course.
+
+For quick inspiration on what makes code readable, start with this article: [Pragmatic Engineer - Readable Code](https://blog.pragmaticengineer.com/readable-code/).
+
+## Code Review Best Practices
+
+Modern code reviews use tools to inspect changes and leave comments or start discussions regarding these changes[*]. After reviewing the changes, reviewers leave comments on the code reviewed.
+
+Comments can target specific lines of code, specific files, or the whole PR.
+
+::: {.fragment}
+[*]: This is stated in contrast to older scientific articles, where code review process can mean very formal, in-person code review, where several people are looking at printouts of the code.
+:::
+
+## Raising Effective PRs
+
+### Key Principles
+- **Provide context** - Explain what is being changed and why. A good title and proper description can go a long way.
+- **Keep it small** - The smaller the PR, the easier it is to review [1]
+- **Review the code yourself** - Looking at poor quality PRs can feel like a waste of time to team members. Always make sure you've taken all the steps on your side to make it as smooth as possible.
+
+::: {.fragment}
+*Keeping it small: [1] Study suggests that as the number of files in the PR increases, the usefulness of comments decreases. This is potentially related to the fact that it's harder to reason about large-scale codebases effectively, compared to smaller ones.*
+:::
+
+### Reviewing the code yourself
+
+Some things you can do to improve the quality of PRs you submit:
+
+- Review your own code first. Check if the variables make sense and try to look through the reviewer's eyes.
+- Test your changes locally. Run the local automated tests and make sure they pass.
+- Make sure all automated code formatting or linting tools were run and code style is consistent with your standards.
+- Compilers can provide warnings which can indicate code smells—make sure they are addressed before submitting the code.
+
+## Reviewing PRs Effectively
+
+**What to focus on:**
+- Focus on what is in the scope of the PR
+- Code readability and maintainability
+- Logic correctness and potential bugs
+- Test coverage and quality
+- Performance implications [*]
+
+::: {.fragment}
+*[&ast;] When it comes to performance implications, it's especially easy to go down the endless rabbit hole of marginal improvements that can be found. This is the very appropriate place to focus on **good instead of perfect**.*
+:::
+
+### Focus on the Current Changes
+- Review only what's in scope of this PR
+- Don't address historical code issues in current PR
+
+It is sometimes tempting to point out historicall bad solutions in the new PRs. Code that was once OK, now has obvious flaws at it is easy to point that out. However it is better to refrain from this.
+
+### Provide Constructive Feedback
+- Give actionable suggestions, i.e. not the something is wrong, but how can it be improved
+- Help others learn rather than scolding for bad code
+- Focus on "good enough" rather than perfect
+
+While you do need to identify that something is wrong to be able to fix this, focusing too much on the negativity can lead to overall worse motivation of the team and the outcomes.
+
+## Types of Review Comments
+
+Generally comments can be grouped into 2 categories:
+
+1. **Readability related comments**
+   - Naming conventions
+   - Code structure and organization
+   - Documentation and clarity
+
+2. **Code logic or design related comments**
+   - Business logic correctness
+   - Error handling
+   - Performance concerns
+   - Security issues
+   - Unconventional design decisions
+
+### Naming conventions
+
+```csharp
+class Person
+{
+    public string FirstName { get; set; } // -- Why PascalCase here?
+    public string Last_Name { get; set; } // -- But Snake_Case here?
+}
+```
+
+::: {.fragment}
+It's not *per se* that one style is better than the other, but the research overwhelmingly shows that consistency is critical to readable code.
+:::
+
+### Code structure
+
+```csharp
+class Person
+{
+    // -- Why are logically similar properties separated by the construtor?
+    public string FirstName { get; private set; }
+
+    public Person(string firstName, string lastName)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+    }
+
+    public string LastName { get; private set; }
+}
+```
+
+### Documentation and clarity
+
+```csharp
+class Person
+{
+    public string FirstName { get; set; }
+    public string Code { get; set; } // -- What kind of code is this? Maybe personal identification code, but very ambigious just from the name.
+}
+```
+
+# Code Review Examples
+
+Next will follow a few examples that can be used for inspiration for what to look at when doing code reviews.
+
+## Example 1: Poor readbility
+
+One of the key goals of pull requests is ensuring code **readability**.
+
+**Readable code means:**
+- Other engineers can easily understand what the code does
+- Variables, classes, and methods have descriptive names  
+- Code is maintainable for future changes
+
+
+
+**Issues**: Unclear names, missing validation, wrong return type
+
+### ❌ Before
+
+```csharp
+class U
+{
+    public int C(List<int> l)
+    {
+        var s = 0;
+        foreach (var i in l) s += i;
+        return s / l.Count;
+    }
+}
+```
+
+::: {.fragment}
+
+**Question**: What's wrong with this code? What does it even do?
+:::
+
+### 💬 Comments
+
+```csharp
+class U // -- Cannot understand the intent of the class from it's name. There is also no state, it could probably be `static`
+{
+    public int C(List<int> l) // -- Cannot understand what the method is supposed to do from it's name
+    { // -- What if the list is empty? It is also never modified in the method.
+        var s = 0; // -- unclear variable name
+        foreach (var i in l) s += i;
+        return s / l.Count; // -- Division results in `double` result, but it is narrowed down to `int` by the method. Is this intended?
+    }
+}
+```
+
+::: {.fragment}
+*Trying to point out the potential problems, while also suggesting or implying solutions to them.*
+:::
+
+### ✅ After fixing the code according to comments
+
+```csharp
+static class Statistics
+{
+    public static double Average(IReadOnlyList<int> numbers)
+    {
+        if (numbers is null) 
+            throw new ArgumentNullException(nameof(numbers));
+        if (numbers.Count == 0) 
+            throw new ArgumentException(
+                "Sequence cannot be empty.", 
+                nameof(numbers));
+
+        var sum = numbers.Sum();
+        return (double)sum / numbers.Count;
+    }
+}
+```
+
+**Benefits**: Clear intent, proper validation, correct return type
+
+## Example 2: Separation of Concerns
+
+### ❌ Before  
+
+```csharp
+class OrderProc
+{
+    public decimal P(string path)
+    {
+        var json = File.ReadAllText(path);
+        var order = JsonSerializer.Deserialize<Order>(json);
+        if (order.DiscountCode == "VIP") 
+            return order.Amount * 0.8m;
+        return order.Amount;
+    }
+}
+
+class Order 
+{ 
+    public decimal Amount { get; set; } 
+    public string DiscountCode { get; set; } 
+}
+```
+
+::: {.fragment}
+**Question**: How would you test this? What are the different responsibilities here?
+:::
+
+### 💬 Comments
+
+```csharp
+class OrderProc // -- This class has multiple responsibilities: file I/O and pricing logic. Need to be able to test one without the other.
+{
+    public decimal P(string path) // -- Method name 'P' is not descriptive. What does it process?
+    {
+        var json = File.ReadAllText(path); // -- Would be better if the data could be passed externally
+        var order = JsonSerializer.Deserialize<Order>(json); // -- What if deserialization fails?
+        if (order.DiscountCode == "VIP")  // -- Pricing logic should be separate from file operations
+            return order.Amount * 0.8m; // -- Could this be improved to support other discount cases?
+        return order.Amount;
+    }
+}
+
+class Order  // -- This is fine, but could benefit from validation
+{ 
+    public decimal Amount { get; set; } 
+    public string DiscountCode { get; set; } 
+}
+```
+
+*Suggesting to separate concerns and make the code more testable by splitting responsibilities.*
+
+### ✅ After fixing the code according to comments
+
+```csharp
+static class OrderReader
+{
+    public static Order ReadFromFile(string path) =>
+        JsonSerializer.Deserialize<Order>(
+            File.ReadAllText(path))
+        ?? throw new InvalidDataException(
+            "Order payload invalid");
+}
+
+static class Pricing
+{
+    public static decimal ApplyDiscount(Order order)
+    {
+        if (order is null) 
+            throw new ArgumentNullException(nameof(order));
+        return order.DiscountCode switch
+        {
+            "VIP" => order.Amount * 0.8m,
+            "EMP" => order.Amount * 0.7m,
+            _ => order.Amount
+        };
+    }
+}
+```
+
+::: {.fragment}
+**Improvements**: File access separated from pricing logic
+**Benefits**: Testable, single responsibility, extensible
+:::
+
+## Example 3: Incremental Refactoring
+
+### ❌ Before
+
+```csharp
+class ShippingCostCalculatorV1
+{
+    public decimal Calculate(string country, int weightGrams)
+    {
+        var baseCost = 5m;
+        if (country == "US") baseCost = 3m;
+        if (weightGrams > 1000) baseCost += 4m;
+        if (country == "DE" && weightGrams < 500) 
+            baseCost -= 1m;
+        return baseCost;
+    }
+}
+```
+
+::: {.fragment}
+**Question**: This logic is hard to review. How could it be made easier to verify in a PR?
+:::
+
+### 💬 Comments
+
+```csharp
+class ShippingCostCalculatorV1
+{
+    public decimal Calculate(string country, int weightGrams)
+    {
+        var baseCost = 5m;
+        if (country == "US") baseCost = 3m; // -- Since it clearly changes based on country, maybe this can be placed elsewhere for clarity?
+        if (weightGrams > 1000) baseCost += 4m;
+        if (country == "DE" && weightGrams < 500) // -- It would be clearer if country specific logic would be separated.
+            baseCost -= 1m;
+        return baseCost; // -- base cost sounds misleading at this point
+    }
+}
+```
+
+*Suggesting to break down complex logic into smaller, testable functions with clear responsibilities.*
+
+### ✅ After fixing the code according to comments
+
+```csharp
+class ShippingCostCalculatorV2
+{
+    public decimal Calculate(string country, int weightGrams)
+        => Base(country) + Surcharge(weightGrams) + 
+           CountryAdjustment(country, weightGrams);
+
+    private static decimal Base(string country) => 
+        country == "US" ? 3m : 5m;
+    
+    private static decimal Surcharge(int weightGrams) => 
+        weightGrams > 1000 ? 4m : 0m;
+    
+    private static decimal CountryAdjustment(
+        string country, int weightGrams)
+        => (country, weightGrams) switch 
+        { 
+            ("DE", < 500) => -1m, 
+            _ => 0m 
+        };
+}
+```
+
+::: {.fragment}
+**Improvement**: Extracted logical parts into small, pure functions.
+:::
+
+::: {.fragment}
+**Discussion**: "conventionally" speaking the code is *cleaner* now, but is it really that much easier to read?
+:::
+
+## Example 4
+
+### ❌ Before
+
+```csharp
+class UserServiceV1
+{
+    public bool Register(string e, string p)
+    {
+        if (e.Contains("@") && p.Length > 5)
+        {
+            // pretend save
+            return true;
+        }
+        return false;
+    }
+}
+```
+
+**Question**: What happens on failure? What are the valid inputs for `e` and `p`?
+
+### 💬 Comments
+
+```csharp
+class UserServiceV1
+{
+    public bool Register(string e, string p) // -- Parameter names 'e' and 'p' are not descriptive
+    { // -- What does a false return mean? Validation failed? User already exists?
+        if (e.Contains("@") && p.Length > 5) // -- Email validation is too simplistic
+        {
+            // pretend save // -- What if save fails? No error handling
+            return true;
+        }
+        return false; // -- Failure case gives no information about what went wrong
+    }
+}
+```
+
+::: {.fragment}
+*Suggesting explicit error handling and proper validation to create a clear, enforceable contract.*
+:::
+
+### ✅ After fixing the code according to comments
+
+```csharp
+class InvalidEmailException : ArgumentException { /* ... */ }
+
+static class Email
+{
+    static readonly Regex Pattern = new Regex(/* ... */);
+    
+    public static void EnsureValid(string value, string paramName)
+    {
+        if (string.IsNullOrWhiteSpace(value) || 
+            !Pattern.IsMatch(value))
+            throw new InvalidEmailException(
+                "Email format invalid", paramName);
+    }
+}
+
+class UserServiceV2
+{
+    public void Register(string email, string password)
+    {
+        Email.EnsureValid(email, nameof(email));
+        if (string.IsNullOrWhiteSpace(password) || 
+            password.Length < 6)
+            throw new ArgumentException(
+                "Password must be at least 6 characters.", 
+                nameof(password));
+        // persist user here
+    }
+}
+```
+
+**Benefits**: Clear failure modes, explicit validation
+
+## Measuring PR Process Effectiveness
+
+### Key Metrics to Track
+- **Review time** - Time from PR creation to approval
+- **PR size** - Lines of code changed
+- **Review iterations** - Number of back-and-forth cycles
+- **Time to merge** - Complete cycle time
+
+### References
+- Benchmarks and reference values: [LinearB Engineering Benchmarks](https://linearb.io/resources/engineering-benchmarks)
+- DORA metrics: [DORA Metrics Four Keys](https://dora.dev/guides/dora-metrics-four-keys/)
+
+# Key Takeaways
+
+## For PR Authors
+
+- **Create focused PRs** - One feature/bug fix per PR
+- **Write clear descriptions** - Explain what, why, and how; include screenshots if UI changes
+- **Self-review first** - Check your own diff before asking others to review
+- **Ensure quality** - Run tests, linters, and verify CI passes
+
+## For Reviewers
+
+- **Stay in scope** - Review only what's changed in this PR
+- **Be constructive** - Suggest solutions, not just problems
+- **Consider context** - Balance "perfect" vs "good enough" based on code criticality
+
+::: {.notes}
+# References
+
+[1] Bacchelli, A., & Bird, C. (2013). Characteristics of Useful Code Reviews: An Empirical Study at Microsoft. *Microsoft Research*. https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/bosu2015useful.pdf
+
+[2] Rigby, P. C., & Bird, C. (2013). Convergent Contemporary Software Peer Review Practices. *Proceedings of the 2013 9th Joint Meeting on Foundations of Software Engineering*.
+
+[3] McIntosh, S., Yasutaka, K., & Adams, B. (2014). An empirical study of the impact of modern code review practices on software quality. *Empirical Software Engineering*.
+
+[4] Sadowski, C., Söderberg, E., Church, L., Sipko, M., & Bacchelli, A. (2018). Expectations, Outcomes, and Challenges of Modern Code Review. *Proceedings of the 40th International Conference on Software Engineering*.
+:::

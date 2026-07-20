@@ -1,0 +1,9 @@
+── cell 1 ──
+── cell 2 ──
+Hello, World! (from extension method)
+── cell 3 ──
+6
+── cell 4 ──
+Hello, World! (from extension method)
+── cell 5 ──
+Hello, World! (from extension method)

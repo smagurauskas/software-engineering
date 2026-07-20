@@ -1,0 +1,113 @@
+---
+title: "Time"
+verify: run # output depends on current date/time
+---
+
+## Working with time
+
+C# has several classes for working with time related matters: `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly` and `Stopwatch`.
+
+When thinking about time we can think about it in 2 ways:
+- "Wall time" - time that represents a time of day, or in other words a specific moment in time.
+- "Monotonic time" - time that specifies duration between 2 events.
+
+### `DateTime`
+
+`DateTime` class stores date and time, has 3 `.Kind`s:
+- `DateTimeKind.Utc`: Coordinated Universal Time
+- `DateTimeKind.Local`: Local system time
+- `DateTimeKind.Unspecified`: No time zone context
+
+It works fine for most basic use cases. Only caveat is that if you need to store datetime in some specific timezone - it does not support that.
+
+***
+
+```{.csharp}
+var utcDateTime = DateTime.UtcNow;
+
+utcDateTime.Display();
+```
+
+***
+
+```{.csharp}
+var localDateTime = DateTime.Now;
+
+localDateTime.Display();
+
+// We can print it with time zone offset
+localDateTime.ToString("yyyy-MM-dd HH:mm:ss zzz").Display();
+
+// But if we parse it back, we will only now that it is `Local` kind
+var parsedLocalDateTime = DateTime.Parse(localDateTime.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss zzz"));
+parsedLocalDateTime.Display();
+parsedLocalDateTime.Kind.Display(); // Local
+```
+
+### `DateTimeOffset`
+
+`DateTimeOffset` can be used to store date alongside the time offset info. It should be more flexible for cases when you do care about the time zone.
+
+***
+
+```{.csharp}
+var dateTimeOffset = DateTimeOffset.Now;
+dateTimeOffset.Display();
+
+dateTimeOffset.Offset.Display(); // Time zone offset
+
+// Change the time zone offset
+dateTimeOffset = dateTimeOffset.ToOffset(TimeSpan.FromHours(5));
+dateTimeOffset.Display();
+dateTimeOffset.Offset.Display(); // Time zone offset
+```
+
+### `DateOnly` and `TimeOnly`
+
+`DateOnly` and `TimeOnly` allows to smaller amount of information that only relates to date or time that you care about. It is useful when you only care about specific part of data and don't want to artificially store the other part.
+
+::: {.fragment}
+```{.csharp}
+var dateOnly = DateOnly.FromDateTime(DateTime.Now);
+dateOnly.ToString().Display();
+
+var timeOnly = TimeOnly.FromDateTime(DateTime.Now);
+timeOnly.ToString().Display();
+```
+:::
+
+### Wall time pitfalls
+
+Wall time in practice is not always linear. Some of the common pitalls you can encounter are:
+- Time zone changes
+- System time synchronizations
+- Leap seconds
+
+::: {.fragment}
+```{.csharp}
+var utcTime = new DateTime(2025, 10, 26, 0, 58, 0, DateTimeKind.Utc);
+
+TimeZoneInfo vilniusZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
+
+// You would expect time be continously increasing, but due to DST change it is not
+// which you cannot know, unless you know the time zone it is happening in
+TimeZoneInfo.ConvertTimeFromUtc(utcTime, vilniusZone).Display();
+TimeZoneInfo.ConvertTimeFromUtc(utcTime.AddMinutes(1), vilniusZone).Display();
+TimeZoneInfo.ConvertTimeFromUtc(utcTime.AddMinutes(2), vilniusZone).Display();
+```
+:::
+
+### `Stopwatch`
+
+`Stopwatch` uses monotonic time provided by the OS when possible, which allows to avoid some of the potential wall time pitfalls, when you care only about time intervals.
+
+::: {.fragment}
+```{.csharp}
+var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+await Task.Delay(1000);
+stopwatch.Stop();
+
+stopwatch.ElapsedMilliseconds.Display();
+```
+:::

@@ -1,0 +1,133 @@
+---
+title: "Quick intro into .NET Core and C#"
+verify: none # no executable cells
+---
+
+## Agenda:
+- Why C# for this course?
+- What is .NET Core?
+- C# as a virtual machine-based language
+- Common Language Runtime (CLR)
+- Memory management: Heap and Stack
+
+## Why C# for this course?
+
+- Easy to work with, especially for web development
+- Runs on all platforms
+- C# an OOP language, so it lends itself well to exploring some OOP specific concepts
+- High standardization in ecosystem helps to avoid niche issues
+
+## What is .NET Core?
+
+.NET Core is a **free**, **cross-platform** and **open-source** framework for building modern applications.
+
+ASP.NET Core is framework built on top of .NET Core, that is used for building **web applications**.
+
+### Evolution:
+- 2002: .NET Framework 1.0 (Windows-only)
+- 2012: .NET Framework 4.5 (still Windows-only)
+***
+- 2016: .NET Core 1.0 (now cross-platform and open-source)
+- 2019: .NET Core 3.0
+- 2020: .NET 5 (.NET Core version 4 is skipped, the word **core* is dropped)
+
+## C# is a Virtual Machine-Based Language
+
+C# doesn't compile directly to machine code. Instead, it follows a **two-step compilation process**:
+
+### Compilation Process:
+1. **Source Code → Intermediate Language (IL)**
+   - C# code is compiled to Common Intermediate Language (CIL/IL)
+   - IL is platform-independent bytecode
+
+2. **IL → Machine Code (Just-In-Time)**
+   - Common Language Runtime (CLR) compiles IL to native machine code
+   - Happens at runtime (JIT compilation)
+
+### Benefits:
+- **Platform independence**: Same IL runs on different operating systems
+- **Language interoperability**: Multiple .NET languages can are translated into same IL
+- **Optimization**: JIT can optimize for specific hardware at runtime
+
+***
+
+```{mermaid}
+graph LR
+    CSharp[C#] --> IL[Intermediate Language]
+    FSharp[F#] --> IL
+    VBNet[VB.NET] --> IL
+
+    IL --> Windows[Windows runtime]
+    IL --> Linux[Linux runtime]
+    IL --> Mac[Mac runtime]
+```
+
+## Common Language Runtime (CLR)
+
+The **CLR** is the execution environment for .NET applications. It provides:
+
+- **Just-In-Time (JIT) Compilation**: Converts IL to native machine code
+- **Memory Management**: Automatic garbage collection
+
+## Memory Management: Heap and Stack
+
+.NET applications use **two main memory areas**:
+
+### Stack Memory
+- **Fast allocation and deallocation**
+- Stores **value types** and **method call information**
+- **LIFO** (Last In, First Out) structure
+- **Automatically managed** - no garbage collection needed
+- **Thread-specific** - each thread has its own stack
+
+### Heap Memory
+- **Slower allocation, managed deallocation**
+- Stores **reference types** (objects)
+- **Garbage Collector (GC)** automatically frees unused memory
+- **Shared across threads**
+- **Generations**: Gen 0, Gen 1, Gen 2 for optimization
+
+## Automatic Garbage Collection
+
+.NET's **Garbage Collector (GC)** automatically manages heap memory:
+
+### How it works:
+1. **Allocation**: Objects are allocated in Generation 0
+2. **Collection**: When Gen 0 fills up, GC runs
+3. **Survival**: Surviving objects move to Generation 1
+4. **Promotion**: Long-lived objects eventually reach Generation 2
+
+### Benefits:
+- **No manual memory management** (no `free()` or `delete`)
+- **Memory leaks prevention** (mostly)
+- **Automatic optimization**
+
+## Strong Type System
+
+C# has a **strong, static type system** that provides:
+
+### Type Safety:
+- **Compile-time type checking**
+- **Runtime type verification**
+- **No undefined behavior** from type mismatches
+
+### Two Main Categories:
+
+#### Value Types
+- **Stored directly on stack** (when not boxed)
+- **Copy semantics** - assignment creates a copy
+- Examples: `int`, `double`, `bool`, `char`, `struct`, `enum`
+
+#### Reference Types
+- **Stored on heap**, reference on stack
+- **Reference semantics** - assignment copies the reference
+- Examples: `class`, `interface`, `delegate`, `string`, `object`, `array`
+
+## Key Takeaways
+
+- **.NET** is a cross-platform, open-source framework
+- **C#** is a **VM-based language** that compiles to Intermediate Language (IL)  
+- **Common Language Runtime (CLR)** executes the IL
+- **Memory management** uses Stack (fast, value types) and Heap (managed, reference types)  
+- **Garbage Collection** automatically manages heap memory  
+- **Strong type system** provides safety and performance  

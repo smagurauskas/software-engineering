@@ -1,0 +1,174 @@
+---
+title: "CI/CD"
+verify: none # no executable cells
+---
+
+CI - continuous integration.  
+CD - continuous delivery/deployment.
+
+Collectively CI/CD refers to automated integration and delivery of code, usually assisted by the tooling.
+
+***
+
+```{mermaid}
+graph TD
+    A[Developer Commit Code] --> B[Push to Repository]
+    B --> C[Trigger CI Pipeline]
+    C --> D[Run Tests]
+    D --> E{Tests Pass?}
+    E -- Yes --> F[Build Application]
+    F --> G[Deploy to Staging]
+    G --> H[Run Staging Tests]
+    H --> I{Staging Tests Pass?}
+    I -- Yes --> J[Deploy to Production]
+    I -- No --> K[Rollback Changes]
+    E -- No --> L[Send Feedback to Developer]
+```
+
+## Continuous integration
+
+>CI is a software engineering practice that continually merges artifacts, including source code updates from all members of a team, into a shared mainline <...>.
+
+In practice this means merging your changes into the main branch frequently and consistently.
+
+***
+
+CI depends on automation in order to integrated fast and quick.
+
+Examples of automated pipelines steps:
+- Building the program,
+- Running units tests,
+- Running integration tests,
+- Linting,
+- Static code analysis.
+
+## Continuous delivery/deployment
+
+CD abbreviation can have 2 meanings:
+- Continuous delivery, and
+- Continuous deployment.
+
+***
+
+According to SWEBOK they have different meanings:
+
+Continuous delivery is:
+> <..>  a software engineering practice that uses automated tools to provide frequent releases of new  systems (including software) to staging or various test environments. CD continuously assembles the latest code and configuration from the head into release candidates.
+
+Continuous integration is:
+> <...> an automated process of deploying changes to production by verifying intended features and validations to reduce risk. Jez Humble and David Farley [8] pointed out that “[t]he biggest risk to any software effort is that you end up building something that isn’t useful. The earlier and more frequently you get working software in front of real users, the quicker you get feedback to find out how valuable it really is.”
+
+## GitHub actions example
+
+GitHub actions allows to run containerized workflows against the code repository.
+
+They can be found in the repository in the "Actions" tab. Users get certain amount of free actions minutes every month.
+
+Actions are located in `.github/workflows` directory and they are described in `.yml` format.
+
+***
+
+For this example we want to build a pipeline that will:
+1. Whenever PR is raised make sure that the code builds.
+2. Run the tests.
+3. Report % code coverage back to PR.
+
+### Building the code
+
+To make sure the code build, it is only needed to run `dotnet build` at the correct solution and make sure that the process exists with the success status code. Conveniently GH Actions automatically fails the build step if the process call exists with error.
+
+***
+
+Create a file named: `build-and-test.yml` inside the `.github/workflows` directory.
+
+```yaml
+name: Build and test PRs
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.x'
+
+      - name: Build solution
+        run: dotnet build
+```
+
+When this is done. Open the PR to the `main` branch to test this; the action should start after the PR is opened.
+
+### Test
+
+To test the solution, it suffices to add a single step to the existing job:
+
+```yaml
+      - name: Test solution
+        run: dotnet test
+```
+
+### Report coverage
+
+To report code coverage 2 things needs to be done:
+1. Update test projects to start reporting coverage.
+2. Report the coverage back to PR.
+
+***
+
+!This assumes `xUnit` is used for testing!
+
+To start reporting coverage from test projects, we need to add `coverlet.collector` package to each test project.
+
+This can be done by running the following command on the projects:  
+`dotnet add package coverlet.collector`.
+
+***
+
+Replace the test step with the following:
+
+```yaml
+    - name: Run tests and report coverage
+      run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+    - name: Install dotnet coverage tool
+      run:  dotnet tool install --global dotnet-coverage
+    
+    - name: Merge results from all test projects into 1 file
+      run: dotnet-coverage merge TestResults/**/coverage.cobertura.xml --recursive --output unified.cobertura.xml --output-format cobertura
+
+    - name: Generate report on code coverage
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: unified.cobertura.xml
+        badge: true
+        fail_below_min: false
+        format: markdown
+        hide_branch_rate: false
+        hide_complexity: false
+        indicators: false
+        output: both
+        thresholds: '60 80'
+
+    - name: Report code coverage to PR
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        recreate: true
+        path: code-coverage-results.md
+```
+
+Reporting will require additionally to give more permissions for actions in the github repository. Go to Settings -> Actions -> Workflow permission -> Select "Read and write permissions".
+
+## Further reading
+
+- SWEBOK Chaper 06: Software Engineering Operations.

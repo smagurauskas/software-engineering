@@ -1,0 +1,27 @@
+project:
+  output-dir: _site
+  render:
+    - "*.qmd"
+
+# Every lecture renders twice from the same source:
+#   <name>.html        - readable course-notes page
+#   <name>.slides.html - reveal.js slide deck
+format:
+  html:
+    toc: true
+    code-copy: true
+    theme: cosmo
+  revealjs:
+    output-ext: slides.html
+    # Self-contained decks: both formats share the same <name>_files/ dir and
+    # would otherwise clobber each other's libs (404s in the deck). Embedding
+    # also makes each deck a single portable file.
+    embed-resources: true
+    slide-level: 2
+    theme: white
+    slide-number: true
+    code-line-numbers: true
+    hash: true
+    auto-stretch: false
+
+engine: markdown

@@ -1,0 +1,140 @@
+---
+title: "Generics"
+verify: output
+---
+
+In the lecture `04` generics were covered. Generics allow to instantiate classes with variable (generic) type constraints. There are additional constraints that can be with generic classes - variance and covariance.
+
+There constrains specify what more or less derived types the references can be substituted with.
+
+## Variance an contravariance
+
+Generic, invariance, covariance and contravariance allows to specify what types can be used for a certain generic type. In other words, can a value of more or less specific generic type be assigned to a generic type variable.
+
+This only works with **interfaces** and delegates.
+
+For the sake of examples, consider that we have such class hierarchy:
+
+```{.csharp}
+class Base
+{
+    public void DoSomething() { }
+}
+
+class Derived : Base
+{
+    public void DoSomethingMore() { }
+}
+
+class OtherDerived : Base
+{
+    public void DoSomethingElse() { }
+}
+
+class MoreDerived : Derived
+{
+    public void DoSomethingEvenMore() { }
+}
+```
+
+## Invariance
+
+Generic invariance simply means that only exact type that was specified as generic argument can be used.
+
+Even though the `IDerivedInterface` interface is more specific and could be implicitly assigned to a variable of type `IBaseInterface`, that cannot be done for variables with generic invariant types.
+
+```{.csharp}
+interface IInvariantGeneric<T>
+{
+    // Invariant T can be used anywhere
+    T DoStuff(T stuffIn);
+}
+
+class InvariantGeneric<T> : IInvariantGeneric<T>
+{
+    public T DoStuff(T stuffIn) => stuffIn;
+}
+
+IInvariantGeneric<Derived> invariantGeneric = new InvariantGeneric<Derived>();
+IInvariantGeneric<MoreDerived> invariantGeneric2 = new InvariantGeneric<MoreDerived>();
+
+// Both are illegal
+// invariantGeneric = invariantGeneric2;
+// invariantGeneric2 = invariantGeneric;
+```
+
+## Covariance
+
+Generic covariance allows to use more specific (more derived) types, when assigning generic types. It is similar to polymorphic behavior of regular, non generic, types.
+
+In order to define the generic type as covariant, an `out` keyword should be used before the generic argument name.
+
+Covariant arguments can only be used for return types.
+
+For example `Generic<out T>` would mean that the `T` would be covariant.
+
+```{.csharp}
+interface ICovariantGeneric<out T>
+{
+    // T will only work in places where it is covariantly valid
+    public T DoStuff(int something);
+}
+
+class CovariantGeneric<T> : ICovariantGeneric<T> 
+{
+    public T DoStuff(int something) => default;
+}
+
+ICovariantGeneric<Derived> covariantGeneric = new CovariantGeneric<Derived>();
+ICovariantGeneric<MoreDerived> moreConcreteCovariantGeneric = new CovariantGeneric<MoreDerived>();
+
+covariantGeneric = moreConcreteCovariantGeneric;
+```
+
+Why only return type is allowed to be covariant? Suppose the interface would make an argument generic:
+
+```csharp
+interface ICovariantGeneric<out T>
+{
+    public T DoStuff(T something);
+}
+
+// All types are assignable to object
+ICovariantGeneric<object> objectCovariantGeneric = new CovariantGeneric<object>();
+ICovariantGeneric<string> stringCovariantGeneric = new CovariantGeneric<string>();
+ICovariantGeneric<int> intCovariantGeneric = new CovariantGeneric<int>();
+
+// generic type that that requires string could be assigned to one who asks for object
+objectCovariantGeneric = stringCovariantGeneric;
+object obj = objectCovariantGeneric.DoStuff(new object());
+object str = objectCovariantGeneric.DoStuff("Hello, World!");
+
+// couldn't work, because although type expects object, but the more specific implementation requires string
+object num = objectCovariantGeneric.DoStuff(42);
+
+// while string could be passed instead of object, other non descendant types could not
+```
+
+This code block above would not compile.
+
+## Contravariance
+
+Generic contravariance allows to use **less** specific types.
+
+```{.csharp}
+interface IContravariantGeneric<in T>
+{
+    // T will only work in places where it is contravariantly valid
+    public void DoStuff(T something);
+}
+
+class ContravariantGeneric<T> : IContravariantGeneric<T>
+{
+    public void DoStuff(T something) { }
+}
+
+IContravariantGeneric<Derived> contravariantGeneric = new ContravariantGeneric<Derived>();
+IContravariantGeneric<Base> moreAbstractContravariantGeneric = new ContravariantGeneric<Base>();
+
+contravariantGeneric = moreAbstractContravariantGeneric;
+```

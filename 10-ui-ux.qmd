@@ -1,0 +1,84 @@
+---
+title: "UI/UX"
+verify: none # no executable cells
+---
+
+What is UI/UX and what how to apply it in practice.
+
+Main content can be found here:
+- Figma file where you can explore the practical aspects of app design: [link to Figma](https://www.figma.com/design/kGTVt2mugpQb986YV0NAew/UX%2FUI-Design-lecture-Case-Study?node-id=0-1&t=tnyH4SnsTfqEBkfK-1).
+- Slides use for presentation: [link to OneDrive](https://vult-my.sharepoint.com/:b:/g/personal/tomas_smagurauskas_mif_vu_lt/EZWLl--Gq6lOpLP-Qd_JJasBszzkDmX2S7_jZZI4N9YJNA?e=WUAyD6). Will need to login with VU email to access them.
+
+Rest of the notebook to be considered as "quick references", rather than the actual material at the moment.
+
+### What is UI and what is UX
+
+User Interface (UI) focuses on how a product/web looks and interacts visually.
+
+User Experience (UX) focuses on how a product feels and functions.
+
+### UX vs UI
+
+Purpose: UX solves user needs; UI creates visual appeal.
+
+Focus: UX is functionality centered; UI is appearance centered.
+
+Order: UX often comes first (foundation), and UI builds on top (decoration).
+
+## UX
+
+UX design is about solving problems for users.
+
+UX involves researching user needs, organizing content logically, and designing interactions that create a friendly user experience.
+
+### Design Thinking
+
+
+```{mermaid}
+flowchart LR
+    A[Empathize] --> B[Define]
+    B --> C[Ideate]
+    C --> D[Prototype]
+    D --> E[Test]
+    E --> A
+
+    subgraph DesignThinking[Design Thinking Process]
+        A
+        B
+        C
+        D
+        E
+    end
+
+    style A fill:#FFDDC1,stroke:#333,stroke-width:1px
+    style B fill:#FFABAB,stroke:#333,stroke-width:1px
+    style C fill:#FFC3A0,stroke:#333,stroke-width:1px
+    style D fill:#D5AAFF,stroke:#333,stroke-width:1px
+    style E fill:#85E3FF,stroke:#333,stroke-width:1px
+```
+
+***
+
+![Three lenses of design thinking](https://public-images.interaction-design.org/tags/td-three-lenses-of-design-thinking.png)
+
+*Image by [© Interaction Design Foundation](https://www.interaction-design.org/literature/topics/design-thinking), CC BY-SA 4.0.*
+
+#### Alternative frameworks
+
+- The Double Diamond by the Design Council
+- Inspire, Ideate, Implement by IDEO
+- Head, Heart and Hand by the American Institution of Graphic Arts (AIGA)
+
+## UI
+
+UI design is about making interfaces beautiful and intuitive.
+
+UI involves choosing colors, typography, layouts, and interactions.
+
+::: {.content-visible unless-format="revealjs"}
+## References
+
+- https://www.interaction-design.org/literature/topics/design-thinking
+- https://lawsofux.com/
+- https://web.stanford.edu/~mshanks/MichaelShanks/files/509554.pdf
+:::

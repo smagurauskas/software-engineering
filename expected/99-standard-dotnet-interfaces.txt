@@ -1,0 +1,18 @@
+── cell 1 ──
+── cell 2 ──
+── cell 3 ──
+True
+── cell 4 ──
+True
+my value
+── cell 5 ──
+1
+── cell 6 ──
+── cell 7 ──
+9
+-9
+0
+── cell 8 ──
+Name=Adeline Doe, IdNumber=22345
+Name=John Doe, IdNumber=12345
+Name=John Doe, IdNumber=32345

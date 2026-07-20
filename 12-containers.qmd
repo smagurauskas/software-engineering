@@ -1,0 +1,115 @@
+---
+title: "Containers"
+verify: none # no executable cells
+---
+
+Containers allows running application in a specially isolated environments, where dependencies can be managed as a part of container configuration.
+
+***
+
+Containers can simplify dealing with such dependencies as:
+- Operating System. I.e. what OS the binaries are built to run on.
+- Networking configuration. I.e. which program uses which ports, what files from file system uses and so on.
+- System packages. I.e. tools like `git`, various build tools, or libs like `openssl`.
+
+***
+
+Code is built into *container images*.  
+Container images are pushed to *registries*.  
+When container engine runs an image it becomes simply *container*.
+
+Naturally, because the names are very similar, in day to day usage these terms are used interchangeably and their meaning is derived largely from the context.
+
+## Using containers for deployment
+
+```{mermaid}
+graph TD
+    subgraph Local_Development["Local environment"]
+        Developer
+        IDE["Code Editor/IDE"]
+        DockerDesktop["Docker Desktop"]
+        Minikube
+    end
+
+    subgraph CI_CD_Pipeline["CI/CD Pipeline"]
+        GitRepo["Git Repository (GitHub/GitLab)"]
+        CI_CD["CI/CD Tool (GitHub Actions/GitLab CI)"]
+        ContainerRegistry["Container Registry (Docker Hub/ECR)"]
+    end
+
+    subgraph Cloud_Deployment["Cloud"]
+        CloudProvider["Cloud Provider (AWS/Azure/GCP)"]
+        K8sCluster["Kubernetes Cluster (EKS/AKS/GKE)"]
+    end
+
+    Developer --> IDE
+    IDE --> DockerDesktop
+    IDE --> Minikube
+    DockerDesktop -->|Builds & runs containers| Developer
+    Minikube -->|Runs Kubernetes locally| Developer
+
+    IDE -->|Commits code to| GitRepo
+    GitRepo --> CI_CD
+    CI_CD -->|Builds container image| ContainerRegistry
+    CI_CD -->|Deploys to| K8sCluster
+    K8sCluster -->|Runs on| CloudProvider
+    K8sCluster -->|Pulls images from| ContainerRegistry
+
+    Developer -->|Monitors deployment via| K8sCluster
+```
+
+***
+
+To run containers locally you will need to install containerization software on your machine. Popular choice for this is Docker Desktop.
+
+## Containerizing ASP.NET application
+
+Sample `Dockerfile` that can be used for ASP.NET application:
+
+```Dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+WORKDIR /App
+
+# Copy everything
+COPY . ./
+# Restore as distinct layers
+RUN dotnet restore
+# Build and publish a release
+RUN dotnet publish -c Release -o out
+
+# Build runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /App
+COPY --from=build-env /App/out .
+
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "<assembly to run>.dll"]
+```
+
+***
+
+`grader` will be the tag of an image and is use throughout the example.
+
+Build an image from the `Dockerfile`:
+
+```sh
+docker build -t grader .
+```
+
+Run the image:
+```sh
+docker run -p [host_port]:[container_port] grader
+```
+
+Run and set environment variable:
+```sh
+docker run -e VARIABLE_NAME=variable_value grader
+```
+
+::: {.notes}
+To reach back host machine use:
+
+- Windows/Mac: `host.docker.internal` as host name to reach the host machine.
+- Linux: `172.17.0.1` IP to reach the host machine.
+:::

@@ -1,0 +1,342 @@
+---
+title: "Monitoring"
+verify: none # no executable cells
+---
+
+Monitoring is the process of observing application behavior to ensure reliable operation.
+
+Logging is the process of storing information for monitoring, debugging or analysis purposes.
+
+## Logging
+
+Logging is done by writing log statements when the program is being executed. Logs are not intended to influence the behavior of application, but rather to help understand what is happening for the observers.
+
+```csharp
+_logger.LogInformation("We are hereeeee");
+```
+
+### Log severity
+
+Logs are usually divided into different severity levels:
+
+1. Trace
+1. Debug
+1. Information
+1. Warning
+1. Error
+
+::: {.content-visible unless-format="revealjs"}
+Log levels are intended to help engineers better filter information that is being produced. Each subsequent level goes up in severity. More severe levels can be interpreted as being more important.
+
+For example if `Trace` levels logs are very verbose, where they can even be made to print information about each statements that is being executed. Such verbosity can be too much even for local debugging purposes, so the engineer can choose not to print or display `Trace` level logs.
+
+Similarly we could say that `Error` logs are so important and mean such extraordinary situations, that some engineer should be automatically notified when this happens. This report would be an example of alert.
+:::
+
+### Logging in ASP.NET
+
+ASP.NET generic host comes prepared with a console logger provider. To access this logger, you simply need to inject it into your class:
+
+```csharp
+public class MyClass
+{
+    private readonly ILogger _logger;
+
+    public MyClass(ILogger<MyClass> logger)
+    {
+        _logger = logger;
+    }
+}
+```
+
+Note that `ILogger<>` must be injected in it's generic form, there the generic type matches the type into which you are injecting it.
+
+***
+
+`ILogger` has methods for all severities and overloads for most common scenarios:
+
+```csharp
+_logger.LogDebug("Debug");
+_logger.LogInformation("Information");
+_logger.LogWarning("Warning");
+```
+
+Severity can also be passed as an argument:
+
+```csharp
+_logger.Log(LogLevel.Information, "Information");
+```
+
+Overload to pass an exception for an error log:
+
+```csharp
+_logger.LogError(new Exception(), "Exception happened");
+```
+
+## Monitoring tools
+
+One of the things that enable monitoring are tools that allow to collect, visualize and act upon metrics provided by the program.
+
+### Metrics
+
+- Counter: value that only goes up.
+- Gauge: momentary value.
+- Histogram: event type value that might be statistically significant.
+
+## Monitoring example with Grafana
+
+This example will show sample setup for using Grafana for logs, dashboards and alerting together with ASP.NET.
+
+```{mermaid}
+graph TD
+    A[ASP.NET Application] -->|Telemetry Data| B[OpenTelemetry .NET SDK]
+    B -->|Exports Metrics| C[OpenTelemetry Collector]
+    C -->|Scraped Metrics| D[Prometheus]
+    C -->|Logs| G[Loki]
+    G --> E
+    D -->|Serves Data| E[Grafana]
+    E -->|Visualizes Data| F[Dashboards]
+
+    subgraph Observability Pipeline
+        B
+        C
+        D
+        E
+        G
+    end
+```
+
+### Setting up Grafana, Loki and Prometheus
+
+In the following example, the tools will be responsible for:
+- `prometheus` will pull metrics from our API and serve to to `grafana`
+- API will serve logs to `loki` and `grafana` will be able to take logs from it
+- `grafana` itself will be used to visualize metrics and logs via dashboard
+
+To start it all up use the following `docker-compose` file:
+
+```yml
+# file: docker-compose.monitoring.yml
+version: "3.8"
+
+services:
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3010:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
+```
+
+The `docker-compose.monitoring.yml` references `prometheus.yml`, use the template below, except note the following (!): `prometheus` will need to reach the API running on host machine, so replace the `targets` address of `host.docker.internal` with one of the addresses you get from `hostname -i` (applies on Linux).
+
+```yml
+# file: prometheus.yml
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "dotnet-app"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.docker.internal:5000"] # adjust for API port running on host
+```
+
+Start it via:
+```bash
+docker-compose -f docker-compose.monitoring.yml up -d
+```
+
+Verify that it is running:
+- Go to `http://localhost:3010` and `grafana` should open up. Use `admin/admin` to login.
+- Go to `http://localhost:9090` and `prometheus` interface should open up.
+
+For reference to be used later on:
+- `loki` address to use in API running on host: `http://localhost:3100`
+- `extra_hosts: host.docker.internal:host-gateway` is Linux specific bit to allow `prometheus` to reach an API running on host machine
+- Data sources to use in `grafana`:
+    - Prometheus: `http://prometheus:9090`
+    - Loki: `http://loki:3100`
+
+### Logging sink to `loki`
+
+Next, prepare some boilerplate code which would allow to sink the logs from the asp.net to Grafana later on.
+
+Add Nuget packages:
+
+```
+dotnet add package Serilog.AspNetCore
+dotnet add package Serilog.Sinks.Grafana.Loki
+```
+
+Update the `Program.cs`:
+
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.GrafanaLoki(
+        "http://localhost:3100", // Loki endpoint, depends on how docker ports will be mapped
+        labels: new List<LokiLabel>
+        {
+            new LokiLabel { Key = "app", Value = "my-api-name" },
+        }
+    )
+    .CreateLogger();
+
+builder.Logging.ClearProviders();
+builder.Host.UseSerilog();
+```
+
+Now logging could be done via static class:
+
+```csharp
+Log.Information("Hello");
+```
+
+When setting up `Serilog`, you can add the following lines, to reduce the chattines of existing `Microsoft` logs:
+
+```csharp
+.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+```
+
+### Providing metrics
+
+`OpenTelemetry` is a set packages that can be used to export metrics for monitoring tools in various format. There are alternative ways how this could be done.
+
+To start using it, add the following packages:
+
+```bash
+dotnet add package OpenTelemetry.Exporter.Prometheus.AspNetCore --prerelease
+dotnet add package OpenTelemetry.Extensions.Hosting
+dotnet add package OpenTelemetry.Instrumentation.AspNetCore
+```
+
+`prometheus` will need to call the service that is running on your host, so depending on the OS, some configuration will be needed to accomodate that.
+
+Start by adding:
+```csharp
+builder.WebHost.UseUrls("http://0.0.0.0:5000");
+```
+
+Usage of `0.0.0.0` ensures that it binds to all addresses, meaning that it will resonding, regardless of what address was used to route the request.
+
+On top of that make sure that places like `launchSettings.json` or `launch.json` does not override environment variable `ASPNETCORE_URLS`. Update the variable to use host `0.0.0.0` if needed as well.
+
+In the API project register the OpenTelemetry services to the DI and add the middlewares:
+
+Dependency injection:
+
+```csharp
+builder
+    .Services.AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics.AddPrometheusExporter().AddAspNetCoreInstrumentation();
+        metrics.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("dotnet-app"));
+    });
+```
+
+Middlewares:
+
+```csharp
+// This by default will start exposing metrics at /metrics endpoint.
+app.MapPrometheusScrapingEndpoint();
+```
+
+Once this is done, if you were to go to `http://localhost:5000/metrics` (assuming you are running on port 5000), you should be able to see some textual output with ASP.NET instrumentation metrics.
+
+If using Linux, then you can check the host addresses using `hostname -i`. Take the first address from that list and verify that you can reach metrics endpoint using it like `http://192.168.x.x:5000/metrics`.
+
+### Creating custom metrics in dotnet
+
+#### Tracking the error rate
+
+Create `InstrumentationSource` class:
+```csharp
+public sealed class InstrumentationSource : IDisposable
+{
+    public const string ActivitySourceName = "API";
+    public const string MeterName = "API";
+    private readonly Meter meter;
+
+    public InstrumentationSource()
+    {
+        string? version = typeof(InstrumentationSource).Assembly.GetName().Version?.ToString();
+        ActivitySource = new ActivitySource(ActivitySourceName, version);
+        meter = new Meter(MeterName, version);
+        GameCounter = this.meter.CreateCounter<long>("games")
+    }
+
+    public ActivitySource ActivitySource { get; }
+
+    public Counter<long> GameCounter { get; }
+
+    public void Dispose()
+    {
+        ActivitySource.Dispose();
+        meter.Dispose();
+    }
+}
+```
+
+Add the meter:
+```csharp
+builder
+    .Services.AddOpenTelemetry()
+    .WithMetrics(configure =>
+    {
+        configure
+            .AddMeter(InstrumentationSource.MeterName)
+            .SetExemplarFilter(ExemplarFilterType.TraceBased)
+            .AddRuntimeInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation();
+    })
+```
+
+Configure `InstrumentationSource` for DI injection:
+
+```csharp
+builder.Services.AddSingleton<InstrumentationSource>();
+```
+
+Whenever you want to increase the counter, inject the `InstrumentationSource` class and:
+```csharp
+_instrumentationSource.GameCounter.Add(1);
+```
+
+## Further reading
+
+- https://sre.google/workbook/monitoring/

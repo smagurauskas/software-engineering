@@ -1,0 +1,301 @@
+---
+title: "IO and streams"
+verify: none # generates and scans an ~800MB file
+---
+
+.NET provides classes for working with files and streaming data. This notebook will go through some of these classes and some examples how to make best use of them.
+
+## Working with files and directories
+
+```{.csharp}
+using System.IO;
+
+// DirectoryInfo class can be used to get information about the file system
+var directoryInfo = new DirectoryInfo(".");
+
+foreach (DirectoryInfo directory in directoryInfo.GetDirectories())
+{
+    Console.WriteLine(directory.Name);
+}
+```
+
+```{.csharp}
+// Similarly FileInfo can be used to get information about files
+foreach (FileInfo file in directoryInfo.GetFiles())
+{
+    Console.WriteLine(file.Name);
+}
+```
+
+```{.csharp}
+// Both classes can be leverage together to get the full information about the available files and directories
+
+void PrintContentsRecursively(DirectoryInfo root, int depth = 0)
+{
+    foreach (var directory in root.GetDirectories())
+    {
+        Console.WriteLine($"{new String('-', depth)} {directory.Name}");
+        PrintContentsRecursively(directory, depth + 1);
+    }
+
+    foreach (var file in root.GetFiles())
+    {
+        Console.WriteLine($"{new String('-', depth)} {file.Name}");
+    }
+
+    return;
+}
+
+PrintContentsRecursively(new DirectoryInfo("."), 0);
+```
+
+```{.csharp}
+// Any errors will be provded as exceptions
+
+var directory = new DirectoryInfo("K://");
+
+try
+{
+    directory.GetDirectories();
+}
+catch (DirectoryNotFoundException)
+{
+    Console.WriteLine("Directory does not exist");
+}
+catch (UnauthorizedAccessException)
+{
+    Console.WriteLine("Cannot access");
+}
+
+var file = new FileInfo("fileeee");
+
+try
+{
+    file.OpenRead();
+}
+catch (FileNotFoundException)
+{
+    Console.WriteLine("File does not exist");
+}
+```
+
+## Reading from files
+
+In simplest cases files can be read and written to using the `File` class. 
+
+```{.csharp}
+// Write to File
+
+File.WriteAllText("test.txt", "Hello World");
+```
+
+```{.csharp}
+// Read from the same file
+
+Console.WriteLine(File.ReadAllText("test.txt"));
+```
+
+```{.csharp}
+// File can be written line by line
+
+for (int i = 0; i < 10; i++)
+{
+    File.AppendAllText("test.txt", $"Line {i}\n");
+}
+```
+
+```{.csharp}
+// File can also be read line by line
+
+foreach (var line in File.ReadLines("test.txt"))
+{
+    Console.WriteLine(line);
+}
+```
+
+```{.csharp}
+// File can be cleared
+// WriteLine appends to the end of file, while WriteAllText clears the file and writes the content
+
+File.WriteAllText("test.txt", "");
+```
+
+## Streams
+
+Streams allows working with the data whose size is not known.
+
+Using the streams for processing, the data is manipulated one chunk at the time. Chunk can be one line, one json object, predefined amount of bytes, etc.
+
+```{.csharp}
+// File can be written to using the stream
+
+// Passing the string argument to the StreamWriter constructor will create the file to write to
+// However there are constructor overload for other cases like writing to other streams and such
+using (var streamWriter = new StreamWriter("test.txt"))
+{
+    streamWriter.WriteLine("Hello World");
+}
+```
+
+```{.csharp}
+// Stream allows to continually write to the file with the same handle
+
+// Writing byte by byte
+using (var fileStream = new FileStream("test.txt", FileMode.Append))
+{
+    for (int i = 0; i < 10; i++)
+    {
+        fileStream.WriteByte((byte)i);
+    }
+}
+```
+
+```{.csharp}
+// Using the stream to write to file you don't need to have all the data in memory at once,
+// but it can be created and written in chunks
+
+using (var fileStream = new FileStream("test.txt", FileMode.Create))
+for (var i = 0; i < 1_000_000; i++)
+{
+    // format i to 7 digit string and convert it to byte array
+    var byteString = Encoding.UTF8.GetBytes(i.ToString("D7") + "\n");
+
+    fileStream.Write(byteString);
+}
+```
+
+```{.csharp}
+// Using a stream reader, bytes at an offset can be read
+
+using (var fileStream = new FileStream("test.txt", FileMode.Open))
+{
+    var buffer = new byte[8];
+    fileStream.Seek(8 * 123556, SeekOrigin.Begin);
+    fileStream.Read(buffer, 0, 8);
+    Console.WriteLine(Encoding.UTF8.GetString(buffer));
+}
+```
+
+## Example of processing large file
+
+This example will focus on how to read large from the disk while still maintaining small memory footprint in the process.
+
+```{.csharp}
+// Seed a file with lots of random numbers
+using System.IO;
+
+using (var fileStream = new FileStream("test.txt", FileMode.Create))
+{
+    var random = new Random();
+    // Will effectively write 10000000 * 8 bytes to file (~800MB)
+
+    for (var i = 0; i < 100_000_000; i++)
+    {
+        var number = random.Next(0, 100_000_00);
+        var byteString = Encoding.UTF8.GetBytes(number.ToString("D7") + "\n");
+        fileStream.Write(byteString);
+    }
+}
+```
+
+```{.csharp}
+void PrintMemoryUsage()
+{
+    // Not the best or most accurate way to measure memory usage
+    GC.Collect();
+    long memory = GC.GetTotalMemory(true);
+    Console.WriteLine(memory);
+}
+```
+
+```{.csharp}
+// Find the biggest number inside the file
+using System.IO;
+
+Console.WriteLine("Before reading to memory:");
+PrintMemoryUsage();
+
+var lines = File.ReadAllLines("test.txt");
+int max = int.MinValue;
+foreach (var line in lines)
+{
+    var number = int.Parse(line);
+
+    if (number > max)
+    {
+        max = number;
+    }
+}
+
+Console.WriteLine($"Biggest number: {max}");
+
+Console.WriteLine("After reading to memory:");
+PrintMemoryUsage();
+```
+
+```{.csharp}
+// Find the biggest number while stream reading from the file
+
+using System.IO;
+
+Console.WriteLine("Before reading to memory:");
+PrintMemoryUsage();
+
+int max = int.MinValue;
+using (var fileStream = new FileStream("test.txt", FileMode.Open))
+{
+    var buffer = new byte[8];
+    for (var i = 0; i < 100_000_000; i++)
+    {
+        fileStream.Read(buffer, 0, 8);
+        var str = Encoding.UTF8.GetString(buffer).Trim();
+
+        var number = int.Parse(str);
+
+        if (number > max)
+        {
+            max = number;
+        }
+    }
+}
+
+Console.WriteLine($"Biggest number: {max}");
+
+Console.WriteLine("After reading to memory:");
+PrintMemoryUsage();
+```
+
+## Unix pipes
+
+Unix pipes are a mechanism for interprocess communication widely used by tools in Unix like environments.
+
+A simplest examples is `ls | grep 05` - it combines 2 processes:
+- `ls` for listing the directory structure,
+- `grep` for finding the rows with `05` in them.
+
+The `|` indicates to pass the standard output of the left process to the standard input of the right process.
+
+What makes these pipes relate to streaming is that their input size is not known ahead of time. The program will have to process arbitrary amount of data, provided by the left process.
+
+In C# the `Console` class provides the abstraction for standard input and output.
+
+Meaning that `Console.ReadLine` and similar can be used to consume the standard input, and `Console.WriteLine` and similar can be used to produce it.
+
+The next example will showcase a code for simple C# console program that uppercases the given input and outputs it back.
+
+```{.csharp}
+public static void Main()
+{
+    string? line;
+
+    // As long as read returns something - the process continues
+    while ((line = Console.ReadLine()) != null)
+    {
+        Console.WriteLine(line.ToUpperInvariant());
+    }
+}
+```
+
+To run this - a new `csproj` will have to be created.
+
+After creating the project (provided you are in it's directory) it can now be executed by `ls | dotnet run` and it should printout all the contents of that directory in uppercase.

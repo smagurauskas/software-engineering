@@ -1,0 +1,260 @@
+---
+title: "Architectural patterns"
+verify: none # no executable cells
+---
+
+::: {.notes}
+This notebook covers common architectural patterns for web (and not only) applications.
+
+In this context architectural patterns refers to structure and limitations introduced on code structure and communication between modules.
+:::
+
+## Layered architecture
+
+Key characteristics:
+- Relations point inward moving 1 layer at the time.
+- Upper layers depend of lower layers.
+
+```{mermaid}
+flowchart TD
+    UI --> Application
+    Application --> DA[Data Access]
+```
+
+***
+
+Example project structure:
+
+```text
+MyApp/
+├── MyApp.API/
+│   ├── Controllers/
+│   │   └── ProductsController.cs
+│   ├── Program.cs
+│   └── MyApp.API.csproj           # References: MyApp.Application
+│
+├── MyApp.Application/
+│   ├── Services/
+│   │   ├── IProductService.cs
+│   │   └── ProductService.cs
+│   ├── DTOs/
+│   │   └── ProductDto.cs
+│   └── MyApp.Application.csproj   # References: MyApp.DataAccess
+│
+├── MyApp.DataAccess/
+│   ├── Repositories/
+│   │   ├── IProductRepository.cs
+│   │   └── ProductRepository.cs
+│   ├── Entities/
+│   │   └── Product.cs
+│   ├── AppDbContext.cs
+│   └── MyApp.DataAccess.csproj    # References NuGets and/or other deps
+│
+└── MyApp.sln
+```
+
+## Onion architecture
+
+Key characteristics:
+- Domain is at the very center.
+- Dependencies point inward towards domain.
+
+```{mermaid}
+flowchart TD
+    Framework --> Application
+    Framework --> DA
+    Framework --> Infrastructure
+    Application --> Domain
+    DA[DataAccess] --> Domain
+    Infrastructure --> Domain
+```
+
+***
+
+Example project structure:
+
+```text
+MyApp/
+├── MyApp.API/
+│   ├── Controllers/
+│   │   └── ProductsController.cs
+│   ├── Program.cs
+│   └── MyApp.API.csproj           # References: MyApp.Application, MyApp.Infrastructure
+│
+├── MyApp.Application/
+│   ├── Services/
+│   │   ├── IProductService.cs
+│   │   └── ProductService.cs
+│   ├── DTOs/
+│   │   └── ProductDto.cs
+│   └── MyApp.Application.csproj   # References: MyApp.Domain
+│
+├── MyApp.Infrastructure/
+│   ├── Repositories/
+│   │   └── ProductRepository.cs
+│   ├── AppDbContext.cs
+│   └── MyApp.Infrastructure.csproj # References: MyApp.Domain
+│
+├── MyApp.Domain/
+│   ├── Entities/
+│   │   └── Product.cs
+│   ├── Interfaces/
+│   │   └── IProductRepository.cs
+│   └── MyApp.Domain.csproj
+│
+└── MyApp.sln
+```
+
+## Modular monolith
+
+```{mermaid}
+flowchart TD
+    subgraph Module1
+    A1[Application]
+    D1[Domain]
+    I1[Infrastructure]
+    A1 --> D1
+    I1 --> D1
+    end
+    
+    subgraph Module2
+    A2[Application]
+    D2[Domain]
+    I2[Infrastructure]
+    A2 --> D2
+    I2 --> D2
+    end
+
+    subgraph Module3
+    A3[Application]
+    D3[Domain]
+    I3[Infrastructure]
+    A3 --> D3
+    I3 --> D3
+    end
+
+    Framework --> Module1
+    Framework --> Module2
+    Framework --> Module3
+```
+
+***
+
+Example project structure:
+
+```text
+MyApp/
+├── MyApp.API/
+│   ├── Program.cs
+│   └── MyApp.API.csproj
+│
+├── Modules/
+│   ├── Products/
+│   │   ├── Products.Infrastructure/
+│   │   │   ├── Endpoints/
+│   │   │   │   └── ProductEndpoints.cs
+│   │   │   ├── Repositories/
+│   │   │   │   └── ProductRepository.cs
+│   │   │   └── Products.Infrastructure.csproj # References Application
+│   │   ├── Products.Application/
+│   │   │   ├── Services/
+│   │   │   │   ├── IProductService.cs
+│   │   │   │   └── ProductService.cs
+│   │   │   └── Products.Application.csproj
+│   │   └── Products.Domain/
+│   │       ├── Entities/
+│   │       │   └── Product.cs
+│   │       └── Products.Domain.csproj
+│   │
+│   ├── Orders/
+│   │   ├── Orders.Infrastructure/
+│   │   │   ├── Endpoints/
+│   │   │   │   └── OrderEndpoints.cs
+│   │   │   └── Orders.Infrastructure.csproj
+│   │   ├── Orders.Application/
+│   │   │   └── Orders.Application.csproj
+│   │   └── Orders.Domain/
+│   │       └── Orders.Domain.csproj
+│   │
+│   └── Customers/
+│       ├── Customers.Infrastructure/
+│       │   ├── Endpoints/
+│       │   │   └── CustomerEndpoints.cs
+│       │   └── Customers.Infrastructure.csproj
+│       ├── Customers.Application/
+│       │   └── Customers.Application.csproj
+│       └── Customers.Domain/
+│           └── Customers.Domain.csproj
+│
+└── MyApp.sln
+```
+
+***
+
+Key characteristics:
+- Single monolithic application consisting on many layered modules.
+- Each module has all the layers needed to serve that module.
+- Central orchestrator/framework module bootstraps all individual layered modules.
+
+References:
+- https://github.com/kgrzybek/modular-monolith-with-ddd
+
+## Clean architecture
+
+Example project structure:
+
+```text
+MyApp/
+├── MyApp.API/
+│   ├── Controllers/
+│   │   └── ProductsController.cs
+│   ├── Program.cs
+│   └── MyApp.API.csproj
+│
+├── MyApp.Infrastructure/
+│   ├── Persistence/
+│   │   ├── AppDbContext.cs
+│   │   └── ProductRepository.cs
+│   ├── Services/
+│   │   └── DateTimeService.cs
+│   └── MyApp.Infrastructure.csproj
+│
+├── MyApp.Application/
+│   ├── Common/
+│   │   ├── Interfaces/
+│   │   │   ├── IProductRepository.cs
+│   │   │   └── IDateTimeService.cs
+│   │   └── Behaviors/
+│   │       └── ValidationBehavior.cs
+│   ├── Products/
+│   │   ├── Commands/
+│   │   │   └── CreateProduct/
+│   │   │       ├── CreateProductCommand.cs
+│   │   │       └── CreateProductCommandHandler.cs
+│   │   └── Queries/
+│   │       └── GetProducts/
+│   │           ├── GetProductsQuery.cs
+│   │           └── GetProductsQueryHandler.cs
+│   └── MyApp.Application.csproj
+│
+├── MyApp.Domain/
+│   ├── Entities/
+│   │   └── Product.cs
+│   ├── Events/
+│   │   └── ProductCreatedEvent.cs
+│   └── MyApp.Domain.csproj
+│
+└── MyApp.sln
+```
+
+***
+
+References:
+- https://github.com/jasontaylordev/CleanArchitecture
+- https://github.com/ardalis/CleanArchitecture
+- https://blog.cleancoder.com/uncle-bob/2011/11/22/Clean-Architecture.html
+
+## Other
+
+References:
+- Hexagonal architecture: https://alistair.cockburn.us/hexagonal-architecture

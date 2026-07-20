@@ -1,0 +1,144 @@
+── cell 1 ──
+── cell 2 ──
+FirstName=David, LastName=Davis, Age=60
+FirstName=Danielle, LastName=Davis, Age=61
+FirstName=Daniel, LastName=Davis, Age=65
+FirstName=Diana, LastName=Davis, Age=66
+FirstName=Dennis, LastName=Davis, Age=70
+── cell 3 ──
+46
+── cell 4 ──
+John Doe, Jane Doe, John Smith, Jane Smith, John Johnson, Jane Johnson, John Williams, Jane Williams, John Brown, Jane Brown, Anthony Davis, Jessica Davis, Michael Davis, Michelle Davis, David Davis, Danielle Davis, Daniel Davis, Diana Davis, Dennis Davis
+── cell 5 ──
+FirstName=David, LastName=Davis, Age=60
+FirstName=Danielle, LastName=Davis, Age=61
+FirstName=Daniel, LastName=Davis, Age=65
+FirstName=Diana, LastName=Davis, Age=66
+FirstName=Dennis, LastName=Davis, Age=70
+── cell 6 ──
+John Doe
+Jane Doe
+John Smith
+Jane Smith
+John Johnson
+Jane Johnson
+John Williams
+Jane Williams
+John Brown
+Jane Brown
+Anthony Davis
+Jessica Davis
+Michael Davis
+Michelle Davis
+David Davis
+Danielle Davis
+Daniel Davis
+Diana Davis
+Dennis Davis
+── cell 7 ──
+1
+2
+3
+4
+5
+6
+── cell 8 ──
+889
+── cell 9 ──
+889
+46.78947368421053
+70
+25
+── cell 10 ──
+False
+── cell 11 ──
+True
+── cell 12 ──
+True
+── cell 13 ──
+False
+── cell 14 ──
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+System.Linq.Grouping`2[System.String,Submission#0+Person]
+── cell 15 ──
+{ FirstName = Jane, Count = 5 }
+{ FirstName = John, Count = 5 }
+{ FirstName = Anthony, Count = 1 }
+{ FirstName = Daniel, Count = 1 }
+{ FirstName = Danielle, Count = 1 }
+{ FirstName = David, Count = 1 }
+{ FirstName = Dennis, Count = 1 }
+{ FirstName = Diana, Count = 1 }
+{ FirstName = Jessica, Count = 1 }
+{ FirstName = Michael, Count = 1 }
+{ FirstName = Michelle, Count = 1 }
+── cell 16 ──
+Submission#0+Person
+── cell 17 ──
+[exception] InvalidOperationException: Sequence contains no elements
+── cell 18 ──
+
+── cell 19 ──
+[exception] InvalidOperationException: Sequence contains no elements
+── cell 20 ──
+
+── cell 21 ──
+[exception] InvalidOperationException: Sequence contains more than one element
+── cell 22 ──
+FirstName=Anthony, LastName=Davis, Age=50
+FirstName=Daniel, LastName=Davis, Age=65
+FirstName=Danielle, LastName=Davis, Age=61
+FirstName=David, LastName=Davis, Age=60
+FirstName=Dennis, LastName=Davis, Age=70
+FirstName=Diana, LastName=Davis, Age=66
+FirstName=Jane, LastName=Brown, Age=46
+FirstName=Jane, LastName=Doe, Age=26
+FirstName=Jane, LastName=Johnson, Age=36
+FirstName=Jane, LastName=Smith, Age=31
+FirstName=Jane, LastName=Williams, Age=41
+FirstName=Jessica, LastName=Davis, Age=51
+FirstName=John, LastName=Brown, Age=45
+FirstName=John, LastName=Doe, Age=25
+FirstName=John, LastName=Johnson, Age=35
+FirstName=John, LastName=Smith, Age=30
+FirstName=John, LastName=Williams, Age=40
+FirstName=Michael, LastName=Davis, Age=55
+FirstName=Michelle, LastName=Davis, Age=56
+FirstName=Danielle, LastName=Davis, Age=61
+FirstName=David, LastName=Davis, Age=60
+FirstName=Dennis, LastName=Davis, Age=70
+FirstName=Diana, LastName=Davis, Age=66
+FirstName=Jane, LastName=Brown, Age=46
+── cell 23 ──
+FirstName=Jane, LastName=Smith, Age=31
+FirstName=John, LastName=Johnson, Age=35
+FirstName=Jane, LastName=Johnson, Age=36
+FirstName=John, LastName=Williams, Age=40
+FirstName=Jane, LastName=Williams, Age=41
+FirstName=John, LastName=Brown, Age=45
+FirstName=Jane, LastName=Brown, Age=46
+FirstName=Jessica, LastName=Davis, Age=51
+── cell 24 ──
+── cell 25 ──
+John
+John
+John
+Anthony
+── cell 26 ──
+Where called
+FirstName=David, LastName=Davis, Age=60
+FirstName=Danielle, LastName=Davis, Age=61
+FirstName=Daniel, LastName=Davis, Age=65
+FirstName=Diana, LastName=Davis, Age=66
+FirstName=Dennis, LastName=Davis, Age=70
+Select called
+Where called

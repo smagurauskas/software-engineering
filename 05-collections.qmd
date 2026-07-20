@@ -1,0 +1,669 @@
+---
+title: "Collections"
+verify: output
+---
+
+Collections refers to types in C# that are intended to store and manage groups of objects within them. Some of the collections are located within the `System.Collections` namespace in .NET framework, some, like arrays or memory spans, are within the defined in the `System` namespace and supported by the C# language itself.
+
+Collections are designed for different use cases, and each of their usage as well as performance will benefit some situations more than others. It is important to learn to to determine which collection fits which situation.
+
+## Arrays
+
+Arrays are basic fixed size collections.
+
+```{.csharp}
+// Simple array declaration
+// In this case array size is inferred from the number of elements during initialization
+int[] arr = {1, 2, 3, 4, 5};
+
+// Alternatively you can specify the size of the array manually
+int[] arr2 = new int[5];
+```
+
+```{.csharp}
+// Array can be multi-dimensional
+// 2x3 array
+int[,] arr3 = new int[2, 3];
+
+// 3x3x3 array
+int[,,] arr4 = {
+    {
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 9}
+    },
+    {
+        {10, 11, 12},
+        {13, 14, 15},
+        {16, 17, 18}
+    },
+    {
+        {19, 20, 21},
+        {22, 23, 24},
+        {25, 26, 27}
+    }
+};
+```
+
+```{.csharp}
+// Not to be confused with array of arrays, called jagged arrays
+int[][] arr5 = new int[2][];
+
+arr5[0] = new int[] {1, 2, 3};
+arr5[1] = new int[] {4, 5, 6, 7, 8};
+```
+
+```{.csharp}
+// Array class can be used to access some helpful methods for working with arrays
+
+// Initialize an empty array
+var emptyArray = Array.Empty<int>();
+
+// Create an array with a specified length
+// Although notice that it is not type safe and you need to cast it to the desired type
+var lengthArray = Array.CreateInstance(typeof(int), 5);
+
+// LINQ has some better alternatives for methods in Array class and is generally preferred
+```
+
+### `Array` memory allocation
+
+Array elements are allocated in a continous memory block. This is essential for offset access to work.
+
+https://devblogs.microsoft.com/premier-developer/managed-object-internals-part-3-the-layout-of-a-managed-array-3
+
+## `List`
+
+List is a generic collection that does not have a fixed size allows to easily add or remove elements. List acts like "bag" as in you just throw items into, but if you need to get 1 specific item from it, then you have manually go through them.
+
+```{.csharp}
+// Initialize the list
+var list = new List<int> {1, 2, 3, 4, 5};
+
+// Add an element to the list
+list.Add(6);
+
+// Get the amount of elements in the list
+var count = list.Count;
+Console.WriteLine(count);
+
+// Remove an element from the list
+// It will remove the first occurrence of the element (matching the equality check)
+list.Remove(6);
+
+Console.WriteLine(list.Count);
+```
+
+```{.csharp}
+// List has a backing array that can be accessed directly
+for (int i = 0; i < 20; i++)
+{
+    list.Add(i);
+    Console.WriteLine($"Count = {list.Count}, Capacity = {list.Capacity}");
+}
+```
+
+```{.csharp}
+// Because List implement IEnumerable, you can iterate over it using foreach
+foreach (var item in list)
+{
+    Console.WriteLine(item);
+}
+```
+
+## `Dictionary`
+
+Dictionary is a generic key-value collection. Items are placed with a unique key and retrieved using the same key was well.
+
+```{.csharp}
+// Create a dictionary with initialiser
+var dict = new Dictionary<string, int>
+{
+    {"one", 1},
+    {"two", 2},
+    {"three", 3},
+};
+
+// Add a new value
+dict["four"] = 4;
+
+// Access a value
+var value = dict["two"];
+Console.WriteLine(value);
+```
+
+```{.csharp}
+// As with List, Dictionary also implements IEnumerable, so you can iterate over it
+foreach (var pair in dict)
+{
+    Console.WriteLine($"{pair.Key} = {pair.Value}");
+}
+```
+
+## `Queue`
+
+Queue is collection to process element in order. Elements can be pushed (`Enqueue`d) and popped (`Dequeue`d) from the queue. Queue is a first-in-first-out collection.
+
+```{.csharp}
+// Initialize a new Queue
+var queue = new Queue<int>();
+
+// Enqueue elements
+queue.Enqueue(1);
+
+// Dequeue elements
+var dequeued = queue.Dequeue();
+```
+
+```{.csharp}
+// Push multiple elements
+for (var i = 0; i < 5; i++)
+{
+    Console.WriteLine($"Enqueueing {i}");
+    queue.Enqueue(i);
+}
+```
+
+```{.csharp}
+// Dequeue all elements. Dequeuing an element removes it from the queue
+while (queue.Count > 0)
+{
+    Console.WriteLine($"Dequeuing {queue.Dequeue()}");
+}
+```
+
+```{.csharp}
+// If the queue is empty, Dequeue will throw an exception
+try
+{
+    queue.Dequeue();
+}
+catch (InvalidOperationException)
+{
+    Console.WriteLine("Queue is empty");
+}
+```
+
+```{.csharp}
+// Get the count of elements in the queue
+var queueCount = queue.Count;
+Console.WriteLine(queueCount);
+```
+
+```{.csharp}
+// Queue implements IEnumerable, so you can iterate over it using foreach
+foreach (var element in queue)
+{
+    Console.WriteLine(element);
+}
+
+// Iterating through element does not remove them from the Queue
+Console.WriteLine($"Count of elements in the queue: {queue.Count}");
+```
+
+## `Stack`
+
+Stack is a collection to process element in last-in-first-out order. Elements can be `Push`ed and `Pop`ed to and from the Stack.
+
+```{.csharp}
+// Initialize the stack
+var stack = new Stack<int>();
+
+// Push to the Stack
+stack.Push(1);
+
+// Pop from the Stack
+var popped = stack.Pop();
+```
+
+```{.csharp}
+// Count the number of elements in the Stack
+var count = stack.Count;
+Console.WriteLine(count);
+```
+
+```{.csharp}
+// Push multiple elements to stack
+for (var i = 0; i < 5; i++)
+{
+    Console.WriteLine($"Pushing {i}");
+    stack.Push(i);
+}
+```
+
+```{.csharp}
+// Pop all elements from the stack
+while (stack.Count > 0)
+{
+    Console.WriteLine($"Popping {stack.Pop()}");
+}
+```
+
+```{.csharp}
+// Trying to pop from an empty stack will throw an exception
+try
+{
+    stack.Pop();
+}
+catch (InvalidOperationException)
+{
+    Console.WriteLine("Stack is empty");
+}
+```
+
+```{.csharp}
+// Stack can be iterated over using foreach as well
+foreach (var element in stack)
+{
+    Console.WriteLine(element);
+}
+```
+
+## `HashSet`
+
+`HashSet` is a collection for storing unique elements. Only unique values are stored in the `HashSet`.
+
+```{.csharp}
+// Initialize a HashSet
+var hashSet = new HashSet<int>();
+
+// Add elements to the HashSet
+hashSet.Add(1);
+
+// Check if an element is in the HashSet
+var contains = hashSet.Contains(1);
+Console.WriteLine(contains);
+
+// Remove an element from the HashSet
+hashSet.Remove(1);
+```
+
+```{.csharp}
+// Add multiple elements to the HashSet
+hashSet.Add(1);
+hashSet.Add(1);
+
+// HashSet will only contain unique elements
+Console.WriteLine(hashSet.Count);
+```
+
+```{.csharp}
+// Larger example
+for (var i = 0; i < 5; i++)
+{
+    for (var j = 0; j < 5; j++)
+    {
+        Console.WriteLine($"Adding {i}");
+        hashSet.Add(i);
+    }
+}
+
+// Only unique elements were added
+Console.WriteLine($"Count of elements: {hashSet.Count}");
+```
+
+```{.csharp}
+// As all other collections HashSet can be iterated as well
+foreach (var element in hashSet)
+{
+    Console.WriteLine(element);
+}
+```
+
+## Indexers
+
+Some collections allow to access their elements with indexers, by specifying some value between `[]`. In array that is typically a numerical value indicating the index, but for instance with `Dictionary` that can be any type. Any type can be given this behavior by specifying the indexers.
+
+```{.csharp}
+// Type with indexer
+public class IndexerExample
+{
+    private int[] _data = new int[5];
+
+    public int this[int index]
+    {
+        get => _data[index];
+        set => _data[index] = value;
+    }
+}
+
+var instance = new IndexerExample();
+```
+
+```{.csharp}
+Console.WriteLine(instance[0]);
+```
+
+```{.csharp}
+instance[0] = 42;
+Console.WriteLine(instance[0]);
+```
+
+```{.csharp}
+// Other types than int can be used
+public class StringIndexerExample
+{
+    public int this[string index]
+    {
+        get => index.Length;
+    }
+}
+
+var stringInstance = new StringIndexerExample();
+
+Console.WriteLine(stringInstance["Hello"]);
+```
+
+## Spread operator
+
+Collections have a `..e` spread operator, which is a syntactic sugar for working with collections. It works by adding all elements in collection into expression. It is also allows collection type inference from the **left** side.
+
+```{.csharp}
+var arrayToSpread = new int[] {1, 2, 3, 4, 5};
+int[] spread = [..arrayToSpread, 6];
+
+spread.Display();
+```
+
+```{.csharp}
+List<int> spreadList = [..arrayToSpread, 6, 7, 8];
+spreadList.Display();
+```
+
+## Homemade collection
+
+Assume that we need to create collection that satisfies the following criteria:
+1. It should provide type safety (`object` doesn't fit),
+2. It should be dynamically sizeable, meaning any amount of elements can be added or removed,
+3. It should be indexable,
+4. It should be iterable via `foreach` loop.
+
+In a nutshell it is a `List<>` with reduced capabilities. Memory and CPU optimizations are irrelevant for this example.
+
+```{.csharp}
+// As it is required to be type safe and support multiple types
+// The obvious solution is to use generics
+
+class HomemadeList<T>
+{
+    public void Add(T item) { }
+    public void Remove(T item) { }
+    public T Get(int index) { return default(T); }
+}
+```
+
+```{.csharp}
+// Use an array as a backing store
+class HomemadeList<T>
+{
+    private T[] _data = new T[5];
+    private int _count = 0;
+
+    public void Add(T item)
+    {
+        _data[_count] = item;
+        _count++;
+    }
+
+    public void Remove(T item)
+    {
+        for (var i = 0; i < _count; i++)
+        {
+            if (_data[i].Equals(item))
+            {
+                // Shift the remaining items down
+                for (var j = i; j < _count - 1; j++)
+                {
+                    _data[j] = _data[j + 1];
+                }
+
+                _count--;
+                break;
+            }
+        }
+    }
+
+    public T Get(int index)
+    {
+        return _data[index];
+    }
+}
+```
+
+```{.csharp}
+// However now it has a problem if more items are added than the initial capacity
+var list = new HomemadeList<int>();
+
+for (var i = 0; i < 6; i++)
+{
+    list.Add(i);
+}
+```
+
+```{.csharp}
+// If there is not enough space in the current backing array
+// Then a new array of bigger size needs to be created
+class HomemadeList<T>
+{
+    private T[] _data = new T[5];
+    private int _count = 0;
+
+    public void Add(T item)
+    {
+        if (_count == _data.Length)
+        {
+            var newData = new T[_data.Length * 2];
+            Array.Copy(_data, newData, _data.Length);
+            _data = newData;
+        }
+
+        _data[_count] = item;
+        _count++;
+    }
+
+    public void Remove(T item)
+    {
+        for (var i = 0; i < _count; i++)
+        {
+            if (_data[i].Equals(item))
+            {
+                // Shift the remaining items down
+                for (var j = i; j < _count - 1; j++)
+                {
+                    _data[j] = _data[j + 1];
+                }
+
+                _count--;
+                break;
+            }
+        }
+    }
+
+    public T Get(int index)
+    {
+        return _data[index];
+    }
+}
+```
+
+```{.csharp}
+// Because the list has to be indexed, a this[] blocks needs to be added
+class HomemadeList<T>
+{
+    private T[] _data = new T[5];
+    private int _count = 0;
+
+    public T this[int index]
+    {
+        get => _data[index];
+        set => _data[index] = value;
+    }
+
+    public void Add(T item)
+    {
+        if (_count == _data.Length)
+        {
+            var newData = new T[_data.Length * 2];
+            Array.Copy(_data, newData, _data.Length);
+            _data = newData;
+        }
+
+        _data[_count] = item;
+        _count++;
+    }
+
+    public void Remove(T item)
+    {
+        for (var i = 0; i < _count; i++)
+        {
+            if (_data[i].Equals(item))
+            {
+                // Shift the remaining items down
+                for (var j = i; j < _count - 1; j++)
+                {
+                    _data[j] = _data[j + 1];
+                }
+
+                _count--;
+                break;
+            }
+        }
+    }
+
+    // Get can be removed as the indexer replaces it completely
+}
+```
+
+```{.csharp}
+// Final requirement is to make it iterable using foreach
+// For this an IEnumerable<T> interface needs to be implemented
+
+class HomemadeList<T> : IEnumerable<T>
+{
+    private T[] _data = new T[5];
+    private int _count = 0;
+
+    public T this[int index]
+    {
+        get => _data[index];
+        set => _data[index] = value;
+    }
+
+    public void Add(T item)
+    {
+        if (_count == _data.Length)
+        {
+            var newData = new T[_data.Length * 2];
+            Array.Copy(_data, newData, _data.Length);
+            _data = newData;
+        }
+
+        _data[_count] = item;
+        _count++;
+    }
+
+    public void Remove(T item)
+    {
+        for (var i = 0; i < _count; i++)
+        {
+            if (_data[i].Equals(item))
+            {
+                // Shift the remaining items down
+                for (var j = i; j < _count - 1; j++)
+                {
+                    _data[j] = _data[j + 1];
+                }
+
+                _count--;
+                break;
+            }
+        }
+    }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        for (var i = 0; i < _count; i++)
+        {
+            yield return _data[i];
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+}
+```
+
+```{.csharp}
+// Short detour on how yield return works
+// It allows to return enumerable values one by one
+// Excecution is paused until the next value is requested
+
+IEnumerable<int> GetNumbers()
+{
+    Console.WriteLine("Pong");
+    yield return 1;
+    Console.WriteLine("Pong");
+    yield return 2;
+    Console.WriteLine("Pong");
+    yield return 3;
+}
+
+foreach (var number in GetNumbers())
+{
+    Console.WriteLine("Ping");
+    Console.WriteLine(number);
+}
+```
+
+```{.csharp}
+// Now let's verify that all the requirements work
+
+// 1. Verify it is type safe
+var list = new HomemadeList<int>();
+
+list.Add(1);
+
+int element = list[0];
+
+// Assuming the above compiles
+```
+
+```{.csharp}
+// 2. Verify that it dynamically adapts to any size
+// While we cannot easily verify that it would fit any size, we can check if would fit quite a large size
+var list = new HomemadeList<int>();
+for (var i = 0; i < 1_000_000; i++)
+{
+    list.Add(i);
+}
+```
+
+```{.csharp}
+// 3. Verify that the list is indexable
+var list = new HomemadeList<int>();
+
+for (var i = 0; i < 5; i++)
+{
+    list.Add(i);
+}
+
+Console.WriteLine(list[4]);
+```
+
+```{.csharp}
+// 4. Verify that the list is iterable with foreach
+
+var list = new HomemadeList<int>();
+
+for (var i = 0; i < 5; i++)
+{
+    list.Add(i);
+}
+
+foreach (var element in list)
+{
+    Console.WriteLine(element);
+}
+```

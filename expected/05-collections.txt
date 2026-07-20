@@ -1,0 +1,185 @@
+── cell 1 ──
+── cell 2 ──
+── cell 3 ──
+── cell 4 ──
+── cell 5 ──
+6
+5
+── cell 6 ──
+Count = 6, Capacity = 8
+Count = 7, Capacity = 8
+Count = 8, Capacity = 8
+Count = 9, Capacity = 16
+Count = 10, Capacity = 16
+Count = 11, Capacity = 16
+Count = 12, Capacity = 16
+Count = 13, Capacity = 16
+Count = 14, Capacity = 16
+Count = 15, Capacity = 16
+Count = 16, Capacity = 16
+Count = 17, Capacity = 32
+Count = 18, Capacity = 32
+Count = 19, Capacity = 32
+Count = 20, Capacity = 32
+Count = 21, Capacity = 32
+Count = 22, Capacity = 32
+Count = 23, Capacity = 32
+Count = 24, Capacity = 32
+Count = 25, Capacity = 32
+── cell 7 ──
+1
+2
+3
+4
+5
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+── cell 8 ──
+2
+── cell 9 ──
+one = 1
+two = 2
+three = 3
+four = 4
+── cell 10 ──
+── cell 11 ──
+Enqueueing 0
+Enqueueing 1
+Enqueueing 2
+Enqueueing 3
+Enqueueing 4
+── cell 12 ──
+Dequeuing 0
+Dequeuing 1
+Dequeuing 2
+Dequeuing 3
+Dequeuing 4
+── cell 13 ──
+Queue is empty
+── cell 14 ──
+0
+── cell 15 ──
+Count of elements in the queue: 0
+── cell 16 ──
+── cell 17 ──
+0
+── cell 18 ──
+Pushing 0
+Pushing 1
+Pushing 2
+Pushing 3
+Pushing 4
+── cell 19 ──
+Popping 4
+Popping 3
+Popping 2
+Popping 1
+Popping 0
+── cell 20 ──
+Stack is empty
+── cell 21 ──
+── cell 22 ──
+True
+── cell 23 ──
+1
+── cell 24 ──
+Adding 0
+Adding 0
+Adding 0
+Adding 0
+Adding 0
+Adding 1
+Adding 1
+Adding 1
+Adding 1
+Adding 1
+Adding 2
+Adding 2
+Adding 2
+Adding 2
+Adding 2
+Adding 3
+Adding 3
+Adding 3
+Adding 3
+Adding 3
+Adding 4
+Adding 4
+Adding 4
+Adding 4
+Adding 4
+Count of elements: 5
+── cell 25 ──
+1
+0
+2
+3
+4
+── cell 26 ──
+── cell 27 ──
+0
+── cell 28 ──
+42
+── cell 29 ──
+5
+── cell 30 ──
+1
+2
+3
+4
+5
+6
+── cell 31 ──
+1
+2
+3
+4
+5
+6
+7
+8
+── cell 32 ──
+── cell 33 ──
+── cell 34 ──
+[exception] IndexOutOfRangeException: Index was outside the bounds of the array.
+── cell 35 ──
+── cell 36 ──
+── cell 37 ──
+── cell 38 ──
+Pong
+Ping
+1
+Pong
+Ping
+2
+Pong
+Ping
+3
+── cell 39 ──
+── cell 40 ──
+── cell 41 ──
+4
+── cell 42 ──
+0
+1
+2
+3
+4

@@ -1,0 +1,1575 @@
+---
+title: "C# Basics"
+verify: output
+verify-volatile-cells: [87] # GC.GetTotalMemory prints live memory usage
+---
+
+This notebook covers C# language basic building blocks: types, operators, cycles, generics, comparison and more.
+
+## Built-in types
+
+C# has 18 built-in types. These types are built into .NET, but they have keywords (aliases in C#). All of these types can be referenced using they full qualifiers, but it is more common practice to reference them by their C# keyword instead.
+
+***
+
+```{.csharp}
+// Reference by their C# keywords like this
+float floatNumber = 10;
+
+// Instead of this
+System.Single floatNumberNet = 10;
+```
+
+***
+
+```{.csharp}
+bool boolValue = true;
+bool boolButFalse = false;
+```
+
+***
+
+```{.csharp}
+byte byteValue = 255;
+
+// Will yield an error
+// byte byteTooBig = 256;
+```
+
+***
+
+```{.csharp}
+char character = 'a';
+```
+
+***
+
+```{.csharp}
+// Uses 4 bytes
+// By default the number with decimal point is double, so F is needed to specify it is float
+float floatNumber = 10.1F;
+floatNumber.Display();
+
+floatNumber = 10.000001F;
+floatNumber.Display();
+
+floatNumber = 10.0000001F;
+floatNumber.Display();
+```
+
+***
+
+```{.csharp}
+// Can be directly assigned with decimal point
+double doubleNumber = 10.00000000000001;
+doubleNumber.Display();
+
+// Has quirks around the edge of precision
+doubleNumber = 10.000000000000001;
+doubleNumber.Display();
+```
+
+***
+
+```{.csharp}
+// Uses different math specification than float/double at the cost of speed
+decimal decimalNumber = 10.000000000000001M;
+decimalNumber.Display();
+
+decimalNumber = 10.000000000000000000000000001M;
+decimalNumber.Display();
+```
+
+***
+
+```{.csharp}
+// Int32
+int integerNumber = 2000000000;
+
+// Int64
+long longNumber = 2000000000000000000;
+```
+
+***
+
+```{.csharp}
+string text = "Hello, World!";
+```
+
+***
+
+```{.csharp}
+// Base reference type
+object objectValue = new object();
+
+// Any type can be assigned to it
+objectValue = 10;
+objectValue = "Hello";
+objectValue = true;
+```
+
+## Nullable types
+
+***
+
+```{.csharp}
+// Reference types can be null by default
+object objectValue = null;
+```
+
+***
+
+```{.csharp}
+// value types can't be null by default
+// int integerNumber = null; // does not compile
+
+// Value types can be specified as nullable by adding ?
+int? nullableInteger = null;
+```
+
+***
+
+```{.csharp}
+// HasValue can be used to check if nullable type has value (for value types)
+int? nullableInteger = null;
+
+if (nullableInteger.HasValue)
+{
+    Console.WriteLine("Has value");
+}
+else
+{
+    Console.WriteLine("No value");
+}
+
+nullableInteger = 10;
+
+if (nullableInteger.HasValue)
+{
+    Console.WriteLine("Has value");
+}
+else
+{
+    Console.WriteLine("No value");
+}
+```
+
+***
+
+```{.csharp}
+// .Value can be used to obtain the value of nullable type. Obtained value will be of non-nullable type.
+int? integerNumber = 10;
+
+// int value = integerNumber; // does not compile
+int value = integerNumber.Value; // good
+```
+
+***
+
+```{.csharp}
+// Nullable values are wrapped in `Nullable<T>` struct
+int? integerNumber = 10;
+
+Nullable<int> nullableInteger = integerNumber;
+```
+
+***
+
+It must be noted that C# 10 allows to specify reference types nullable as well. This can be made available using `<Nullable>enable</Nullable>` element in `csproj`.
+
+## Operators
+
+Each type comes with a list of predefined operators. C# also allows overriding of operators for specific types.
+
+### Arithmetic operators
+
+***
+
+```{.csharp}
+// Addition
+int a = 10;
+int b = 20;
+
+// Addition
+Console.WriteLine("a + b = " + (a + b));
+
+// Subtraction
+Console.WriteLine("a - b = " + (a - b));
+
+// Multiplication
+Console.WriteLine("a * b = " + (a * b));
+
+// Division
+Console.WriteLine("a / b = " + (a / b));
+
+// Modulus
+Console.WriteLine("a % b = " + (a % b));
+
+// Increment
+Console.WriteLine("a: "  + a++);
+Console.WriteLine("a: "  + a);
+
+Console.Write("b: " + ++b);
+```
+
+### Assignment operators
+
+***
+
+```{.csharp}
+// = assignment
+var a = 10;
+Console.WriteLine("a: " + a);
+```
+
+***
+
+```{.csharp}
+// += add and assign
+
+var a = 10;
+var b = 20;
+
+a += b;
+Console.WriteLine("a: " + a);
+```
+
+***
+
+```{.csharp}
+// -= subtract and assign
+
+var a = 10;
+var b = 20;
+
+a -= b;
+Console.WriteLine("a: " + a);
+```
+
+***
+
+```{.csharp}
+// *= multiply and assign
+
+var a = 10;
+var b = 20;
+
+a *= b;
+Console.WriteLine("a: " + a);
+```
+
+***
+
+```{.csharp}
+// /= divide and assign
+
+var a = 10;
+var b = 20;
+
+a /= b;
+Console.WriteLine("a: " + a);
+```
+
+***
+
+```{.csharp}
+// %= modulus and assign
+var a = 10;
+var b = 20;
+
+a %= b;
+Console.WriteLine("a: " + a);
+```
+
+***
+
+```{.csharp}
+// ??= assign if null
+
+int? a = null;
+
+a ??= 10;
+Console.WriteLine("a: " + a);
+a ??= 5;
+Console.WriteLine("a: " + a);
+```
+
+***
+
+```{.csharp}
+// Assignment operators can also be used with bitwise operations
+var a = 10;
+var b = 20;
+
+// Shift left and assign
+a <<= 2;
+Console.WriteLine("<<= " + a);
+
+// Shift right and assign
+a >>= 2;
+Console.WriteLine(">>= " + a);
+
+// Bitwise AND and assign
+a &= b;
+Console.WriteLine("&= " + a);
+
+// Bitwise OR and assign
+a |= b;
+Console.WriteLine("|= " + a);
+
+// Bitwise XOR and assign
+a ^= b;
+Console.WriteLine("^= " + a);
+```
+
+### Comparison operators
+
+***
+
+```{.csharp}
+var a = 10;
+var b = 20;
+
+// Equal
+Console.WriteLine("a == b: " + (a == b));
+
+// Not equal
+Console.WriteLine("a != b: " + (a != b));
+
+// Greater than
+Console.WriteLine("a > b: " + (a > b));
+
+// Less than
+Console.WriteLine("a < b: " + (a < b));
+
+// Greater than or equal
+Console.WriteLine("a >= b: " + (a >= b));
+
+// Less than or equal
+Console.WriteLine("a <= b: " + (a <= b));
+```
+
+### Logical operators
+
+***
+
+```{.csharp}
+// Logical AND
+bool a = true;
+bool b = false;
+
+Console.WriteLine("a && b: " + (a && b));
+
+// Logical OR
+Console.WriteLine("a || b: " + (a || b));
+
+// Logical NOT
+Console.WriteLine("!a: " + (!a));
+```
+
+#### Short circuits
+
+Logical expressions are evaluated left-to-right. Short circuit happens when the result of expression can be determined without evaluating all parts.
+
+***
+
+```{.csharp}
+bool MethodA()
+{
+    Console.WriteLine("MethodA");
+    return true;
+}
+
+bool MethodB()
+{
+    Console.WriteLine("MethodB");
+    return false;
+}
+
+bool a = MethodA() && MethodB();
+```
+
+***
+
+```{.csharp}
+bool b = MethodB() && MethodA();
+```
+
+***
+
+```{.csharp}
+bool c = MethodA() || MethodB();
+```
+
+***
+
+```{.csharp}
+bool d = MethodB() || MethodA();
+```
+
+### Binary operators
+
+***
+
+```{.csharp}
+int a = 2;
+int b = 3;
+
+// Binary AND
+Console.WriteLine("a & b: " + (a & b));
+
+// Binary OR
+Console.WriteLine("a | b: " + (a | b));
+
+// Binary XOR
+Console.WriteLine("a ^ b: " + (a ^ b));
+
+// Binary NOT
+Console.WriteLine("~a: " + (~a));
+
+// Binary left shift
+Console.WriteLine("a << 1: " + (a << 1));
+
+// Binary right shift
+Console.WriteLine("a >> 1: " + (a >> 1));
+```
+
+### Overloading operators
+
+Operators can be overloaded on user defined types. Overloading allows to give operators to types that do not support these operators by default. Operators are overloaded using the `operator` keyword on that type.
+
+***
+
+```{.csharp}
+class Number 
+{
+    protected readonly int Value;
+
+    public Number(int value) => Value = value;
+
+    public override string ToString() => $"{Value}";
+
+    public static Number operator +(Number a, Number b)
+        => new Number(a.Value + b.Value);
+
+    public static Number operator -(Number a, Number b)
+        => new Number(a.Value - b.Value);
+}
+```
+
+***
+
+```{.csharp}
+var a = new Number(10);
+var b = new Number(20);
+
+a.Display();
+b.Display();
+```
+
+***
+
+```{.csharp}
+(a + b).Display();
+(a - b).Display();
+```
+
+### Ternary operator
+
+Ternary operator returns value based on predicate.
+
+***
+
+```{.csharp}
+var a = 1;
+var b = 2;
+
+var outcome = a == b ? "Equal" : "Not equal";
+
+outcome.Display();
+
+b = 1;
+outcome = a == b ? "Equal" : "Not equal";
+
+outcome.Display();
+```
+
+### Null coalescing
+
+Null coalescing keeps selecting values right-wise, until non `null` value is reached.
+
+***
+
+```{.csharp}
+string a = null;
+string b = null;
+string c = "C";
+
+var outcome = a ?? b ?? c;
+outcome.Display();
+
+a = "A";
+outcome = a ?? b ?? c;
+outcome.Display();
+```
+
+### `switch`
+
+::: {.fragment}
+```{.csharp}
+// switch allows to different code paths based on the value of a variable
+
+int a = 2;
+
+switch (a)
+{
+    case 1:
+        Console.WriteLine("One");
+        break;
+    case 2:
+        Console.WriteLine("Two");
+        break;
+    case 3:
+        Console.WriteLine("Three");
+        break;
+    default:
+        Console.WriteLine("Other");
+        break;
+}
+```
+:::
+
+```{.csharp}
+// Fallthrough is not allowed in C# switch statements, yet goto can be used to achieve similar effect
+
+int a = 3;
+
+switch (a)
+{
+    case 1:
+        Console.WriteLine("One");
+        break; // Would not work if this break was commented out
+    case 2:
+        Console.WriteLine("Two or more");
+        break;
+    case 3:
+        // Can fallthrough if there is no code
+    default:
+        goto case 2;
+    
+}
+```
+
+## Cycles
+
+***
+
+```{.csharp}
+// basic for loop
+for (int i = 0; i < 5; i++)
+{
+    Console.WriteLine(i);
+}
+```
+
+***
+
+```{.csharp}
+// technically none of for loop parts are required
+// for (;;) // this would run forever
+// {
+//     Console.WriteLine("Infinite loop");
+//     break;
+// }
+```
+
+***
+
+```{.csharp}
+// while loop
+int i = 0;
+
+while (i < 5)
+{
+    Console.WriteLine(i);
+    i++;
+}
+```
+
+***
+
+```{.csharp}
+// do while loop
+int i = 0;
+
+do
+{
+    Console.WriteLine(i);
+    i++;
+} while (i < 5);
+```
+
+***
+
+```{.csharp}
+// foreach loop
+int[] numbers = { 1, 2, 3, 4, 5 };
+
+foreach (var number in numbers)
+{
+    Console.WriteLine(number);
+}
+```
+
+***
+
+```{.csharp}
+// break
+
+for (int i = 0; i < 5; i++)
+{
+    // break can be used to cancel loop instantly and prematurely
+    if (i == 3)
+    {
+        break;
+    }
+
+    Console.WriteLine(i);
+}
+```
+
+***
+
+```{.csharp}
+// continue
+
+for (int i = 0; i < 5; i++)
+{
+    // continue can be used to skip the rest of the loop and continue to the next iteration
+    if (i == 3)
+    {
+        continue;
+    }
+
+    Console.WriteLine(i);
+}
+```
+
+## User defined types
+
+### Classes
+
+`class`es are references types, that can contain method, property and field members. All classes implicitly inherit from the `object` class. Classes can inherit from up to 1 other class (`object` base class excluded). Classes can implement multiple interfaces.
+
+***
+
+```{.csharp}
+class SimpleClass
+{
+    public int Property { get; set; }
+    public int Field;
+
+    // Constructor
+    public SimpleClass(int value)
+    {
+        Property = value;
+        Field = value;
+    }
+
+    public void Method()
+    {
+        Console.WriteLine("Property: " + Property);
+        Console.WriteLine("Field: " + Field);
+    }
+}
+```
+
+***
+
+```{.csharp}
+// By default 2 classes are equal if they are the same reference
+
+var a = new SimpleClass(10);
+var b = new SimpleClass(10);
+
+(a == b).Display();
+
+a = b;
+(a == b).Display();
+```
+
+***
+
+```{.csharp}
+// Classes can have accessibility modifiers:
+// public - accessible from anywhere
+// internal - accessible from the same assembly
+// protected - accessible from the same class or derived classes
+// private - accessible from the same class
+// protected internal - accessible from the same assembly or derived classes
+// private protected - accessible from the same class or derived classes in the same assembly
+
+// It is considered a good practice to always explicitly specify the access modifier
+
+internal class InternalClass
+{
+    private protected class PrivateProtectedClass
+    {
+        public void Method()
+        {
+            Console.WriteLine("Private protected class");
+        }
+    }
+
+    public void Method()
+    {
+        Console.WriteLine("Internal class");
+        var privateProtected = new PrivateProtectedClass();
+        privateProtected.Method();
+    }
+}
+
+var internalClass = new InternalClass();
+internalClass.Method();
+```
+
+### Structs
+
+`struct`s are value types. Structs can have fields, properties and implement interfaces.
+
+***
+
+```{.csharp}
+struct SimpleStruct
+{
+    public int Property { get; set; }
+    public int Field;
+
+    public SimpleStruct(int value)
+    {
+        Property = value;
+        Field = value;
+    }
+
+    public void Method()
+    {
+        Console.WriteLine("Property: " + Property);
+        Console.WriteLine("Field: " + Field);
+    }
+}
+```
+
+***
+
+```{.csharp}
+var a = new SimpleStruct(10);
+var b = new SimpleStruct(10);
+// Structs by default do not have == operator defined
+// a == b // does not compile
+
+// Structs can be compared using Equals method
+// Structs are considered to be equal if all their fields are equal
+a.Equals(b).Display();
+```
+
+### Records
+
+`record` is a special modifier that can be used on `class` (and similarly on `struct`) to define that i is primarily a data wrapping class.
+
+`record` are considered to be equal if all their member values are equal. Additionally `record` can make use of primary constructor to define the whole type.
+
+***
+
+```{.csharp}
+// record class equality will be determined by the values of their properties
+record class RecordClass
+{
+    public int PropertyA { get; set; }
+    public int PropertyB { get; set; }
+}
+
+var a = new RecordClass { PropertyA = 10, PropertyB = 20 };
+var b = new RecordClass { PropertyA = 10, PropertyB = 20 };
+
+(a == b).Display();
+
+a.PropertyA = 11;
+(a == b).Display();
+```
+
+***
+
+```{.csharp}
+// `record` modified allows to use == operator for comparison
+record struct RecordStruct
+{
+    public int PropertyA { get; set; }
+    public int PropertyB { get; set; }
+}
+
+var a = new RecordStruct { PropertyA = 10, PropertyB = 20 };
+var b = new RecordStruct { PropertyA = 10, PropertyB = 20 };
+
+(a == b).Display();
+```
+
+***
+
+```{.csharp}
+record class RecordClass(int PropertyA, int PropertyB);
+
+var a = new RecordClass(10, 20);
+
+// It infers property names from the constructor
+a.PropertyA.Display();
+a.PropertyB.Display();
+
+// Record with primary constructor can be deconstructed into positional variables
+var (propertyA, propertyB) = a;
+```
+
+### Interfaces
+
+Interfaces allows to define public interface that the type is supposed to implement.
+
+In C# interface names are prefixed with letter `I` at the start, i.e. `ISimpleInterface`.
+
+***
+
+```{.csharp}
+interface ISimpleInterface
+{
+    void Method();
+}
+
+class SimpleClass : ISimpleInterface
+{
+    // Class must implement "Method" otherwise it will not compile 
+    public void Method() => Console.WriteLine("Method");
+}
+```
+
+***
+
+```{.csharp}
+interface IMoreComplexInterface
+{
+    void Method();
+    int Property { get; set; }
+}
+
+class MoreComplexClass : IMoreComplexInterface
+{
+    public void Method() => Console.WriteLine("Method");
+    public int Property { get; set; }
+}
+```
+
+***
+
+```{.csharp}
+// Interface can provide default implementation
+interface IDefaultInterface
+{
+    void Method() { Console.WriteLine("Default method"); }
+}
+
+class DefaultClass : IDefaultInterface
+{
+}
+
+IDefaultInterface defaultClass = new DefaultClass();
+defaultClass.Method();
+
+// but it wont be reached via class reference
+DefaultClass strictlyDefaultClass = defaultClass as DefaultClass;
+//strictlyDefaultClass.Method(); // compile error
+
+class ClassWithOverriddenMethod : IDefaultInterface
+{
+    public void Method() => Console.WriteLine("Overridden method");
+}
+
+IDefaultInterface overriddenClass = new ClassWithOverriddenMethod();
+overriddenClass.Method();
+```
+
+***
+
+```{.csharp}
+// Interface can inherit from another interface
+interface IInheritedInterface : ISimpleInterface
+{
+    void AnotherMethod();
+}
+```
+
+***
+
+```{.csharp}
+// Because class can inherit multiple interfaces
+// It is possible for member names to collide
+interface IInterfaceA
+{
+    void Method();
+}
+
+interface IInterfaceB
+{
+    void Method();
+}
+
+// Methods can be implemented for each interface explicitly
+class CollidingClass : IInterfaceA, IInterfaceB
+{
+    void IInterfaceA.Method() => Console.WriteLine("Interface A method");
+    void IInterfaceB.Method() => Console.WriteLine("Interface B method");
+}
+
+var collidingClass = new CollidingClass();
+(collidingClass as IInterfaceA).Method();
+(collidingClass as IInterfaceB).Method();
+
+//collidingClass.Method(); // compile error
+```
+
+***
+
+```{.csharp}
+// Or if the method signature matches between interfaces, same method can be used to satisfy both
+class AnotherCollidingClass : IInterfaceA, IInterfaceB
+{
+    public void Method() => Console.WriteLine("Method");
+}
+
+var anotherCollidingClass = new AnotherCollidingClass();
+anotherCollidingClass.Method();
+
+((IInterfaceA)anotherCollidingClass).Method();
+((IInterfaceB)anotherCollidingClass).Method();
+```
+
+### Enums
+
+Enums allows to defined name list of values. Under the hood enums are numbers with nice textual representation in code. 
+
+It is consider a good practice to use `enum` when you want to have a predefined list of values to choose from.
+
+***
+
+```{.csharp}
+enum Statuses
+{
+    Active,
+    Inactive,
+    Deleted,
+}
+
+var statusA = Statuses.Active;
+var statusB = Statuses.Inactive;
+
+class ClassWithStatus
+{
+    public Statuses Status { get; set; }
+}
+
+var classWithStatus = new ClassWithStatus();
+classWithStatus.Status = Statuses.Active;
+```
+
+***
+
+```{.csharp}
+// By default enum values are assigned numerical values starting from 0
+enum Statuses
+{
+    Active, // 0
+    Inactive, // 1
+    Deleted, // 2
+}
+
+// However numerical values an also be specified explicitly
+enum StatusesButWithNumbers
+{
+    Active = 1,
+    Inactive = 2,
+    Deleted = 4,
+}
+
+// Enum values can be casted to int
+((int)StatusesButWithNumbers.Active).Display();
+
+// Numerical values can start from any number
+enum StatusesButWithBiggerNumbers
+{
+    Active = 10,
+    Inactive = 20,
+    Deleted = 30,
+}
+```
+
+***
+
+```{.csharp}
+// Enums can be decorated with [Flags] attribute
+
+[Flags]
+enum Permissions
+{
+    Read,
+    Write,
+    Execute,
+}
+
+var permissions = Permissions.Read | Permissions.Write;
+permissions.Display();
+
+permissions.HasFlag(Permissions.Read).Display();
+permissions.HasFlag(Permissions.Execute).Display();
+```
+
+### Partial classes
+
+In C# classes can be `partial`, meaning that single class can be defined in multiple iterations.
+
+::: {.fragment}
+```{.csharp}
+public partial class PartialClass
+{
+    public void MethodA() => Console.WriteLine("Method A");
+}
+
+public partial class PartialClass
+{
+    public void MethodB() => Console.WriteLine("Method B");
+}
+
+var partialClass = new PartialClass();
+partialClass.MethodA();
+partialClass.MethodB();
+```
+:::
+
+### Properties
+
+Classes can use fields or properties to contain data. Properties differ from fields, in a way that they provide access to the underlying data field via methods.
+
+Methods can be defined implicitly by providing simple `{ get; set; }` which will generate underlying methods with simple assignment or retrieval implementation.
+
+Alternatively implementation can be defined explicitly. 
+
+Both `get` and `set` methods can have different accessibility modifiers.
+
+***
+
+```{.csharp}
+// class with automatically implemented property
+class SimpleClass
+{
+    public int Property { get; set; }
+}
+```
+
+***
+
+```{.csharp}
+// class with manually implemented property
+class ManualClass
+{
+    private int _property;
+
+    public int Property
+    {
+        get => _property;
+        set => _property = value;
+    }
+}
+```
+
+***
+
+```{.csharp}
+// more sophisticated property
+class ComplexClass
+{
+    private int _property;
+
+    public int Property
+    {
+        get
+        {
+            Console.WriteLine("Getting property");
+            return _property;
+        }
+        set
+        {
+            Console.WriteLine("Setting property");
+            _property = value * 2;
+        }
+    }
+}
+
+var complexClass = new ComplexClass();
+complexClass.Property = 10;
+complexClass.Property.Display();
+```
+
+***
+
+```{.csharp}
+// class with read-only property
+class ReadOnlyClass
+{
+    private int _property;
+
+    public ReadOnlyClass(int value) => _property = value;
+
+    public int Property { get => _property; }
+}
+```
+
+***
+
+```{.csharp}
+// public getter but private setter
+class ReadOnlySetterClass
+{
+    private int _property;
+
+    public int Property { get; private set; }
+
+    public ReadOnlySetterClass(int value) => Property = value;
+
+    public void Method()
+    {
+        Property = 10;
+    }
+}
+
+var readOnlySetterClass = new ReadOnlySetterClass(5);
+readOnlySetterClass.Property.Display();
+
+// readOnlySetterClass.Property = 10; // does not compile
+```
+
+### Fields
+
+Fields can store values in type similar to properties, but they do not create intermediate methods for working with underlying values.
+
+::: {.fragment}
+```{.csharp}
+class ClassWithField
+{
+    public int Field;
+}
+```
+:::
+
+## Exceptions
+
+Exceptions are used to signal erroneous state of execution, where the application cannot continue in the intended manner and break of execution is required. All exceptions in C# must inherit `Exception` class directly or indirectly. Exceptions are thrown using the `throw` keyword. 
+
+***
+
+```{.csharp}
+// Simplest example of exception
+class CustomException : Exception
+{
+    public CustomException(string message) : base(message) { }
+}
+
+try
+{
+    throw new CustomException("Custom exception");
+}
+catch (CustomException e)
+{
+    Console.WriteLine(e.Message);
+}
+```
+
+***
+
+```{.csharp}
+// Exceptions can be caught polymorphically
+try
+{
+    throw new CustomException("Custom exception");
+}
+// Will catch because CustomException is derived from Exception
+catch (Exception e)
+{
+    Console.WriteLine(e.Message);
+}
+```
+
+***
+
+```{.csharp}
+// Catch block can be empty to catch all exceptions
+try
+{
+    throw new CustomException("Custom exception");
+}
+// Although works same as catch (Exception e)
+// And not a good practice in general
+catch
+{
+    Console.WriteLine("Exception caught");
+}
+```
+
+***
+
+```{.csharp}
+// Finally block will always be executed, regardles if there was exception or not
+try {
+    try
+    {
+        throw new CustomException("Custom exception");
+    }
+    catch (CustomException e)
+    {
+        throw new CustomException("Custom exception again");
+    }
+    finally
+    {
+        Console.WriteLine("Finally block");
+    }
+}
+catch
+{
+    Console.WriteLine("Don't want any errors to slip into notebook");
+}
+```
+
+***
+
+```{.csharp}
+// Finally block will be executed even after `return` from the method
+int Method()
+{
+    try
+    {
+        throw new CustomException("Custom exception");
+        return 10;
+    }
+    finally
+    {
+        Console.WriteLine("Finally block");
+    }
+}
+
+try
+{
+    Method();
+}
+catch (CustomException e)
+{
+    Console.WriteLine(e.Message);
+}
+```
+
+***
+
+```{.csharp}
+// If exception variable is not needed, it can be omitted and just the type left
+try
+{
+    throw new CustomException("Custom exception");
+}
+catch (CustomException)
+{
+    Console.WriteLine("Exception caught");
+}
+```
+
+***
+
+```{.csharp}
+// catch statements support pattern matching to filter exceptions of same polymorphic type
+try
+{
+    throw new CustomException("Custom exception");
+}
+catch (Exception e) when (e.Message == "Custom exception")
+{
+    Console.WriteLine("Custom exception caught");
+}
+catch (Exception e)
+{
+    Console.WriteLine("Other exception caught");
+}
+```
+
+## Type conversions
+
+### Casting
+
+Casting is converting variables of one type to another. Because C# is a type-safe language - type conversions are only available when types are compatible for conversion. If types cannot be converted from one to another, then it will result in either runtime or compile time exception.
+
+#### Implicit cast
+
+Implicit casts happen when variable of one type is assigned to the variable of another type. Implicit casting does not require any additional syntax - simple assignment is enough. Implicit casts are typically safe.
+
+Implicit casts happen from more specific to mess specific types, or from equivalent more precise types to less precise types.
+
+***
+
+```{.csharp}
+class LessSpecificType
+{
+}
+
+class MoreSpecificType : LessSpecificType
+{
+}
+
+var moreSpecificType = new MoreSpecificType();
+LessSpecificType lessSpecificType = moreSpecificType;
+```
+
+#### User defined cast operators
+
+Explicit or implicit cast operations can be defined for user defined types. `implicit` cast is used to define conversion from user-defined type to another. `explicit` cast is used to define cast to user-defined type.
+
+***
+
+```{.csharp}
+class CustomClass
+{
+    public string Property { get; set; }
+
+    public CustomClass(string property)
+    {
+        Property = property;
+    }
+
+    public static implicit operator int(CustomClass customClass)
+        => customClass.Property.Length;
+
+    public static explicit operator CustomClass(int length)
+        => new CustomClass(new string('a', length));
+}
+
+var customClass = new CustomClass("Hello");
+int length = customClass;
+length.Display();
+
+var anotherCustomClass = (CustomClass)5;
+anotherCustomClass.Property.Display();
+```
+
+### Boxing and Unboxing
+
+Boxing happens a value type is assigned to reference typed variable. Boxed value is moved to memory-heap and a reference pointing to that place in memory is stored in variable.
+
+***
+
+```{.csharp}
+// When a value type is assigned to reference typed variable it is called boxing
+
+// `object` is an reference type
+// literal 10 is an `int` which is a value type
+object boxed = 10;
+
+// unboxing
+int unboxed = (int)boxed;
+```
+
+### Widening and narrowing
+
+::: {.fragment}
+```{.csharp}
+// Widening occurs when a value of smaller type is assigned to a value of larger type
+
+int a = 10;
+long b = a;
+
+// Widening does not incur a loss of data
+```
+:::
+
+::: {.fragment}
+```{.csharp}
+// Narrowing occurs when a value of larger type is assigned to a value of smaller type
+
+long a = 10;
+
+// Narrowing requires explicit cast
+int b = (int)a;
+
+// Narrowing can incur a loss of data
+```
+:::
+
+## Generics
+
+Generics allow define type constraints in user-defined on per-instance basis.
+
+::: {.fragment}
+```{.csharp}
+// Class will be constrained by T type
+class GenericClass<T>
+{
+    public T Value { get; set; }
+
+    public GenericClass(T value)
+    {
+        Value = value;
+    }
+}
+```
+:::
+
+***
+
+Generic types are referred to as "<Type> of T". Using the example above, if the `GenericClass<>` were instantiated as `GenericExample<int>`, then it would be referred to as "GenericClass of int".
+
+More examples:
+- `List<string>` would be "List of string",
+- `Queue<int>` would be "Queue of int",
+- etc...
+
+***
+
+```{.csharp}
+// Generics can be used in any place to substitute for a concrete type
+class GenericClass<T>
+{
+    public T Value { get; set; }
+
+    public GenericClass(T value)
+    {
+        Value = value;
+    }
+
+    public T Method(T value) => value;
+} 
+```
+
+***
+
+```{.csharp}
+// Special constraints can be applied to generics
+// where T : struct - T must be a value type
+// where T : class - T must be a reference type
+// where T : new() - T must have a parameterless constructor
+// where T : <base class> - T must inherit from base class
+// where T : <interface> - T must implement interface
+// constraints can also be combined
+
+class GenericClass<T> where T : struct
+{
+    public T Value { get; set; }
+
+    public GenericClass(T value)
+    {
+        Value = value;
+    }
+}
+
+// works
+var genericClass = new GenericClass<int>(10);
+
+// does not work
+// var genericClass = new GenericClass<string>("Hello");
+```
+
+***
+
+```{.csharp}
+// Bad example
+// Generics can generally be considered useless if they can be replaced with `object`
+class NotSoGoodGenericClass<T>
+{
+    public void Method(T value)
+    {
+        Console.WriteLine(value);
+    }
+}
+
+class SameButNotGenericClass
+{
+    public void Method(object value)
+    {
+        Console.WriteLine(value);
+    }
+}
+```
+
+## Memory management
+
+C# is a memory safe language. As a developer you do not need to deal with memory allocations or freeing the unused memory.
+
+When a new variable is instantiated memory is automatically allocated for storing that variable by the runtime.
+
+When a variable is no longer needed, the memory is *eventually* going to be freed up by the Garbage Collector (or GC for short). Garbage Collector looks for memory allocations that do not have any recursive pointers to the from the *main* thread. GC works in iterations and during the iteration there is a possibility that memory that has no references to it will be freed up.
+
+***
+
+```{.csharp}
+// Garbage collector can be invoked manually
+GC.Collect();
+```
+
+***
+
+```{.csharp}
+// Display the total memory used by the program
+GC.GetTotalMemory(false).Display();
+```
+
+### `unsafe`
+
+`unsafe` keywords allows working with pointers directly. Typically it is not recommended to use `unsafe` in any case, but here are certain **very niche** cases when using `unsafe` might used to write more performant code, or to achieve interoperability with legacy applications.
+
+***
+
+```{.csharp}
+// Unsafe allows to work with pointers
+unsafe
+{
+    int number = 10;
+    int* pointer = &number;
+
+    pointer->Display();
+}
+```
+
+***
+
+```{.csharp}
+// Methods can be marked as unsafe too
+static unsafe void UnsafeMethod()
+{
+    int number = 10;
+    int* pointer = &number;
+
+    pointer->Display();
+}
+```
+
+***
+
+```{.csharp}
+// Unsafe methods can accept pointers as arguments
+unsafe void UnsafeMethod(int* pointer)
+{
+    pointer->Display();
+}
+```
+
+***
+
+```{.csharp}
+// Using unsafe true references can be passed
+unsafe
+{
+    object obj = new object();
+    var object2 = &obj;
+
+    obj = null;
+    object2->Display();
+}
+```

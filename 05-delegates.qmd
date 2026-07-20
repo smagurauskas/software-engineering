@@ -1,0 +1,281 @@
+---
+title: "Delegates"
+verify: output
+---
+
+This notebook covers C# delegates, named and anonymous methods as well as lambdas.
+
+## `delegate`
+
+Most simple delegates can be declared using the `delegate` keyword. Delegate defines a type that represents method with particular parameter list and return type. 
+
+***
+
+```{.csharp}
+// Declare the delegate type
+delegate string OperationOnString(string str);
+
+// Declare a method that matches the delegate type
+string ReverseString(string str)
+{
+    char[] charArray = str.ToCharArray();
+    Array.Reverse(charArray);
+    return new string(charArray);
+}
+
+// The name of delegate can be used as a type
+OperationOnString operation = ReverseString;
+
+// Call the method using the delegate
+Console.WriteLine(operation("Hello World!"));
+```
+
+***
+
+```{.csharp}
+// Capability to use delegate as type can be used further to pass the method as an argument
+string ApplyOperationOnString(OperationOnString operation, string str)
+{
+    return operation(str);
+}
+
+Console.WriteLine(ApplyOperationOnString(ReverseString, "Hello World!"));
+```
+
+***
+
+```{.csharp}
+// This type behaviour also extends everywhere else like properties, fields, etc.
+class ClassWithDelegate
+{
+    public required OperationOnString Operation { get; set; }
+}
+
+var classWithDelegate = new ClassWithDelegate
+{
+    Operation = ReverseString
+};
+
+Console.WriteLine(classWithDelegate.Operation("Hello World!"));
+```
+
+***
+
+```{.csharp}
+// Delegates can also be combined with genererics inside the class
+delegate string GenericOperationOnString<T>(T value);
+
+class GenericClassWithDelegate<T>
+{
+    public GenericOperationOnString<T> Operation { get; set; }
+}
+
+var genericClassWithDelegate = new GenericClassWithDelegate<string>
+{
+    Operation = (obj) => obj.ToString()
+};
+
+Console.WriteLine(genericClassWithDelegate.Operation("Hello World!"));
+```
+
+### Multicasting delegates
+
+::: {.fragment}
+```{.csharp}
+// Interestingly enough, delegates can be joined using the + operator
+
+OperationOnString operation1 = (str) => str.ToUpper();
+OperationOnString operation2 = (str) => str.ToLower();
+
+// Delegates will be called in the order they were added
+OperationOnString combinedOperation = operation1 + operation2;
+
+Console.WriteLine(combinedOperation("Hello World!"));
+```
+:::
+
+***
+
+```{.csharp}
+// The - operator can also be used to remove a delegate from the chain
+
+combinedOperation -= operation2;
+
+Console.WriteLine(combinedOperation("Hello World!"));
+```
+
+### Sample use case
+
+Consider that the class `Event` contains the date of that event. Depending on the region, this date should be formatted differently so that the native format would appropriate for the region.
+
+***
+
+```{.csharp}
+// The naive approach would be to do the formatting inside the class
+
+class Event
+{
+    public string Name { get; set; }
+    public DateTime DateOfEvent { get; set; }
+
+    public string Title => Name + " on " + FormatDate(DateOfEvent);
+
+    private string FormatDate(DateTime date)
+    {
+        return date.ToString("dd/MM/yyyy");
+    }
+}
+
+var event1 = new Event
+{
+    Name = "Event 1",
+    DateOfEvent = DateTime.Now
+};
+
+Console.WriteLine(event1.Title);
+
+// But this approach does not solve the problem of adapting the formatting to different needs
+```
+
+***
+
+```{.csharp}
+// One way to solve this problem is to use a delegate
+delegate string FormatEventDate(DateTime date);
+
+class Event
+{
+    public string Name { get; set; }
+    public DateTime DateOfEvent { get; set; }
+
+    public string Title => Name + " on " + FormatDate(DateOfEvent);
+
+    public required FormatEventDate FormatDate { get; set; }
+}
+
+var event2 = new Event
+{
+    Name = "Event 2",
+    DateOfEvent = DateTime.Now,
+    FormatDate = (date) => date.ToString("dd/MM/yyyy")
+};
+
+Console.WriteLine(event2.Title);
+
+var event3 = new Event
+{
+    Name = "Event 3",
+    DateOfEvent = DateTime.Now,
+    FormatDate = (date) => date.ToString("yyyy-MM-dd")
+};
+
+Console.WriteLine(event3.Title);
+```
+
+## Lambda expressions
+
+Lambda expressions in C# can be used to declare anonymous methods.
+
+***
+
+```{.csharp}
+// Lambda expression adding 2 numbers
+var lambda1 = (int num1, int num2) => num1 + num2;
+
+Console.WriteLine(lambda1(1, 2));
+```
+
+***
+
+```{.csharp}
+// Lambda expression can also have no parameters
+var lambda2 = () => "Hello World!";
+
+Console.WriteLine(lambda2());
+```
+
+***
+
+```{.csharp}
+// There are 2 types to which lambda expression can be converted to
+// 1. Func<T> - Represents a method that takes no arguments and returns a value of the type specified by the TResult parameter.
+// 2. Action - Represents a method that takes no arguments and does not return a value.
+
+// The last generic parameter is the return type
+Func<int, int, int> lambda3 = (num1, num2) => num1 + num2;
+Func<int, int> lambda4 = (num) => num;
+
+// Action does not have a return type
+Action lambda5 = () => Console.WriteLine("Hello World!");
+
+// However Action can still have parameters
+Action<int, int> lambda6 = (num1, num2) => Console.WriteLine(num1 + num2);
+```
+
+### Lambda type inference
+
+::: {.fragment}
+```{.csharp}
+// When lambdas are defined and assigned to type Func or Action, then argument types are inferred
+
+// Do not need to specify type of num1 or num2, because compiler infers them from Action<int, int>
+Action<int, int> lambda7 = (num1, num2) => {};
+
+// Alternatively if the type is defined with var, then the type of lambda is inferred to the type of the variable
+var lambda8 = (int num1, int num2) => {};
+Console.WriteLine(lambda8.GetType().ToString());
+```
+:::
+
+***
+
+```{.csharp}
+// As seen in previous example, lambda expressions can be defined {} like a traditional method'
+
+var lambda9 = (int num1, int num2) => { return num1 + num2; };
+
+// This way statement lambdas consist of multiple statements
+
+var lambda10 = (int num1, int num2) => 
+{
+    var sum = num1 + num2;
+    return sum;
+};
+```
+
+## Expression trees
+
+***
+
+```{.csharp}
+// Lambda expressions can be used to define expression trees
+using System.Linq.Expressions;
+
+Expression<Func<int, int, int>> lambda11 = (num1, num2) => num1 + num2;
+
+// Expression trees can be compiled to a delegate
+var compiledLambda11 = lambda11.Compile();
+
+Console.WriteLine(compiledLambda11(1, 2));
+```
+
+***
+
+```{.csharp}
+// Deconstruct expression into parts
+using System.Reflection;
+
+// Expressions can be used to build complex logic
+Expression<Func<int, int, int>> lambda12 = (num1, num2) => num1 + num2;
+
+var binaryExpression = (BinaryExpression)lambda12.Body;
+
+var leftParameter = (ParameterExpression)binaryExpression.Left;
+var rightParameter = (ParameterExpression)binaryExpression.Right;
+
+var methodCallExpression = lambda12.Body.NodeType;
+
+Console.WriteLine(leftParameter.Name);
+Console.WriteLine(rightParameter.Name);
+Console.WriteLine(methodCallExpression);
+```

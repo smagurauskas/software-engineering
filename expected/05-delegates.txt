@@ -1,0 +1,31 @@
+── cell 1 ──
+!dlroW olleH
+── cell 2 ──
+!dlroW olleH
+── cell 3 ──
+!dlroW olleH
+── cell 4 ──
+Hello World!
+── cell 5 ──
+hello world!
+── cell 6 ──
+HELLO WORLD!
+── cell 7 ──
+Event 1 on 19/07/2026
+── cell 8 ──
+Event 2 on 19/07/2026
+Event 3 on 2026-07-19
+── cell 9 ──
+3
+── cell 10 ──
+Hello World!
+── cell 11 ──
+── cell 12 ──
+System.Action`2[System.Int32,System.Int32]
+── cell 13 ──
+── cell 14 ──
+3
+── cell 15 ──
+num1
+num2
+Add
