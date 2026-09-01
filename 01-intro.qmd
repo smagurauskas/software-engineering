@@ -59,7 +59,7 @@ All these notebooks are versioned and placed here https://github.com/smagurauska
 
 Pull requests for changes are welcome!
 
-Additional lecture material will also be placed at [https://emokymai.vu.lt](https://emokymai.vu.lt).
+Additional lecture material *might* be placed at [https://emokymai.vu.lt](https://emokymai.vu.lt). Will let you know during the lecture if there are any updates there.
 
 *If you were not added as a member of the course in emokymai/VMA/moodle - write me an email and I will add you.*
 
@@ -67,13 +67,13 @@ Additional lecture material will also be placed at [https://emokymai.vu.lt](http
 
 - Lectures are 3 *academic* hours long.
 - That means ~2 hour long lectures.
-- Will try to have break sometime in the middle of lecture.
+- Will try to have a 50 minute lecture, 20 minute break, and then another 50 minute lecture.
 
 The course is worth 10 ECTS credits. Most of it comes from individual work.
 
 ## Purpose of the course unit
 
-> To get acquainted with software development methods using C# programming language and .NET Core framework, to consolidate knowledge of object-oriented programming.
+The purpose of this course unit is to provide overview and hands-on experience in modern software engineering practices, putting emphasis on web-based application development and C#.
 
 ### Learning outcomes of the course unit
 
@@ -81,28 +81,174 @@ The course is worth 10 ECTS credits. Most of it comes from individual work.
 - Apply knowledge of software systems engineering, make qualified design and architectural decisions while expanding the functionality of the developed system;
 - Combine theory and practice using .NET framework technologies and developing OO application systems;
 - Develop the knowledge about data types, named and optional arguments as well as other new features of C# programming language;
+- Understand common automated software testing practices and can apply them using the C# and .NET framework;
+- Develop the knowledge about the software development life cycle, understand how the web applications are deployed and monitored;
 - Program in C# independently and in a team, applying basic OO design templates using C# programming environment;
 - Recognize the need for continuous learning and will have the initial skills;
 - Work in the team - on site and remotely.
 
-Although course is heavily based on C# and .NET, it is not the primary goal of the course to teach these technologies.
+#### The true goal
 
-Primary goal is to teach the general principles in modern software engineering, that could be applied when working with any other technology. C# and .NET is just a tool in doing this. Most of the concepts taught in this course have equivalents in other software language and ecosystems, so the knowledge acquired during this course should be more universal than specific.
+Yes:
+- Learn the principles
+- Learn to reason about software engineering problems
+- Learn to apply the principles in practical scenarios
 
-## Main ideas behind the course
+Not:
+- Become an expert in specific technologies
 
-- Code is a liability.
-- Initial development effort is only the most obviously visible part of the cost.
-- Code is read more often than it is written.
-- *Learning to learn* a technology is more important than *learning a technology*.
+::: {.fragment}
+This doesn't mean that that it is ok be ignorant of the technology you are using.
+:::
+
+## Philosophy behind the course
+
+- Code is a liability
+- Writing code is not the end of it
+- Initial development effort is only the most obviously visible part of the cost
+- Code is read more often than it is written
+- *Learning to learn* a technology is more important than *learning a technology*
+
+## Lab classes
+
+Students form teams of ~4 students and develop a product together during the semester. Teams work in mini 1 week sprints and present the progress during the lab class each week.
+
+Students evaluate themselves and their team members each week according to the individual contributions that week. Final lab assignment grades depend on these self evaluations.
+
+### Self evaluation example
+
+Each week, each student gets some fixed amount of points that can be distributed among their team members based on based on justification provided.
+
+Consider an example below where each student has 10 points to distribute among their team members each week:
+
+| Week   | Student A | Student B | Student C | Student D |
+|--------|-----------|-----------|-----------|-----------|
+| 1      | 10        | 10        | 5         | 15        |
+| 2      | 11        | 9         | 15        | 5         |
+| 3      | 20        | 0         | 5         | 15        |
+| 4      | 10        | 10        | 10        | 10        |
+| Total  | 51        | 29        | 45        | 45        |
+| Dist.  | 100%      | 57%       | 88%       | 88%       |
+
+Lab professor awarded group 1.2 points for settled lab assignment.
+
+Students individually receive:
+
+| Student   | Individual grade     |
+|-----------|----------------------|
+| Student A | 1.2 (100% of 1.2)    |
+| Student B | 0.7 (~57% of 1.2)    |
+| Student C | 1.1 (~88% of 1.2)    |
+| Student D | 1.1 (~88% of 1.2)    |
+
+### General requirements for lab assignments
+
+General requirements:
+- **Projects should be backend dominant**.
+- **All commits must be reviewed via pull requests**. 
+- Project must be versioned in GitHub.
+- Project must be a web application based on ASP.NET. UI layer framework/technology can be selected freely.
+- Goal is to have at least 1 real user at the end of the semester.
+
+## Evaluation
+
+- Exam in written form (max 5.0):
+    - Exam can be taken only if all 3 of the Lab assignments are settled
+    - Exam can be taken only when total amount of points collected during the semester is 3.0 or more
+    - Exam is considered to be passed if at least 1.5 out of 5 points are collected
+
+::: {.fragment}
+- Laboratory assignments (max 5.0)
+    - Three assignments (1.5 + 1.5 + 2.0)
+:::
+
+::: {.fragment}
+- Additional points (max 1.0):
+    - Outstanding performance, demonstrated during the course
+    - Contributing to these course notebooks
+:::
+
+::: {.fragment}
+Maximum available score from Laboratory assignments + Additional points is **5.5**.
+:::
+
+## Lab assignment #1
+
+Deadline: week 7.
+
+Official goal: to develop an web application using the material covered in 1-6 lectures.
+
+Unofficial goal: to develop an app in ASP.NET that has basic functionality of assigned APP. Understand the usage of GitHub, coding in team principles. Prepare foundation for future work. Learn to code review yourself and take the feedback when getting one.
+
+Points: 1.5
+
+1. Application can be interacted with using *some* sort of interface. There exists at least one user scenario, which can be demonstrated end to end.
+2. Creating and using your own `class`, `struct`, `record` and `enum`. 1 type must be immutable.
+3. Property usage in `struct` and `class`.
+4. Named and optional argument usage.
+5. Extension method usage.
+6. Iterating through collections the right way.
+7. Using a stream to load data (can be from file, web service, socket etc.).
+8. LINQ to Objects used where appropriate (methods or queries). If LINQ is not used in a particular scenario, provide a justification.
+9. Implement at least one of the standard .NET interfaces (`IEnumerable`, `IComparable`, `IComparer`, `IEquatable`, `IEnumerator`, etc.)
+10. All changes reviewed via pull requests; each PR must have description explaining what was done and why. Each team member must have authored at least 3 merged PRs and reviewed at least 3 PRs from teammates. PR is counted as reviewed only if there are any meaningful comments and discussions.
+11. Uniform coding style is used throughout the project.
+
+## Lab assignment #2
+
+Deadline: week 11.
+
+Official goal: continue developing an app while working in groups while using material covered in 7-10 lectures.
+
+Unofficial goal: start using database and testing the project. Deepen the functionality of application while being creative.
+
+Points: 1.5
+
+1. Relational database and Entity Framework is used for storing all the data.
+2. Create a generic type with generic method. Demonstrate how generics removed duplication.
+3. Create at least 1 exception type and throw it; meaningfully deal with it, by attaching custom handling logic.
+4. Usage of `async`/`await`, no IO is performed synchronously.
+5. Identify shared memory scenario and deal with it using concurrent collections or appropriate synchronization mechanisms.
+6. Dependency Injection is used everywhere where reasonable, no **dependencies** are created manually with `new`.
+7. Unit and integration tests coverage at least 50%.
+8. All changes reviewed via pull requests; each PR must have description explaining what was done and why. Each team member must have authored at least 3 merged PRs and reviewed at least 3 PRs from teammates. PR is counted as reviewed only if there are any meaningful comments and discussions.
+9. Uniform coding style is used throughout the project.
+
+
+## Lab assignment #3
+
+Deadline: week 15.
+
+Official goal: continue developing an app while working in groups while using material covered in 11-14 lectures.
+
+Unofficial goal: think about the end-user experience, deepen the functionality of application while being creative. Finish up an MVP version of your application.
+
+Points: 2.0
+
+1. Short video (4 to 6 minutes) is prepared, which showcases how the application works and it's features. Key architectural and code design decisions can also be shown. Must be uploaded to some public video hosting service (i.e. YouTube) or provided as a file. 
+2. Application is in a stable state. Additional user flows could be asked to be shown during the presentation.
+3. Value proposition of the application can be clearly articulated.
+4. Application is shown to solve the problem the students have defined.
+5. Unit and integration test coverage is at least 80%.
+6. Entity Framework migrations are used and run automatically.
+7. CI pipeline is set up which gates each pull request, it must have automated tests check + at least 1 extra gate apart from tests.
+8. Application provides live metrics or monitoring for its health and performance (OpenTelemetry or similar).
+9. All changes reviewed via pull requests; each PR must have description explaining what was done and why. Each team member must have authored at least 3 merged PRs and reviewed at least 3 PRs from teammates.
+10. Uniform coding style is used throughout the project.
+
+Bonus points (max 0.5):
+1. Application is hosted in some environment and is accessible through a public domain name. All students in the group must be able to explain how to the deployment setup works.
+2. Metrics observability tool (e.g., Prometheus, Grafana, OpenTelemetry) is integrated and has meaningful dashboards and alerts set up.
 
 ## Planned lecture topics
 
 These are general guidelines on what the lecture are going to be about. It is possible that if the topics might shift a bit during the semester.
 
-Course is organized to get students up to speed with the lab assignments first, and then circle back and dive deeper into C# and software engineering topics. Because of this first few lectures might look a bit complicated and disjointed from the rest of lectures.
+### Ideal scenario
 
-For example if there is specific interest in topic, then more time might be dedicated to it during the lectures, so the subsequent topics might shift a bit further. Analogously if the topic is covered very quickly and there are no questions on it - a topic that was scheduled for later lecture might be shifted earlier.
+- You try something yourself
+- Then you listen to the lecture about what you just tried
+- You try again with the new knowledge
 
 ### Lecture 2
 
@@ -189,114 +335,6 @@ For example if there is specific interest in topic, then more time might be dedi
 
 - Thinking about the performance in C#
 - Preparation for exam
-
-## Lab classes
-
-Students form teams of 4 students and develop a project together during the semester, based on one of the topics provided. Teams work in mini 1 week sprints and present the progress during the lab class each week.
-
-Students evaluate themselves and their team members each week according to the individual contributions that week. Final lab assignment grades depend on these self evaluations.
-
-***
-
-General requirements:
-- **Projects must be backend dominant**.
-- **All commits must be reviewed via pull requests**. 
-- Project must be versioned in GitHub.
-- Project must be a web application based on ASP.NET. UI layer framework/technology can be selected freely.
-- Requirements for lab assignments are meant to be implemented in C#.
-
-## 2025 Lab project topics
-
-General topic: collaborative entertainment apps. Entertainment should come in part from more people joining in on activity.
-
-Concrete suggestions:
-1. Live collaborative playlist builder or music jam session. *I.e. multiple people can contribute songs to the playlist, dynamic votes are invoked to shuffle it up etc.*
-2. Live trivia game. *I.e. some trivia automatically runs on timer in which people can participate. Rank brackets and similar extensions can be done, based on how well a user performs.*
-3. Mini arcade. *I.e. multiple simple games like tic-tac-toe or connect-4 are played in a gauntlet style match, until 1 winner remains.*
-4. Photo ccavenger hunt. *I.e. a specific task for what kind of photo to capture is provided and people have limited amount of time to upload such photo. Photo with the most votes wins.*
-
-## Evaluation
-
-- Exam in written form (max 5.0):
-    - Exam can be taken only if all 3 of the Lab assignments are settled
-    - Exam can be taken only when total amount of points collected during the semester is 3.0 or more
-    - Exam is considered to be passed if at least 1.5 out of 5 points are collected
-
-::: {.fragment}
-- Laboratory assignments (max 5.0)
-    - Three assignments (1.5 + 1.5 + 2.0)
-:::
-
-::: {.fragment}
-- Additional points (max 1.0):
-    - Contributing to these course notebooks.
-    - Bonus identified requirements - see Lab assignment #3. 
-    - Additional contributions or outstanding performance.
-    - *Might* be some quizzes during the lecture.
-:::
-
-::: {.fragment}
-Maximum available score from Laboratory assignments + Additional points is **5.5**.
-:::
-
-## Lab assignment #1
-
-Deadline: week 7.
-
-Official goal: to develop an web application using the material covered in 1-6 lectures.
-
-Unofficial goal: to develop an app in ASP.NET that has basic functionality of assigned APP. Understand the usage of GitHub, coding in team principles. Prepare foundation for future work. Learn to code review yourself and take the feedback when getting one.
-
-Points: 1.5
-
-1. Application can be interacted with using *some* sort of interface
-2. Creating and using your own class, struct, record and enum
-3. Property usage in struct and class
-4. Named and optional argument usage
-5. Extension method usage
-6. Iterating through collection the right way
-7. Using a stream to load data (can be from file, web service, socket etc.)
-8. Boxing and unboxing
-9. LINQ to Objects usage (methods or queries)
-10. Implement at least one of the standard .NET interfaces (IEnumerable, IComparable, IComparer, IEquatable, IEnumerator, etc.)
-
-## Lab assignment #2
-
-Deadline: week 11.
-
-Official goal: continue developing an app while working in groups while using material covered in 7-10 lectures.
-
-Unofficial goal: start using database and testing the project. Deepen the functionality of application while being creative.
-
-Points: 1.5
-
-1. Relational database and Entity Framework is used for storing all the data
-2. Create a generic type with generic method; define at least 2 generic constraints
-3. Create at least 1 exception type and throw it; meaningfully deal with it; (most of the exceptions are logged to a file or a server)
-4. Usage of async/await
-5. Use at least 1 concurrent collection
-6. Dependency Injection is used everywhere where reasonable
-7. Unit and integration tests coverage at least 50%
-
-## Lab assignment #3
-
-Deadline: week 15.
-
-Official goal: continue developing an app while working in groups while using material covered in 11-14 lectures.
-
-Unofficial goal: think about the end-user experience, deepen the functionality of application while being creative. Finish up an MVP version of your application.
-
-Points: 2.0
-
-1. Short video (4 to 6 minutes) is prepared, which showcases how the application works and it's features. Key architectural and code design decisions can also be shown. Must be uploaded to some public video hosting service (i.e. YouTube) or provided as a file. 
-2. Application is in a stable state. Additional user flows could be asked to be shown during the presentation.
-3. Value proposition of the application can be clearly articulated.
-4. Application is shown to solve the problem the students have defined.
-5. Unit and integration test coverage is at least 80%.
-6. Entity Framework migrations are used and run automatically.
-
-Bonus points 0.5:
-1. Application is hosted in some environment and is accessible through a public domain name. All students in the group must be able to explain how to the deployment setup works.
 
 ## Exam
 
