@@ -129,7 +129,7 @@ class Event
 var event1 = new Event
 {
     Name = "Event 1",
-    DateOfEvent = DateTime.Now
+    DateOfEvent = new DateTime(2026, 3, 14)
 };
 
 Console.WriteLine(event1.Title);
@@ -156,7 +156,7 @@ class Event
 var event2 = new Event
 {
     Name = "Event 2",
-    DateOfEvent = DateTime.Now,
+    DateOfEvent = new DateTime(2026, 3, 14),
     FormatDate = (date) => date.ToString("dd/MM/yyyy")
 };
 
@@ -165,7 +165,7 @@ Console.WriteLine(event2.Title);
 var event3 = new Event
 {
     Name = "Event 3",
-    DateOfEvent = DateTime.Now,
+    DateOfEvent = new DateTime(2026, 3, 14),
     FormatDate = (date) => date.ToString("yyyy-MM-dd")
 };
 
