@@ -200,6 +200,7 @@ Students individually receive:
 ### General requirements for lab assignments
 
 General requirements:
+
 - **Projects should be backend dominant**.
 - **All commits must be reviewed via pull requests**. 
 - Project must be versioned in GitHub.
@@ -296,6 +297,7 @@ Points: 2.0
 
 ***
 Bonus points (max 0.5):
+
 1. Application is hosted in some environment and is accessible through a public domain name. All students in the group must be able to explain how to the deployment setup works.
 2. Metrics observability tool (e.g., Prometheus, Grafana, OpenTelemetry) is integrated and has meaningful dashboards and alerts set up.
 

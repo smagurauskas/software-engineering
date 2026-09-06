@@ -11,10 +11,10 @@ hello world!
 ── cell 6 ──
 HELLO WORLD!
 ── cell 7 ──
-Event 1 on 19/07/2026
+Event 1 on 14/03/2026
 ── cell 8 ──
-Event 2 on 19/07/2026
-Event 3 on 2026-07-19
+Event 2 on 14/03/2026
+Event 3 on 2026-03-14
 ── cell 9 ──
 3
 ── cell 10 ──
