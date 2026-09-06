@@ -13,15 +13,19 @@ format:
     theme: cosmo
   revealjs:
     output-ext: slides.html
-    # Self-contained decks: both formats share the same <name>_files/ dir and
-    # would otherwise clobber each other's libs (404s in the deck). Embedding
-    # also makes each deck a single portable file.
     embed-resources: true
     slide-level: 2
-    theme: white
+    # slides.scss keeps each heading at the top of its slide and centers
+    # only the content below it.
+    theme: [white, assets/slides.scss]
     slide-number: true
     code-line-numbers: true
     hash: true
     auto-stretch: false
+    smaller: true
+    center: false
+    scrollable: true
+    # Dots next to the slide number showing fragments left to reveal.
+    include-after-body: assets/fragment-indicator.html
 
 engine: markdown

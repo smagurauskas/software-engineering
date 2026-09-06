@@ -4,6 +4,7 @@ verify: none # no executable cells
 ---
 
 ## Agenda:
+
 - Why C# for this course?
 - What is .NET Core?
 - C# as a virtual machine-based language
@@ -12,38 +13,63 @@ verify: none # no executable cells
 
 ## Why C# for this course?
 
+::: {.fragment}
 - Easy to work with, especially for web development
+:::
+::: {.fragment}
 - Runs on all platforms
+:::
+::: {.fragment}
 - C# an OOP language, so it lends itself well to exploring some OOP specific concepts
+:::
+::: {.fragment}
 - High standardization in ecosystem helps to avoid niche issues
+:::
 
 ## What is .NET Core?
 
 .NET Core is a **free**, **cross-platform** and **open-source** framework for building modern applications.
 
+::: {.fragment}
 ASP.NET Core is framework built on top of .NET Core, that is used for building **web applications**.
+:::
 
-### Evolution:
-- 2002: .NET Framework 1.0 (Windows-only)
-- 2012: .NET Framework 4.5 (still Windows-only)
 ***
+### Evolution:
+
+::: {.fragment}
+- 2002: .NET Framework 1.0 (Windows-only)
+:::
+::: {.fragment}
+- 2012: .NET Framework 4.5 (still Windows-only)
+:::
+::: {.fragment}
 - 2016: .NET Core 1.0 (now cross-platform and open-source)
+:::
+::: {.fragment}
 - 2019: .NET Core 3.0
+:::
+::: {.fragment}
 - 2020: .NET 5 (.NET Core version 4 is skipped, the word **core* is dropped)
+:::
 
 ## C# is a Virtual Machine-Based Language
 
 C# doesn't compile directly to machine code. Instead, it follows a **two-step compilation process**:
 
-### Compilation Process:
+::: {.fragment}
 1. **Source Code → Intermediate Language (IL)**
    - C# code is compiled to Common Intermediate Language (CIL/IL)
    - IL is platform-independent bytecode
+:::
 
+::: {.fragment}
 2. **IL → Machine Code (Just-In-Time)**
    - Common Language Runtime (CLR) compiles IL to native machine code
    - Happens at runtime (JIT compilation)
+:::
 
+***
 ### Benefits:
 - **Platform independence**: Same IL runs on different operating systems
 - **Language interoperability**: Multiple .NET languages can are translated into same IL
@@ -73,19 +99,50 @@ The **CLR** is the execution environment for .NET applications. It provides:
 
 .NET applications use **two main memory areas**:
 
-### Stack Memory
-- **Fast allocation and deallocation**
-- Stores **value types** and **method call information**
-- **LIFO** (Last In, First Out) structure
-- **Automatically managed** - no garbage collection needed
-- **Thread-specific** - each thread has its own stack
+::: {.fragment}
+1. **Stack Memory**
+:::
+::: {.fragment}
+2. **Heap Memory**
+:::
 
+***
+### Stack Memory
+
+::: {.fragment}
+- **Fast allocation and deallocation**
+:::
+::: {.fragment}
+- Stores **value types** and **method call information**
+:::
+::: {.fragment}
+- **LIFO** (Last In, First Out) structure
+:::
+::: {.fragment}
+- **Automatically managed** - no garbage collection needed
+:::
+::: {.fragment}
+- **Thread-specific** - each thread has its own stack
+:::
+
+***
 ### Heap Memory
-- **Slower allocation, managed deallocation**
+
+::: {.fragment}
+- Slower allocation, managed deallocation
+:::
+::: {.fragment}
 - Stores **reference types** (objects)
+:::
+::: {.fragment}
 - **Garbage Collector (GC)** automatically frees unused memory
+:::
+::: {.fragment}
 - **Shared across threads**
+:::
+::: {.fragment}
 - **Generations**: Gen 0, Gen 1, Gen 2 for optimization
+:::
 
 ## Automatic Garbage Collection
 
@@ -104,25 +161,45 @@ The **CLR** is the execution environment for .NET applications. It provides:
 
 ## Strong Type System
 
-C# has a **strong, static type system** that provides:
+C# has a strong, static type system.
 
-### Type Safety:
-- **Compile-time type checking**
-- **Runtime type verification**
-- **No undefined behavior** from type mismatches
+***
+### Two value categories:
 
-### Two Main Categories:
+::: {.fragment}
+1. Value Types
+:::
+::: {.fragment}
+2. Reference Types
+:::
 
+***
 #### Value Types
-- **Stored directly on stack** (when not boxed)
-- **Copy semantics** - assignment creates a copy
+
+::: {.fragment}
+- Stored directly on stack (when not boxed)
+:::
+::: {.fragment}
+- Copy semantics - assignment creates a copy
+:::
+::: {.fragment}
 - Examples: `int`, `double`, `bool`, `char`, `struct`, `enum`
+:::
 
+***
 #### Reference Types
-- **Stored on heap**, reference on stack
-- **Reference semantics** - assignment copies the reference
-- Examples: `class`, `interface`, `delegate`, `string`, `object`, `array`
 
+::: {.fragment}
+- Stored on heap, reference on stack
+:::
+::: {.fragment}
+- Reference semantics - assignment copies the reference
+:::
+::: {.fragment}
+- Examples: `class`, `interface`, `delegate`, `string`, `object`, `array`
+:::
+
+***
 ## Key Takeaways
 
 - **.NET** is a cross-platform, open-source framework

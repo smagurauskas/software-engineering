@@ -9,16 +9,36 @@ All the course material (including these notebooks) can be found at https://gith
 
 Lectures will be held in English.
 
+## Today's lecture agenda
+
+1. Information about the course and lectures
+2. What the lab classes will look like
+3. Quick intro into Pull Requests
+4. Quick intro into .NET and C#
+
 ## What is Software Engineering?
 
 Software engineering can be described *programming over time*.
 
+::: {.fragment}
 Software engineering deals with such topics as:
+:::
+
+::: {.fragment}
 - How to scale development efforts
+:::
+::: {.fragment}
 - How to ensure that the project is maintainable for as long as it is needed
+:::
+::: {.fragment}
 - Making trade-offs in the system design
+:::
+::: {.fragment}
 - How to ensure the quality of software being built
+:::
+::: {.fragment}
 - And many more...
+:::
 
 ***
 
@@ -30,38 +50,51 @@ IEEE defines software engineering as:
 
 Older definitions were:
 
+::: {.fragment}
 > the practical application of scientific knowledge to the design and construction of computer programs and the associated documentation required to develop, operate, and maintain them
+:::
 
 and
 
+::: {.fragment}
 > the technological and managerial discipline concerned with systematic production and maintenance of software products that are developed and modified on time and within cost estimates
+:::
 
 ***
 
 The word "*engineering*" itself is defined as:
 
+::: {.fragment}
 > engineering is about applying that knowledge to solve real-world problems with limited resources cost-effectively
+:::
 
 and
 
+::: {.fragment}
 > In engineering, science and practice are applied to generate potential solutions to the real-world problem, and engineering economics is used to identify the most cost-effective one
-
-## Today's lecture agenda
-
-1. Information about the course and lectures
-2. What the lab classes will look like
-3. Quick intro into Pull Requests
-4. Quick intro into .NET and C#
+:::
 
 ## Course material
 
 All these notebooks are versioned and placed here https://github.com/smagurauskas/software-engineering.
+\
+\
 
+::: {.fragment}
 Pull requests for changes are welcome!
+\
+\
+:::
 
+::: {.fragment}
 Additional lecture material *might* be placed at [https://emokymai.vu.lt](https://emokymai.vu.lt). Will let you know during the lecture if there are any updates there.
+\
+\
+:::
 
+::: {.fragment}
 *If you were not added as a member of the course in emokymai/VMA/moodle - write me an email and I will add you.*
+:::
 
 ## Lecture format
 
@@ -75,6 +108,7 @@ The course is worth 10 ECTS credits. Most of it comes from individual work.
 
 The purpose of this course unit is to provide overview and hands-on experience in modern software engineering practices, putting emphasis on web-based application development and C#.
 
+***
 ### Learning outcomes of the course unit
 
 - Design, implement and develop applied programs, apply code reviews;
@@ -87,15 +121,22 @@ The purpose of this course unit is to provide overview and hands-on experience i
 - Recognize the need for continuous learning and will have the initial skills;
 - Work in the team - on site and remotely.
 
+***
 #### The true goal
 
+::: {.fragment}
 Yes:
+
 - Learn the principles
 - Learn to reason about software engineering problems
 - Learn to apply the principles in practical scenarios
+:::
 
+::: {.fragment}
 Not:
+
 - Become an expert in specific technologies
+:::
 
 ::: {.fragment}
 This doesn't mean that that it is ok be ignorant of the technology you are using.
@@ -103,11 +144,21 @@ This doesn't mean that that it is ok be ignorant of the technology you are using
 
 ## Philosophy behind the course
 
+::: {.fragment}
 - Code is a liability
+:::
+::: {.fragment}
 - Writing code is not the end of it
+:::
+::: {.fragment}
 - Initial development effort is only the most obviously visible part of the cost
+:::
+::: {.fragment}
 - Code is read more often than it is written
+:::
+::: {.fragment}
 - *Learning to learn* a technology is more important than *learning a technology*
+:::
 
 ## Lab classes
 
@@ -115,12 +166,14 @@ Students form teams of ~4 students and develop a product together during the sem
 
 Students evaluate themselves and their team members each week according to the individual contributions that week. Final lab assignment grades depend on these self evaluations.
 
+***
 ### Self evaluation example
 
 Each week, each student gets some fixed amount of points that can be distributed among their team members based on based on justification provided.
 
 Consider an example below where each student has 10 points to distribute among their team members each week:
 
+***
 | Week   | Student A | Student B | Student C | Student D |
 |--------|-----------|-----------|-----------|-----------|
 | 1      | 10        | 10        | 5         | 15        |
@@ -130,8 +183,10 @@ Consider an example below where each student has 10 points to distribute among t
 | Total  | 51        | 29        | 45        | 45        |
 | Dist.  | 100%      | 57%       | 88%       | 88%       |
 
+***
 Lab professor awarded group 1.2 points for settled lab assignment.
 
+::: {.fragment}
 Students individually receive:
 
 | Student   | Individual grade     |
@@ -140,7 +195,8 @@ Students individually receive:
 | Student B | 0.7 (~57% of 1.2)    |
 | Student C | 1.1 (~88% of 1.2)    |
 | Student D | 1.1 (~88% of 1.2)    |
-
+:::
+***
 ### General requirements for lab assignments
 
 General requirements:
@@ -182,6 +238,7 @@ Unofficial goal: to develop an app in ASP.NET that has basic functionality of as
 
 Points: 1.5
 
+***
 1. Application can be interacted with using *some* sort of interface. There exists at least one user scenario, which can be demonstrated end to end.
 2. Creating and using your own `class`, `struct`, `record` and `enum`. 1 type must be immutable.
 3. Property usage in `struct` and `class`.
@@ -204,6 +261,7 @@ Unofficial goal: start using database and testing the project. Deepen the functi
 
 Points: 1.5
 
+***
 1. Relational database and Entity Framework is used for storing all the data.
 2. Create a generic type with generic method. Demonstrate how generics removed duplication.
 3. Create at least 1 exception type and throw it; meaningfully deal with it, by attaching custom handling logic.
@@ -213,7 +271,6 @@ Points: 1.5
 7. Unit and integration tests coverage at least 50%.
 8. All changes reviewed via pull requests; each PR must have description explaining what was done and why. Each team member must have authored at least 3 merged PRs and reviewed at least 3 PRs from teammates. PR is counted as reviewed only if there are any meaningful comments and discussions.
 9. Uniform coding style is used throughout the project.
-
 
 ## Lab assignment #3
 
@@ -225,6 +282,7 @@ Unofficial goal: think about the end-user experience, deepen the functionality o
 
 Points: 2.0
 
+***
 1. Short video (4 to 6 minutes) is prepared, which showcases how the application works and it's features. Key architectural and code design decisions can also be shown. Must be uploaded to some public video hosting service (i.e. YouTube) or provided as a file. 
 2. Application is in a stable state. Additional user flows could be asked to be shown during the presentation.
 3. Value proposition of the application can be clearly articulated.
@@ -236,20 +294,28 @@ Points: 2.0
 9. All changes reviewed via pull requests; each PR must have description explaining what was done and why. Each team member must have authored at least 3 merged PRs and reviewed at least 3 PRs from teammates.
 10. Uniform coding style is used throughout the project.
 
+***
 Bonus points (max 0.5):
 1. Application is hosted in some environment and is accessible through a public domain name. All students in the group must be able to explain how to the deployment setup works.
 2. Metrics observability tool (e.g., Prometheus, Grafana, OpenTelemetry) is integrated and has meaningful dashboards and alerts set up.
+
+***
+### Examples
+
+Time for examples
 
 ## Planned lecture topics
 
 These are general guidelines on what the lecture are going to be about. It is possible that if the topics might shift a bit during the semester.
 
+***
 ### Ideal scenario
 
-- You try something yourself
-- Then you listen to the lecture about what you just tried
-- You try again with the new knowledge
+1. You try something yourself
+2. Then you listen to the lecture about what you just tried
+3. You try again with the new knowledge
 
+***
 ### Lecture 2
 
 - Web services: 
@@ -258,11 +324,13 @@ These are general guidelines on what the lecture are going to be about. It is po
     - What are REST, GraphQL, SOAP and gRPC?
 - Developing web services using ASP.NET
 
+***
 ### Lecture 3
 
 - Building graphical web UIs with ASP.NET
 - Intro into Agile software development
 
+***
 ### Lecture 4
 
 - .NET data types
@@ -273,6 +341,7 @@ These are general guidelines on what the lecture are going to be about. It is po
 - Creation of objects and object lifecycle
 - SOLID
 
+***
 ### Lecture 5
 
 - Working with persistent data
@@ -280,6 +349,7 @@ These are general guidelines on what the lecture are going to be about. It is po
 - Collections
 - Delegates, anonymous methods and lambda expressions
 
+***
 ### Lecture 6
 
 - Introduction to LINQ
@@ -287,17 +357,20 @@ These are general guidelines on what the lecture are going to be about. It is po
 - Extension methods
 - Dependency injection
 
+***
 ### Lecture 7
 
 - Unit and integration testing
 - Writing tests in .NET
 
+***
 ### Lecture 8
 
 - Working with databases
 - Introduction to ORMs and Entity Framework
 - Using LINQ when working with ORM
 
+***
 ### Lecture 9
 
 - Software system construction (SWEBOK)
@@ -305,16 +378,19 @@ These are general guidelines on what the lecture are going to be about. It is po
 - Software modification and maintenance
 - More on generic types in C#
 
+***
 ### Lecture 10
 
 - Multi-threading in C#
 - `async` and `await` keywords and their usage
 - Concurrent collections
 
+***
 ### Lecture 11
 
 - User interfaces and user experience
 
+***
 ### Lecture 12
 
 - Improving the software development process
@@ -322,15 +398,18 @@ These are general guidelines on what the lecture are going to be about. It is po
 - Software deployment
 - Continuous integration and deployment
 
+***
 ### Lecture 13
 
 - Monitoring and observability
 
+***
 ### Lecture 14
 
 - Design patterns
 - Modern OO architectures overview
 
+***
 ### Lecture 15
 
 - Thinking about the performance in C#
@@ -339,6 +418,7 @@ These are general guidelines on what the lecture are going to be about. It is po
 ## Exam
 
 Exam will be some combination of this:
+
 - Open ended questions on general software engineering principles, i.e. code reviews, unit and integration testing, design patterns etc.
 - Circle the correct answer(s) questions - snippet of C# code, what will be it's output?
 - Type in the answer - what will the code print out?
@@ -348,6 +428,7 @@ Exam will be some combination of this:
 ## Literature
 
 ### Official literature
+
 1. Software Engineering at Google: Lessons Learned from Programming Over Time.
 2. C# in Depth - Jon Skeet.
 3. The Pragmatic Programmer: your journey to mastery - Andy Hunt.
@@ -356,4 +437,5 @@ Exam will be some combination of this:
 and more... check the course description for the full info.
 
 #### Other highly recommended literature
+
 1. Accelerate: The Science of Lean Software and DevOps: Building and Scaling High Performing Technology Organizations. 

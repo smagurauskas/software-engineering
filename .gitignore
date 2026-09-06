@@ -5,6 +5,8 @@
 
 # Rendered output (slides/pages are built by CI or locally, never committed)
 **/*.html
+# ...except this one, which is slide source injected into every deck.
+!assets/fragment-indicator.html
 
 # Verification scratch (generated .csx scripts and actual outputs)
 /.verify/

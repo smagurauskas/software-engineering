@@ -1,0 +1,78 @@
+<!-- Fragment indicator.
+     Reveal has no "steps left on this slide" cue, so this draws one dot per
+     fragment step next to the slide number: filled = already revealed,
+     hollow = still to come. Hidden entirely on slides without fragments. -->
+<style>
+  .fragment-indicator {
+    position: fixed;
+    bottom: 8px;
+    right: 92px; /* clear of reveal's slide number */
+    z-index: 31; /* same layer as reveal's slide number */
+    display: none;
+    gap: 6px;
+    align-items: center;
+    pointer-events: none;
+  }
+  .fragment-indicator.visible {
+    display: flex;
+  }
+  .fragment-indicator span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    color: var(--r-link-color, #2a76dd);
+    opacity: 0.55;
+  }
+  .fragment-indicator span.shown {
+    background: currentColor;
+    opacity: 1;
+  }
+  /* Static exports have no notion of "remaining", so leave it out. */
+  .reveal.print-pdf ~ .fragment-indicator,
+  .print-pdf .fragment-indicator {
+    display: none !important;
+  }
+</style>
+<script>
+  (function () {
+    const el = document.createElement("div");
+    el.className = "fragment-indicator";
+    document.body.appendChild(el);
+
+    function update() {
+      const slide = Reveal.getCurrentSlide();
+      if (!slide) return;
+
+      // Fragments sharing a data-fragment-index are revealed together, so the
+      // number of distinct indices is the number of clicks, not the number of
+      // .fragment elements.
+      const steps = new Set(
+        Array.from(slide.querySelectorAll(".fragment")).map(
+          (f) => f.getAttribute("data-fragment-index") || "0"
+        )
+      );
+
+      if (steps.size === 0) {
+        el.classList.remove("visible");
+        el.replaceChildren();
+        return;
+      }
+
+      const shown = Reveal.getIndices().f + 1; // -1 when nothing revealed yet
+      el.replaceChildren(
+        ...Array.from({ length: steps.size }, (_, i) => {
+          const dot = document.createElement("span");
+          if (i < shown) dot.className = "shown";
+          return dot;
+        })
+      );
+      el.classList.add("visible");
+    }
+
+    Reveal.addEventListener("ready", update);
+    Reveal.addEventListener("slidechanged", update);
+    Reveal.addEventListener("fragmentshown", update);
+    Reveal.addEventListener("fragmenthidden", update);
+  })();
+</script>

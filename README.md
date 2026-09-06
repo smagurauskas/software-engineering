@@ -10,7 +10,7 @@ same source into two forms:
 - `<lecture>.slides.html` — a reveal.js slide deck used during the lecture
 
 The C# code inside the lectures is executable and is verified by CI on every
-change, so code samples cannot silently rot (see *How code verification works*
+change, so code samples cannot silently rot (see _How code verification works_
 below).
 
 > The material previously lived in Polyglot Notebooks (`.ipynb`). That stack
@@ -31,21 +31,11 @@ Live-reloading preview of a lecture page while editing:
 quarto preview 06-linq.qmd
 ```
 
-Render everything (pages + slides for all lectures, output in `_site/`):
-
-```bash
-quarto render
-```
-
-Render one lecture's slide deck only:
+Render one lecture's format slides:
 
 ```bash
 quarto render 06-linq.qmd --to revealjs
 ```
-
-Slides follow reveal.js conventions: `##` headings start a new slide, press `S`
-in the deck for speaker notes. Rendered output is never committed — `_site/`
-and `*.html` are git-ignored; CI builds and publishes the site.
 
 ## Running the lecture code
 
@@ -61,11 +51,11 @@ dotnet run --project tools/LectureRunner -- 06-linq.qmd
 
 Every lecture declares a tier in its front matter:
 
-| Tier | Meaning |
-|------|---------|
-| `verify: output` | CI runs the lecture's code and its stdout must match `expected/<lecture>.txt` exactly |
-| `verify: run` | CI runs the code and only asserts there are no compile errors (output is nondeterministic — threads, time, randomness) |
-| `verify: none` | Code is not executed by CI (needs external services/NuGet packages, very long runtime, or the lecture has no code) |
+| Tier             | Meaning                                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `verify: output` | CI runs the lecture's code and its stdout must match `expected/<lecture>.txt` exactly                                  |
+| `verify: run`    | CI runs the code and only asserts there are no compile errors (output is nondeterministic — threads, time, randomness) |
+| `verify: none`   | Code is not executed by CI (needs external services/NuGet packages, very long runtime, or the lecture has no code)     |
 
 The pieces:
 
@@ -104,14 +94,14 @@ masked before comparison while the rest of the lecture stays snapshot-verified.
 
 ## Writing conventions
 
-Markdown-authored code fences (```` ```csharp ````) are illustrative only and
+Markdown-authored code fences (` ```csharp `) are illustrative only and
 are never executed. Executable cells use the attribute form
-(```` ```{.csharp} ````) — the verifier picks up exactly those. Keep executable
+(` ```{.csharp} `) — the verifier picks up exactly those. Keep executable
 cells small enough to fit a slide; prefer several small cells over one large
 one.
 
 - Text should be in passive tense where possible.
-- Use mermaid diagrams (```` ```{mermaid} ```` blocks) instead of image
+- Use mermaid diagrams (` ```{mermaid} ` blocks) instead of image
   diagrams where possible.
 - Prefer open source examples and tools where possible.
 

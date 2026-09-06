@@ -1,0 +1,50 @@
+/*-- scss:rules --*/
+
+/* Slide vertical layout.
+ *
+ * Reveal's own `center: true` centers the *whole* slide, heading included,
+ * so it is left off (see _quarto.yml). Instead each slide is a full-height
+ * flex column and the free space is handed to auto margins:
+ *
+ *   - slide with an `##` heading -> heading stays at the top, the remaining
+ *     content is centered in the space below it (equal auto margins above
+ *     and below the content block)
+ *   - slide with no heading (a `***` continuation slide) -> everything is
+ *     centered, as reveal would have done
+ *
+ * When content overflows there is no free space, the auto margins collapse
+ * to zero and the slide falls back to top-aligned - which is what the
+ * `scrollable` slides need.
+ */
+
+.reveal .slides > section.slide,
+.reveal .slides > section > section.slide {
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Heading pinned to the top, content centered underneath. */
+.reveal .slides section.slide:has(> h2) > h2 {
+  flex: 0 0 auto;
+  margin-top: 0;
+  margin-bottom: auto;
+}
+
+.reveal .slides section.slide:has(> h2)::after {
+  content: "";
+  display: block;
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+/* Headingless slides: center the lot. */
+.reveal .slides section.slide:not(:has(> h2)) {
+  justify-content: center;
+}
+
+/* Overflowing slides scroll instead of centering. */
+.reveal .slides section.slide.scrollable {
+  justify-content: flex-start;
+}

@@ -5,9 +5,12 @@ verify: none # no executable cells
 
 ## What are Pull Requests?
 
+::: {.fragment}
 Pull Requests is a collaborative process of reviewing code changes before they are merged into the main code branch.
-
+:::
+::: {.fragment}
 **Goal**: Increase code quality through peer review.
+:::
 
 ::: {.fragment}
 *Note: Pull requests are usually just called simply "PRs" in spoken language. This abbreviated form will be used in the notebook.*
@@ -15,12 +18,15 @@ Pull Requests is a collaborative process of reviewing code changes before they a
 
 ***
 
-Code review is an important step of the overall software development process. Research published by Microsoft found that developers spend ~6 hours per week preparing code for PRs or reviewing others' PRs, amounting to around **~15% of total work time** being related to the code review process.
+Code review is an important step of the overall software development process. 
+
+Research published by Microsoft found that developers spend ~6 hours per week preparing code for PRs or reviewing others' PRs, amounting to around **~15% of total work time** being related to the code review process. [^1]
 
 ::: {.notes}
 *Note: Pull requests may sometimes be called "Merge requests" or similar names, based on the platform used.*
 :::
 
+***
 ### Pull Request Process
 
 ```{mermaid}
@@ -44,25 +50,39 @@ flowchart LR
 
 ## Why Pull Requests Matter
 
-Pull requests allow multiple engineers to review changes before they are merged into the main trunk. Multiple research studies show that performing code reviews decreases the defect count [3], among other benefits.
+Pull requests allow multiple engineers to review changes before they are merged into the main trunk. Multiple research studies show that performing code reviews decreases the defect count [^3], among other benefits.
 
-**Goals and benefits:**
+::: {.fragment}
+Goals and benefits:
+:::
+
+::: {.fragment}
 - Get a second (or more) look at changes
+:::
+::: {.fragment}
 - Provide comments on potential improvements
+:::
+::: {.fragment}
 - Ensure code will be understood in the future
+:::
+::: {.fragment}
 - Encourage learning between team members
+:::
 
+***
 ### Code readability
 
 There is a popular quote in software engineering:
 
 > Code is read more than it is written
 
+::: {.fragment}
 While it's hard to trace the origin of this quote, the sentiment remains relevant today.
 
 After code is written, it will be read numerous times by the author and, more importantly, by other engineers. Ideas that aren't clearly expressed in code will be forgotten. Cryptic variable names will stop making sense over time. 
 
 Therefore, it's important to make code future-proof, so that people with little context about the prior history can understand it later.
+:::
 
 ***
 
@@ -72,78 +92,139 @@ For quick inspiration on what makes code readable, start with this article: [Pra
 
 ## Code Review Best Practices
 
-Modern code reviews use tools to inspect changes and leave comments or start discussions regarding these changes[*]. After reviewing the changes, reviewers leave comments on the code reviewed.
+Modern code reviews use tools to inspect changes and leave comments or start discussions regarding these changes. This is stated in contrast to older scientific articles, where code review process can mean very formal, in-person code review, where several people are looking at printouts of the code.
+
+After reviewing the changes, reviewers leave comments on the code reviewed.
 
 Comments can target specific lines of code, specific files, or the whole PR.
 
-::: {.fragment}
-[*]: This is stated in contrast to older scientific articles, where code review process can mean very formal, in-person code review, where several people are looking at printouts of the code.
-:::
-
 ## Raising Effective PRs
 
-### Key Principles
-- **Provide context** - Explain what is being changed and why. A good title and proper description can go a long way.
-- **Keep it small** - The smaller the PR, the easier it is to review [1]
-- **Review the code yourself** - Looking at poor quality PRs can feel like a waste of time to team members. Always make sure you've taken all the steps on your side to make it as smooth as possible.
 
 ::: {.fragment}
-*Keeping it small: [1] Study suggests that as the number of files in the PR increases, the usefulness of comments decreases. This is potentially related to the fact that it's harder to reason about large-scale codebases effectively, compared to smaller ones.*
+- **Provide context** - Explain what is being changed and why. A good title and proper description can go a long way.
+:::
+::: {.fragment}
+- **Keep it small** - The smaller the PR, the easier it is to review [^1]
+:::
+::: {.fragment}
+- **Review the code yourself** - Looking at poor quality PRs can feel like a waste of time to team members. Always make sure you've taken all the steps on your side to make it as smooth as possible.
+:::
+::: {.fragment}
+*Keeping it small: [^1] Study suggests that as the number of files in the PR increases, the usefulness of comments decreases. This is potentially related to the fact that it's harder to reason about large-scale codebases effectively, compared to smaller ones.*
 :::
 
+***
 ### Reviewing the code yourself
 
 Some things you can do to improve the quality of PRs you submit:
 
+::: {.fragment}
 - Review your own code first. Check if the variables make sense and try to look through the reviewer's eyes.
+:::
+::: {.fragment}
 - Test your changes locally. Run the local automated tests and make sure they pass.
+:::
+::: {.fragment}
 - Make sure all automated code formatting or linting tools were run and code style is consistent with your standards.
+:::
+::: {.fragment}
 - Compilers can provide warnings which can indicate code smells—make sure they are addressed before submitting the code.
+:::
 
 ## Reviewing PRs Effectively
 
 **What to focus on:**
+
+::: {.fragment}
 - Focus on what is in the scope of the PR
+:::
+::: {.fragment}
 - Code readability and maintainability
+:::
+::: {.fragment}
 - Logic correctness and potential bugs
+:::
+::: {.fragment}
 - Test coverage and quality
+:::
+::: {.fragment}
 - Performance implications [*]
+:::
 
 ::: {.fragment}
 *[&ast;] When it comes to performance implications, it's especially easy to go down the endless rabbit hole of marginal improvements that can be found. This is the very appropriate place to focus on **good instead of perfect**.*
 :::
 
+***
 ### Focus on the Current Changes
+
+::: {.fragment}
 - Review only what's in scope of this PR
+:::
+::: {.fragment}
 - Don't address historical code issues in current PR
+:::
 
+::: {.fragment}
 It is sometimes tempting to point out historicall bad solutions in the new PRs. Code that was once OK, now has obvious flaws at it is easy to point that out. However it is better to refrain from this.
+:::
 
+***
 ### Provide Constructive Feedback
-- Give actionable suggestions, i.e. not the something is wrong, but how can it be improved
-- Help others learn rather than scolding for bad code
-- Focus on "good enough" rather than perfect
 
+::: {.fragment}
+- Give actionable suggestions, i.e. not the something is wrong, but how can it be improved
+:::
+::: {.fragment}
+- Help others learn rather than scolding for bad code
+:::
+::: {.fragment}
+- Focus on "good enough" rather than perfect
+:::
+
+::: {.fragment}
 While you do need to identify that something is wrong to be able to fix this, focusing too much on the negativity can lead to overall worse motivation of the team and the outcomes.
+:::
 
 ## Types of Review Comments
 
 Generally comments can be grouped into 2 categories:
 
+::: {.fragment}
 1. **Readability related comments**
+:::
+::: {.fragment}
    - Naming conventions
    - Code structure and organization
    - Documentation and clarity
-
+:::
+::: {.fragment}
 2. **Code logic or design related comments**
+:::
+::: {.fragment}
    - Business logic correctness
    - Error handling
    - Performance concerns
    - Security issues
    - Unconventional design decisions
+:::
 
+***
 ### Naming conventions
 
+::: {.r-stack}
+::: {.fragment .fade-out fragment-index=0}
+```csharp
+class Person
+{
+    public string FirstName { get; set; }
+    public string Last_Name { get; set; }
+}
+```
+:::
+
+::: {.fragment .fade-in fragment-index=0}
 ```csharp
 class Person
 {
@@ -151,13 +232,34 @@ class Person
     public string Last_Name { get; set; } // -- But Snake_Case here?
 }
 ```
+:::
+:::
 
 ::: {.fragment}
 It's not *per se* that one style is better than the other, but the research overwhelmingly shows that consistency is critical to readable code.
 :::
 
+***
 ### Code structure
 
+::: {.r-stack}
+::: {.fragment .fade-out fragment-index=0}
+```csharp
+class Person
+{
+    public string FirstName { get; private set; }
+
+    public Person(string firstName, string lastName)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+    }
+
+    public string LastName { get; private set; }
+}
+```
+:::
+::: {.fragment .fade-in fragment-index=0}
 ```csharp
 class Person
 {
@@ -173,18 +275,35 @@ class Person
     public string LastName { get; private set; }
 }
 ```
+:::
+:::
 
+***
 ### Documentation and clarity
 
+::: {.r-stack}
+::: {.fragment .fade-out fragment-index=0}
 ```csharp
 class Person
 {
     public string FirstName { get; set; }
-    public string Code { get; set; } // -- What kind of code is this? Maybe personal identification code, but very ambigious just from the name.
+    public string Code { get; set; }
 }
 ```
+:::
+::: {.fragment .fade-in fragment-index=0}
+```csharp
+class Person
+{
+    public string FirstName { get; set; }
+    public string Code { get; set; } // -- What kind of code is this? 
+    // Maybe personal identification code, but very ambigious just from the name.
+}
+```
+:::
+:::
 
-# Code Review Examples
+## Code Review Examples
 
 Next will follow a few examples that can be used for inspiration for what to look at when doing code reviews.
 
@@ -193,14 +312,18 @@ Next will follow a few examples that can be used for inspiration for what to loo
 One of the key goals of pull requests is ensuring code **readability**.
 
 **Readable code means:**
+
+::: {.fragment}
 - Other engineers can easily understand what the code does
-- Variables, classes, and methods have descriptive names  
+:::
+::: {.fragment}
+- Variables, classes, and methods have descriptive names
+:::
+::: {.fragment}
 - Code is maintainable for future changes
+:::
 
-
-
-**Issues**: Unclear names, missing validation, wrong return type
-
+***
 ### ❌ Before
 
 ```csharp
@@ -216,20 +339,22 @@ class U
 ```
 
 ::: {.fragment}
-
 **Question**: What's wrong with this code? What does it even do?
 :::
 
+***
 ### 💬 Comments
 
 ```csharp
-class U // -- Cannot understand the intent of the class from it's name. There is also no state, it could probably be `static`
+class U // -- Cannot understand the intent of the class from it's name. 
+// There is also no state, it could probably be `static`
 {
     public int C(List<int> l) // -- Cannot understand what the method is supposed to do from it's name
     { // -- What if the list is empty? It is also never modified in the method.
         var s = 0; // -- unclear variable name
         foreach (var i in l) s += i;
-        return s / l.Count; // -- Division results in `double` result, but it is narrowed down to `int` by the method. Is this intended?
+        return s / l.Count; // -- Division results in `double` result, 
+        // but it is narrowed down to `int` by the method. Is this intended?
     }
 }
 ```
@@ -238,6 +363,7 @@ class U // -- Cannot understand the intent of the class from it's name. There is
 *Trying to point out the potential problems, while also suggesting or implying solutions to them.*
 :::
 
+***
 ### ✅ After fixing the code according to comments
 
 ```csharp
@@ -258,10 +384,10 @@ static class Statistics
 }
 ```
 
-**Benefits**: Clear intent, proper validation, correct return type
-
+***
 ## Example 2: Separation of Concerns
 
+***
 ### ❌ Before  
 
 ```csharp
@@ -288,10 +414,12 @@ class Order
 **Question**: How would you test this? What are the different responsibilities here?
 :::
 
+***
 ### 💬 Comments
 
 ```csharp
-class OrderProc // -- This class has multiple responsibilities: file I/O and pricing logic. Need to be able to test one without the other.
+class OrderProc // -- This class has multiple responsibilities: file I/O and pricing logic. 
+// Need to be able to test one without the other.
 {
     public decimal P(string path) // -- Method name 'P' is not descriptive. What does it process?
     {
@@ -310,8 +438,7 @@ class Order  // -- This is fine, but could benefit from validation
 }
 ```
 
-*Suggesting to separate concerns and make the code more testable by splitting responsibilities.*
-
+***
 ### ✅ After fixing the code according to comments
 
 ```csharp
@@ -340,13 +467,9 @@ static class Pricing
 }
 ```
 
-::: {.fragment}
-**Improvements**: File access separated from pricing logic
-**Benefits**: Testable, single responsibility, extensible
-:::
-
 ## Example 3: Incremental Refactoring
 
+***
 ### ❌ Before
 
 ```csharp
@@ -368,6 +491,7 @@ class ShippingCostCalculatorV1
 **Question**: This logic is hard to review. How could it be made easier to verify in a PR?
 :::
 
+***
 ### 💬 Comments
 
 ```csharp
@@ -376,9 +500,11 @@ class ShippingCostCalculatorV1
     public decimal Calculate(string country, int weightGrams)
     {
         var baseCost = 5m;
-        if (country == "US") baseCost = 3m; // -- Since it clearly changes based on country, maybe this can be placed elsewhere for clarity?
+        if (country == "US") baseCost = 3m; // -- Since it clearly changes based on country, 
+        // maybe this can be placed elsewhere for clarity?
         if (weightGrams > 1000) baseCost += 4m;
-        if (country == "DE" && weightGrams < 500) // -- It would be clearer if country specific logic would be separated.
+        if (country == "DE" && weightGrams < 500) 
+        // -- It would be clearer if country specific logic would be separated.
             baseCost -= 1m;
         return baseCost; // -- base cost sounds misleading at this point
     }
@@ -387,6 +513,7 @@ class ShippingCostCalculatorV1
 
 *Suggesting to break down complex logic into smaller, testable functions with clear responsibilities.*
 
+***
 ### ✅ After fixing the code according to comments
 
 ```csharp
@@ -413,15 +540,13 @@ class ShippingCostCalculatorV2
 ```
 
 ::: {.fragment}
-**Improvement**: Extracted logical parts into small, pure functions.
-:::
-
-::: {.fragment}
 **Discussion**: "conventionally" speaking the code is *cleaner* now, but is it really that much easier to read?
 :::
 
+***
 ## Example 4
 
+***
 ### ❌ Before
 
 ```csharp
@@ -439,8 +564,11 @@ class UserServiceV1
 }
 ```
 
+::: {.fragment}
 **Question**: What happens on failure? What are the valid inputs for `e` and `p`?
+:::
 
+***
 ### 💬 Comments
 
 ```csharp
@@ -462,6 +590,7 @@ class UserServiceV1
 *Suggesting explicit error handling and proper validation to create a clear, enforceable contract.*
 :::
 
+***
 ### ✅ After fixing the code according to comments
 
 ```csharp
@@ -473,10 +602,8 @@ static class Email
     
     public static void EnsureValid(string value, string paramName)
     {
-        if (string.IsNullOrWhiteSpace(value) || 
-            !Pattern.IsMatch(value))
-            throw new InvalidEmailException(
-                "Email format invalid", paramName);
+        if (string.IsNullOrWhiteSpace(value) || !Pattern.IsMatch(value))
+            throw new InvalidEmailException("Email format invalid", paramName);
     }
 }
 
@@ -485,44 +612,62 @@ class UserServiceV2
     public void Register(string email, string password)
     {
         Email.EnsureValid(email, nameof(email));
-        if (string.IsNullOrWhiteSpace(password) || 
-            password.Length < 6)
-            throw new ArgumentException(
-                "Password must be at least 6 characters.", 
-                nameof(password));
+        if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
+            throw new ArgumentException("Password must be at least 6 characters.", nameof(password));
         // persist user here
     }
 }
 ```
 
-**Benefits**: Clear failure modes, explicit validation
-
 ## Measuring PR Process Effectiveness
 
 ### Key Metrics to Track
+::: {.fragment}
 - **Review time** - Time from PR creation to approval
+:::
+::: {.fragment}
 - **PR size** - Lines of code changed
+:::
+::: {.fragment}
 - **Review iterations** - Number of back-and-forth cycles
+:::
+::: {.fragment}
 - **Time to merge** - Complete cycle time
+:::
 
+***
 ### References
-- Benchmarks and reference values: [LinearB Engineering Benchmarks](https://linearb.io/resources/engineering-benchmarks)
 - DORA metrics: [DORA Metrics Four Keys](https://dora.dev/guides/dora-metrics-four-keys/)
+- Benchmarks and reference values: [LinearB Engineering Benchmarks](https://linearb.io/resources/engineering-benchmarks)
 
 # Key Takeaways
 
 ## For PR Authors
 
+::: {.fragment}
 - **Create focused PRs** - One feature/bug fix per PR
+:::
+::: {.fragment}
 - **Write clear descriptions** - Explain what, why, and how; include screenshots if UI changes
+:::
+::: {.fragment}
 - **Self-review first** - Check your own diff before asking others to review
+:::
+::: {.fragment}
 - **Ensure quality** - Run tests, linters, and verify CI passes
+:::
 
 ## For Reviewers
 
+::: {.fragment}
 - **Stay in scope** - Review only what's changed in this PR
+:::
+::: {.fragment}
 - **Be constructive** - Suggest solutions, not just problems
+:::
+::: {.fragment}
 - **Consider context** - Balance "perfect" vs "good enough" based on code criticality
+:::
 
 ::: {.notes}
 # References
