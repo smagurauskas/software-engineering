@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+option csharp_namespace = "Catalog.Grpc";
+
+package catalog;
+
+service Catalog {
+  rpc GetBook (GetBookRequest) returns (Book);
+
+  rpc StreamBooksByAuthor (StreamBooksByAuthorRequest) returns (stream Book);
+
+  rpc ImportBooks (stream NewBook) returns (ImportSummary);
+
+  rpc LookupBooks (stream GetBookRequest) returns (stream LookupReply);
+}
+
+message GetBookRequest {
+  string id = 1;
+}
+
+message StreamBooksByAuthorRequest {
+  string author_id = 1;
+}
+
+message NewBook {
+  string title = 1;
+  string author_id = 2;
+  int32 year = 3;
+}
+
+message ImportSummary {
+  int32 imported = 1;
+  int32 rejected = 2;
+  repeated string errors = 3;
+}
+
+message LookupReply {
+  bool found = 1;
+  string requested_id = 2;
+  Book book = 3;
+}
+
+message Author {
+  string id = 1;
+  string name = 2;
+  string country = 3;
+}
+
+message Book {
+  string id = 1;
+  string title = 2;
+  int32 year = 3;
+  Author author = 4;
+  repeated Edition editions = 5;
+}
+
+message Edition {
+  string id = 1;
+  string format = 2;
+  int32 pages = 3;
+  int32 year = 4;
+}

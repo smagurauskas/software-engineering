@@ -1,5 +1,4 @@
 project:
-  output-dir: _site
   render:
     - "*.qmd"
 
@@ -14,7 +13,7 @@ format:
   revealjs:
     output-ext: slides.html
     embed-resources: true
-    slide-level: 2
+    slide-level: 3
     # slides.scss keeps each heading at the top of its slide and centers
     # only the content below it.
     theme: [white, assets/slides.scss]
