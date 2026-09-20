@@ -151,6 +151,7 @@ For example, a method like HTTP `GET` is (and should) only be used to fetch some
 ***
 
 Some of the most frequently used methods are:
+
 - `GET` - the "default" method (at least for browsers) to retrieve a resource.
 - `POST` - a method for creating a resource or invoking a command. It has a body where a payload can be transferred.
 - `PUT` - a method for updating a resource. It has a body similar to `POST`.
@@ -188,6 +189,7 @@ Due to certificates being so easy to obtain nowadays, it is considered a bad pra
 HTTP uses the `Content-Type` header to identify what the media format of a request or response is.
 
 2 large groups of media format can be highlighted:
+
 - `text` - human-readable content types.
 - `application` - machine-readable content types.
 
@@ -329,6 +331,7 @@ REST is an acronym that stands for **Re**presentational **S**tate **T**ransfer. 
 REST was originally defined in [Roy Thomas Fielding dissertation](https://ics.uci.edu/~fielding/pubs/dissertation/fielding_dissertation.pdf) in 2000.
 
 REST is best described by the "uniform interface" it is supposed to provide:
+
 - Resources are identified by their URIs.
 - HTTP standard is used to describe communication and actions.
 - Resources representations are uncoupled from their internal representation.
@@ -351,6 +354,7 @@ For example - if the study program has 10 courses, then every single one of the 
 HTTP verbs are used to define the action on requested resource.
 
 Meaning that:
+
 - `GET https://mif.vu.lt/software-engineering/se-1` - should return the representation of the resource.
 - `DELETE https://mif.vu.lt/software-engineering/se-1` - should delete the resource.
 - etc.
