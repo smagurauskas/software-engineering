@@ -1,36 +1,42 @@
 ---
-title: "Web development"
+title: "Web frontends"
 verify: none # no executable cells
 ---
 
-Web (*webpages* or *websites* or *web app*) developments allows to deliver programs with rich user interaces served by web browsers and are delivered via HTTP(S) protocol.
+Web frontends (*webpages* or *websites* or *web app*) developments allows to deliver programs with rich user interaces served by web browsers and are delivered via HTTP(S) protocol.
 
 ***
 
-Website development predominantly uses `HTML`, `CSS` and `JavaScript` languages:
+
+Web predominantly uses `HTML`, `CSS` and `JavaScript` languages:
+
+::: {.fragment}
 - `HTML` allows to set the structure of elements rendered on web page.
+:::
+::: {.fragment}
 - `CSS` allows to change the styles of these rendered elements.
+:::
+::: {.fragment}
 - `JavaScript` allows to add dynamic interactions to the web page.
+:::
 
 ***
 
 Server returns an `html` file to the browser, and then browser figures out how to display that to the user (aka renders it).
 
 ```html
+<h1>Hello class!</h1>
+```
+
+***
+
+```{=html}
 <html>
   <body>
     <h1>Hello class!</h1>
   </body>
 </html>
 ```
-
-***
-
-<html>
-  <body>
-    <h1>Hello class!</h1>
-  </body>
-</html>
 
 ::: {.content-visible unless-format="revealjs"}
 Websites can be served to users as simple static `HTML` files. But static websites have limited capabilities - they cannot dynamically update their content with new data. In order for website to dynamically adapt to new data it cannot be static, but it needs to be rendered dynamically instead. Rendering in this case means assembling `HTML` document, that can be taken by browser to display the website to user.
@@ -65,11 +71,13 @@ graph TD
     SGML --> XML
 ```
 
+***
 #### Elements and tags
 
-`HTML` markup consists of elements. Elements consists of openning and closing tags.
+`HTML` markup consists of elements. Elements consists of opening and closing tags.
 
-Star tag is written by specifying element name between `<` and `>`, i.e. `<div>`.
+Start tag is written by specifying element name between `<` and `>`, i.e. `<div>`.
+
 End tag is written by specifying element name between `</` and `>`, i.e. `</div>`. The only difference between opening and closing tags are the `/` symbol following `<`.
 
 ::: {.content-visible unless-format="revealjs"}
@@ -81,8 +89,9 @@ Element can be opened and closed in same tag, by prepending `/` before the closi
 :::
 
 ***
+#### HTML syntax quirks
 
-There are some syntax quirks that are valid for `html` documents, but would be invalid `xml` documents, i.e. in the example below, omitting the `<body>` openning tag [would technically be valid](https://html.spec.whatwg.org/multipage/syntax.html#syntax-tag-omission):
+There are some syntax quirks that are valid for `html` documents, but would be invalid `xml` documents, i.e. in the example below, omitting the `<body>` opening tag [would technically be valid](https://html.spec.whatwg.org/multipage/syntax.html#syntax-tag-omission):
 
 ```html
 <html>
@@ -91,6 +100,7 @@ text text text
 </html>
 ```
 
+***
 #### Attributes
 
 `HTML` elements can also have attributes, just like `XML` elements have.
@@ -101,6 +111,7 @@ Attributes are specified in start tag between element name and closing `>`.
 
 Elements can have more than one attribute.
 
+***
 #### Comments
 
 Comments in `HTML` documents are specified between `<!--` and `-->` tags.
@@ -109,6 +120,7 @@ An example comment in `HTML` looks like this: `<!-- this is a comment -->`.
 
 Comments are ignored when browser renders the document.
 
+***
 #### HTML document structure
 
 `HTML` are always wrapped in `<html>` element. Every document must have this element as the root element.
@@ -127,6 +139,13 @@ Check [this reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 
 ```html
 <!-- very simplistic example of an html document with no style or interactivity -->
+<div>text wrapped in container</div>
+<b>text but bold</b>
+<button>pushable button</button>
+```
+
+***
+```{=html}
 <html>
     <head>
         <title>simple document</title>
@@ -138,18 +157,6 @@ Check [this reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Element
     </body>
 </html>
 ```
-***
-<html>
-    <head>
-        <title>simple document</title>
-    </head>
-    <body>
-        <div>text wrapped in container</div>
-        <b>text but bold</b>
-        <button>pushable button</button>
-    </body>
-</html>
-
 ::: {.notes}
 Static `HTML` documents can be tested by simply saving them as `.html` files and the opening them with the internet browser application.
 :::
@@ -200,28 +207,25 @@ This `css` would be applied to an `html` element which has a `class` attribute w
     </body>
 </html>
 ```
+
 ***
-<html>
-    <head>
-        <style>
-            .blue-box
-            {
-                background-color: #0000FF;
-                width: 100px;
-                height: 100px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="blue-box">this will be a blue box</div>
-    </body>
-</html>
-    
+
+```{=html}
+<style>
+  .blue-box {
+    background-color: #0000ff;
+    width: 100px;
+    height: 100px;
+  }
+</style>
+<div class="blue-box">this will be a blue box</div>
+```
 
 ***
 
 `css` statements consists of `selector` statement followed by a style statement between `{ }`. 
 
+::: {.content-visible unless-format="revealjs"}
 Selectors specify which `html` elements the style should apply to. Selectors can be specified to apply to all elements with certain `class` attribute, to elements with certain `id` attribute or to all elements of certain type.
 
 On top of that these rules can be nested by chaining selectors separated by an empty space. For example rule with selector `.blue-box .white-box` would apply to all elements with `class` name `white-box` that are children of element of class `blue-box`.
@@ -229,8 +233,27 @@ On top of that these rules can be nested by chaining selectors separated by an e
 Rules can also be used in conjunction: `.white-box.blue-box` would apply to elements that have both `white-box` and `blue-box` classes.
 
 For the full reference of available rules see [this](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors).
+:::
+
+::: {.fragment}
+`.blue-box` select and element with `class` = `blue-box`
+:::
+
+::: {.fragment}
+`#id-name` select an element with `id` = `id-name`
+:::
+
+::: {.fragment}
+`[data-attribute=value]` select an element with `data-attribute` attribute equal to `value`
+:::
+
+::: {.fragment}
+Selectors can be chained and combined to target more specific elements. For example, `.blue-box .white-box` targets all elements with `class` = `white-box` that are descendants of elements with `class` = `blue-box`.
+:::
 
 ***
+
+CSS selectors are also used more broadly in JavaScript and other languages when selecting HTML elements.
 
 To get the hang of `css` selectors, you can try a simple game like such [https://flukeout.github.io/](https://flukeout.github.io/).
 
@@ -266,16 +289,76 @@ File `page.html`:
 ***
 
 *Better* practices when using `css`:
+
 - Try to use selectors that use `class` names when targeting specific `html` elements.
 - Link `css` from a file rather than inlining on `html` elements.
 - Use [flexbox](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Flexbox) to achieve the wanted page layout.
 
+***
+#### Aligning elements
+HTML:
+```html
+<div class="container">
+  <div class="blue-box">Blue Box</div>
+  <div class="white-box">White Box</div>
+</div>
+```
+
+CSS:
+```css
+.container {
+  display: flex;
+  justify-content: space-between;
+}
+.blue-box {
+  background-color: #0000ff;
+  width: 100px;
+  height: 100px;
+}
+.white-box {
+  background-color: #ffffff;
+  width: 100px;
+  height: 100px;
+}
+```
+
+***
+
+```{=html}
+<style>
+  .flexy-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  .blue-box {
+    background-color: #0000ff;
+    width: 100px;
+    height: 100px;
+  }
+  .white-box {
+    background-color: #ffffff;
+    width: 100px;
+    height: 100px;
+  }
+</style>
+<div class="flexy-container">
+  <div class="blue-box">Blue Box</div>
+  <div class="white-box">White Box</div>
+</div>
+```
+
 ### JavaScript
 
-JavaScript is used to add dynamic functionality to the web sites. Browsers have a capability to execute JavaScript (`js`) scripts that are added to the `html` document to give the website dynamic interactions. `js` is being executed on the client side (user's computer) and is the driving force behind the interactivity in the modern websites.
+JavaScript is used to add dynamic functionality to the web sites.
+
+Browsers have a capability to execute JavaScript (`js`) scripts that are added to the `html` document to give the website dynamic interactions. `js` is being executed on the client side (user's computer) and is the driving force behind the interactivity in the modern websites.
+
+***
 
 `js` can access `document` api and other predefined functions in the browser to alter the `html` document and perform other actions. Things `js` can do include:
+
 - Dynamically add or remove `html` element from the document.
+- Change the content of existing `html` elements.
 - Call web services to fetch or send data.
 - Do any calculations (JavaScript is proper Turing-complete language).
 
@@ -295,15 +378,15 @@ JavaScript can be imported to `html` document via `<script>` element in the `<he
 </html>
 ```
 
+::: {.content-visible unless-format="revealjs"}
 The `html` document in the example above would import the `javascript.js` file with all the scripts inside of it and then would run the inline written script with `alert("inline alert");` (it would make an alert box pop up) statement.
+:::
 
 ***
 
 Example for javascript uses:
 
-<html>
-  <head>
-   
+```{=html}
 <script>
 // Array of messages to show off JavaScript capabilities
 const messages = [
@@ -335,14 +418,81 @@ setInterval(() => {
   i++;
   }, 1000);
 </script>
+<div id="demo-box">
+  Waiting for update...
+</div>
+```
 
-  </head>
-  <body>
-    <div id="demo-box">
-      Waiting for update...
-    </div>
-  </body>
-</html>
+***
+
+```html
+<script>
+// Array of messages to show off JavaScript capabilities
+const messages = [
+  "✅ JS can update HTML!",
+  "🕒 Current time: " + new Date().toLocaleTimeString(),
+  "🔄 Dynamically change styles",
+  "🎲 Random number: " + Math.floor(Math.random() * 100),
+  "🌍 It can handle dates, numbers, text..."
+];
+
+let i = 0;
+setInterval(() => {
+  const box = document.getElementById("demo-box");
+
+  // Cycle through messages
+  const msg = messages[i % messages.length];
+  box.innerHTML = msg;
+
+  if (msg.startsWith("🕒")) {
+  box.innerHTML = "🕒 Current time: " + new Date().toLocaleTimeString();
+  }
+  else if (msg.startsWith("🎲")) {
+  box.innerHTML = "🎲 Random number: " + Math.floor(Math.random() * 100);
+  }
+
+  // Change box color randomly
+  box.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 90%)`;
+
+  i++;
+  }, 1000);
+</script>
+<div id="demo-box">
+  Waiting for update...
+</div>
+```
+
+### Calling Web APIs
+
+```html
+<div id="fact"></div>
+<button onclick="getNewFact()">Get New Fact</button>
+<script>
+  function getNewFact() {
+    let x = new XMLHttpRequest();
+    x.open("GET", "https://catfact.ninja/fact");
+    x.onload = () =>
+      (document.getElementById("fact").innerText = JSON.parse(x.response).fact);
+    x.send();
+  }
+</script>
+```
+
+***
+
+```{=html}
+<div id="fact"></div>
+<button onclick="getNewFact()">Get New Fact</button>
+<script>
+  function getNewFact() {
+    let x = new XMLHttpRequest();
+    x.open("GET", "https://catfact.ninja/fact");
+    x.onload = () =>
+      (document.getElementById("fact").innerText = JSON.parse(x.response).fact);
+    x.send();
+  }
+</script>
+```
 
 ### WebSockets
 
@@ -386,11 +536,16 @@ graph LR
 
 ## Ways of rendering the `html` documents
 
+::: {.content-visible unless-format="revealjs"}
 `HTML` documents have 2 major options how they can be rendered:
+:::
+
 1. Server side
 2. Client side
 
+::: {.fragment}
 Both of these options has their own pros and cons, and none of them is supperior to the other.
+:::
 
 ### Server side rendering
 
@@ -413,16 +568,42 @@ else
 
 ***
 
-This method has such advantages as:
+Server-side rendering has such advantages as:
+
+::: {.fragment}
 - An ability to cache the rendered websites on the server side so they could be served faster for the future users.
+:::
+::: {.fragment}
 - If rendering of the websites requires lots of data from the server, this might be faster because there would be less latency when fetching the data from the server, since all the action is happening in the server itself.
+:::
+::: {.fragment}
 - Server, as a machine, might be faster than the consumer device, which might speed up the calculations needed to assemble the `html` document in certain cases. 
+:::
 
 ### Client side rendering
 
 Client side rendering is done by the `javascript` or *similar other language*[^1] on the user's browser.
 
-In such rendering cases only very basic `html` is returned with the initial `document` load. The document references scipts instead instead of code at first. There scripts fetch the needed data from the server and assemble the `html` document on the client's machine. There are popular SPA (single page application) frameworks for this purpose, like `react.js`, `angular` or `vue.js`.
+::: {.fragment}
+1. Very basic `html` is returned with the initial `document` load.
+:::
+::: {.fragment}
+2. Document asks scripts to be loaded.
+:::
+::: {.fragment}
+3. Scripts start fetching the needed data from Web APIs.
+:::
+::: {.fragment}
+4. Scripts assemble the `html` document on the client's machine.
+:::
+
+***
+
+ There are popular SPA (single page application) frameworks for this purpose, like:
+ 
+- `react.js`
+- `angular`
+- `vue.js`
 
 ***
 
@@ -430,75 +611,103 @@ In case of client side rendering, the `html` document would be constructed on th
 
 The logic needed to modify the document would written in `JavaScript`, `WASM` or some derrivative language.
 
-```html
-<html>
-  <script type="text/javascript">
-    setInterval(() => {
-      document.getElementById("hello").innerText = document
-        .getElementById("hello")
-        .innerText.split("")
-        .reverse()
-        .join("");
-    }, 2000);
-  </script>
-  <h1 id="hello">Hello</h1>
-  <html></html>
-</html>
-```
-
-Would render as:
-
-<html>
-  <script type="text/javascript">
-    setInterval(() => {
-      document.getElementById("hello").innerText = document
-        .getElementById("hello")
-        .innerText.split("").reverse().join("");
-    }, 2000);
-  </script>
-  <h1 id="hello">Hello</h1>
-  <html></html>
-</html>
-
 ***
 
-In the case of client side rendering, the specific data needed to render the page would be fetched using the `XHR` requests.
-
 ```html
-<div id="fact"></div>
+<nav>
+  <button onclick="show('fact')">Fact</button>
+  <button onclick="show('breeds')">Breeds</button>
+</nav>
+<div id="app"></div>
 <script>
-  setInterval(() => {
-    let x = new XMLHttpRequest();
-    x.open("GET", "https://catfact.ninja/fact");
-    x.onload = () =>
-      (document.getElementById("fact").innerText = JSON.parse(x.response).fact);
-    x.send();
-  }, 60000);
+  const app = document.getElementById("app");
+  const getJson = async (url) => (await fetch(url)).json();
+
+  const pages = {
+    fact: async () => `<p>${(await getJson("https://catfact.ninja/fact")).fact}</p>`,
+    breeds: async () => {
+      const { data } = await getJson("https://catfact.ninja/breeds?limit=5");
+      return `<ul>${data.map((b) => `<li>${b.breed}</li>`).join("")}</ul>`;
+    },
+  };
+
+  async function show(page) {
+    app.innerHTML = "Loading...";
+    app.innerHTML = await pages[page]();
+  }
+
+  show("fact");
 </script>
 ```
 
-Would render as:
+***
 
-<div id="fact"></div>
+```{=html}
+<nav>
+  <button onclick="show('fact')">Fact</button>
+  <button onclick="show('breeds')">Breeds</button>
+</nav>
+<div id="app"></div>
 <script>
-  setInterval(() => {
-    let x = new XMLHttpRequest();
-    x.open("GET", "https://catfact.ninja/fact");
-    x.onload = () =>
-      (document.getElementById("fact").innerText = JSON.parse(x.response).fact);
-    x.send();
-  }, 60000);
+  const app = document.getElementById("app");
+  const getJson = async (url) => (await fetch(url)).json();
+
+  const pages = {
+    fact: async () => `<p>${(await getJson("https://catfact.ninja/fact")).fact}</p>`,
+    breeds: async () => {
+      const { data } = await getJson("https://catfact.ninja/breeds?limit=5");
+      return `<ul>${data.map((b) => `<li>${b.breed}</li>`).join("")}</ul>`;
+    },
+  };
+
+  async function show(page) {
+    app.innerHTML = "Loading...";
+    app.innerHTML = await pages[page]();
+  }
+
+  show("fact");
 </script>
+```
 
 ***
 
-This method offers advantages like:
+Client side rendering offers advantages like:
 
+::: {.fragment}
 - Increased level of interactivity of the website. This allows to easily add interaction to `html` elements that would be handled on the client side.
+:::
+::: {.fragment}
 - Initial latency might be reduced. Because a very simple document is only loaded initially, some loading state indicator can be displayed on screen very quickly. To fully render the website will still take time, but the first interactive version can be displayed very quickly.
+:::
+::: {.fragment}
 - Potentially reduced computational load on the server side.
+:::
 
 ^1 - there are options like compiled web assemblies (wasm), that are not `javascript`, but can be used for similar purposes.
+
+### Pitch for client side rendering
+
+::: {.fragment}
+1. You already have a server, so you just return HTML, since it's easier
+:::
+::: {.fragment}
+2. You want to have some interactivity, so you just add random JavaScript inserts here and there
+:::
+::: {.fragment}
+3. There becomes a lot of JavaScript inserts
+:::
+::: {.fragment}
+4. Now you are have sort of backend code, but it is in 2 languages and they don't integrate seamlessly
+:::
+::: {.fragment}
+5. You decide to hard separate them
+:::
+::: {.fragment}
+6. Might as well download all the JavaScript at once
+:::
+::: {.fragment}
+7. ...
+:::
 
 ## Further reading
 
