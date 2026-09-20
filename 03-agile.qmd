@@ -3,22 +3,22 @@ title: "Agile"
 verify: none # no executable cells
 ---
 
-## Waterfall model and historical context
+## Process before Agile
 
-While today the idea of approaching software development in iterative fashion sounds pretty standard that was not always the case. 
+While today the idea of approaching software development in iterative fashion sounds pretty standard, that was not always the case.
 
 In the 90s and early 00s software development was largely viewed as a *sequential* process.
 
 ***
 
-The whole project delivery would be split up into distinct phases and one phase would have to be completed before the next phase could begin.
+The whole project delivery would be split up into distinct phases, and one phase would have to be completed before the next phase could begin.
 
-When thinking visually, this approach where phases are moving forward one after another and never backwards, resembles as waterfall, where water only falls down and not up. Thus it was given the *waterfall* name.
+When thinking visually, this approach, where phases move forward one after another and never backwards, resembles a waterfall, where water only falls down and not up. Thus it was given the *waterfall* name.
 
 ::: {.notes}
-Historically this was most likely because software engineering being a new field (relatively speaking) did not have standardized practices yet and had to borrow these practices from neighboring fields. Some of these neighboring fields were building construction and hardware manufacturing. When the building is being built, once a 2nd floor is finished, you can argue that it would be impractical to completely redo the 1st floor, thus it creates a need to plan in advance, because redos might be overly costly. Same applies to computer hardware, because hardware manufacturing is costly process, it might be too expensive to manufacture multiple chips just to find out that they are not behaving exactly as needed.
+Historically this was most likely because software engineering being a new field (relatively speaking) did not have standardized practices yet and had to borrow these practices from neighboring fields. Some of these neighboring fields were building construction and hardware manufacturing. When a building is being built, once a 2nd floor is finished, it would be impractical to completely redo the 1st floor, thus it creates a need to plan in advance, because redos might be overly costly. The same applies to computer hardware: because manufacturing is a costly process, it might be too expensive to manufacture multiple chips just to find out that they are not behaving exactly as needed.
 
-However software development has one big difference from these other fields - it is (relatively) cheap to do it. Ignoring all the maintenance, technical debt and similar considerations, it is very easy to change some functionality and deploy it to make it available to all users. Because of this approaches like thinking of a solution to a problem, developing an iteration of solution, getting user feedback and adjusting the solution to the given feedback becomes viable in software engineering, but not necessarily in other fields.
+However software development has one big difference from these other fields - it is (relatively) cheap to change. Ignoring maintenance, technical debt and similar considerations, it is very easy to change some functionality and deploy it to make it available to all users. Because of this, approaches like thinking of a solution to a problem, developing an iteration of the solution, getting user feedback and adjusting the solution to the given feedback become viable in software engineering, but not necessarily in other fields.
 :::
 
 ### Waterfall visualized
@@ -33,187 +33,473 @@ sequenceDiagram
     Deployment->>Maintenance: Maintenance
 ```
 
-## What is Agile?
+### What Royce actually wrote
 
-Agile could be defined as software development paradigm that focuses on continuous improvement and iterative approaches.
+The diagram everyone copies comes from Winston Royce, 1970.
 
-"Paradigm" just means a set of concepts or thought patterns. To help put Agile into practice, there are numerous frameworks, like Scrum or Kanban created. 
-
-You do not need to work according to a specific framework rules to be Agile. Being Agile is more about the general principles that you follow and how you approach the problems, rather than following some specific routines.
-
-## Manifesto for Agile Software development
-
-Can be found at [agilemanifersto.org](https://agilemanifesto.org/).
-
-Manifesto is a set principles, written by 21 famous software engineers, to follow when developing the software.
-
-While these principles appear obvious nowadays, they were not obvious at the time when the manifesto was written back in 2001.
-
-### Agile principles
-
-As listed in https://agilemanifesto.org/principles.html.
-
-***
-
-> Our highest priority is to satisfy the customer through early and continuous delivery of valuable software.
-
-***
-
-> Welcome changing requirements, even late in development. Agile processes harness change for the customer's competitive advantage.
-
-***
-
-> Deliver working software frequently, from a couple of weeks to a couple of months, with a preference to the shorter timescale.
-
-***
-
-> Business people and developers must work together daily throughout the project.
-
-***
-
-> Build projects around motivated individuals. Give them the environment and support they need, and trust them to get the job done.
-
-***
-
-> The most efficient and effective method of conveying information to and within a development team is face-to-face conversation.
-
-***
-
-> Working software is the primary measure of progress.
-
-***
-
-> Agile processes promote sustainable development. The sponsors, developers, and users should be able to maintain a constant pace indefinitely.
-
-***
-
-> Continuous attention to technical excellence and good design enhances agility.
-
-***
-
-> Simplicity--the art of maximizing the amount of work not done--is essential.
-
-***
-
-> The best architectures, requirements, and designs emerge from self-organizing teams.
-
-***
-
-> At regular intervals, the team reflects on how to become more effective, then tunes and adjusts its behavior accordingly.
-
-## Agile in practice
-
-While there is no "*the agile process*", there are some practices that are generally agreed upon to be good software development practices and make you agile.
-
-However to there are numerous Agile methodologies created that define the process that should help the teams to adopt the Agile way of work.
-
-### Agile Sprints Visualized
-
-Sprint is technically a Scrum term, but it can be used illustrate the Agile methodology well. Work happens in small batches (sprints) and detailed planing usually happens only for immediate work. 
-
-```{mermaid}
-graph TD
-    A[Backlog] --> B[Sprint Planning]
-    B --> C[Sprint]
-    C --> D[Daily Standup]
-    C --> E[Increment]
-    E --> F[Review & Retrospective]
-    F --> A
-```
-
-***
-
-While waterfall development can be illustrated like this:
-
-```text
-      :(              :(            :(               :|              :)
-                                                                     __
-                                                   _    _          _|  |_
-                                  |      |        |      |        |      |
-                   |______|       |______|        |______|        |______|
-      O  O           O  O           O  O            O  O            O  O
-```
-
-***
-
-The Agile development can be better illustrated like this:
-
-```text
-🛼 -> 🛹 -> 🚲 -> 🛵 -> 🏍️ -> 🚗 -> 🚌
-```
-
-::: {.notes}
-Agile favours creating value incrementally. This means that every iteration should produce some value that is beneficial to the end users and takes the project closer towards the end goal.
-
-Looking at the emoji example above, there is a chain of changes that go from roller skates until the bus. Each step becomes a bit more sophisticated piece of machinery until it finally concludes with the bus.
-
-For example if the goal of the project was to "be able to transport large groups of people simultaneously", then the bus is a valid conclusion to this goal. While in the early steps first iterations can only transport single or couple of people simultaneously, they slowly progress and get better with each step making the capability better. 
+::: {.fragment}
+Royce called that simple sequential version risky and likely to fail.
 :::
 
-## Scrum agile framework
+::: {.fragment}
+The paper argues for building the system twice, with feedback between phases.
+:::
 
-Scrum is [probably the most popular agile framework](https://www.researchgate.net/publication/316271974_Optimizing_IT_Infrastructure_by_Virtualization_Approach).
-
-Scrum uses the term sprint to define small work iterations, where the team should deliver value at the end of it.
-
-Scrum also adds a bunch of predefined process that the team should follow during the sprint as well as roles on top of it.
+::: {.fragment}
+The word "waterfall" does not appear in it.
+:::
 
 ***
 
-Scrum.org has a [poster](https://www.scrum.org/resources/scrum-framework-poster) illustrating the scrum process.
+"waterfall vs agile" is not a fight between a naive past and an enlightened present. It is a fight between a procurement document and the people doing the work.
+
+## What is Agile?
+
+Agile could be defined as a software development paradigm that focuses on continuous improvement and iterative approaches.
+
+::: {.fragment}
+"Paradigm" just means a set of concepts or thought patterns.
+:::
+
+::: {.fragment}
+Frameworks like Scrum or Kanban exist to put it into practice.
+:::
+
+::: {.fragment}
+Following a framework is not what makes a team Agile.
+:::
+
+::: {.notes}
+Being Agile is about the general principles that are followed and how problems are approached, rather than following some specific routines. A team can run every Scrum ceremony perfectly and not be agile in any meaningful sense, if it still takes six months to get a change in front of a user.
+:::
+
+## Manifesto for Agile Software Development
+
+Written in February 2001 at Snowbird, Utah, by 17 software engineers.
+
+Published at [agilemanifesto.org](https://agilemanifesto.org/).
+
+::: {.fragment}
+They were mostly independent consultants and trainers, each already promoting their own lightweight method - XP, Scrum, Crystal, DSDM, FDD, Pragmatic Programming. The manifesto is what they could all agree on, which is why it is short and vague.
+:::
+
+::: {.fragment}
+While these principles appear obvious nowadays, they were not obvious at the time when the manifesto was written.
+:::
+
+### The four values
+
+| We value | over |
+| --- | --- |
+| Individuals and interactions | processes and tools |
+| Working software | comprehensive documentation |
+| Customer collaboration | contract negotiation |
+| Responding to change | following a plan |
+
+::: {.fragment}
+It is not that the right column is bad per se, but if left vs right are in conflict, the left wins.
+:::
+
+### Twelve principles, four themes
+
+::: {.fragment}
+Deliver value early and often
+:::
+
+::: {.fragment}
+Change is normal, not failure
+:::
+
+::: {.fragment}
+Teams over process
+:::
+
+::: {.fragment}
+Technical excellence and continuous improvement
+:::
+
+***
+
+In other words:
+
+::: {.fragment}
+- Ship small and fast
+:::
+
+::: {.fragment}
+- Get data points early and often
+:::
+
+::: {.fragment}
+- Learn to act and adjust based on that data
+:::
+
+::: {.fragment}
+- Keep codebase in such a state that this stays cheap
+:::
+
+### Change is normal, not failure
+
+Learning that something doesn't work is also a valuable outcome.
+
+### Technical excellence and improvement
+
+- Practice attention to good code design
+- Refactoring when needed
+
+::: {.fragment}
+- The opposite of spaghetti code
+:::
 
 ## Extreme programming
 
-Extreme programming (XP) was predecessor to Agile. XP came few years earlier than the "Agile" term was coined, but shares many of the same ideas.
+Extreme programming (XP) predates the Agile term by a few years and shares most of its ideas.
 
-XP “advocates frequent releases in short development cycles, intended to improve productivity and introduce checkpoints at which new customer requirements can be adopted” [wikipedia].
+Where the manifesto describes general ideas and principles, XP states **practices**.
 
-XP does not introduce any specific rituals or processes, but takes already existing software development practices and takes them to the “extreme” levels. Has 12 defined practices that the teams should employ to make their software development more *Agile*.
+### Where XP came from
+
+Chrysler C3 payroll project, 1996. Kent Beck, Ward Cunningham, Ron Jeffries.
+
+::: {.fragment}
+If code review is good - review constantly (pair programming)
+:::
+
+::: {.fragment}
+If testing is good - test every change (TDD)
+:::
+
+::: {.fragment}
+If integration is good - integrate continuously (CI)
+:::
+
+::: {.fragment}
+Just take the good practices and apply them rigorously.
+:::
+
+### Five values
+
+- Communication
+- Simplicity
+- Feedback
+- Courage
+- Respect
+
+### Feedback loops
+
+| Loop | Length |
+| --- | --- |
+| Pair programming | seconds |
+| Unit test | minutes |
+| Stand-up | one day |
+| Acceptance test | days |
+| Iteration plan | weeks |
+| Release plan | months |
 
 ***
 
-Extreme programming has a [website](http://www.extremeprogramming.org/) where more of XP philosophy is explained.
+Agility is the length of your **shortest** feedback loop.
 
-***
+### The twelve practices
 
-List of XP practices:
+**Fine-scale feedback**: pair programming, planning game, test driven development, whole team
 
-- Pair programming
-- Planning game
-- Test driven development
-- Whole team.
-- Continuous integration
-- Design improvement
-- Small releases
-- Coding standard
-- Collective code ownership
-- Simple design
-- System metaphor
-- Sustainable pace
+**Continuous process**: continuous integration, design improvement (refactoring), small releases
 
-## Kanban framework
+**Shared understanding**: coding standard, collective code ownership, simple design, system metaphor
 
-Kanban works by prioritizing visualization of work. Work is split into tasks and they have predefined list of stages to pass through. 
+**Programmer welfare**: sustainable pace
 
-Once the team members starts working on an item it is moved to the appropriate column.
+### Pair programming: the evidence
 
-Kanban can be further restricted limiting the number of items in certain columns.
+- Williams & Kessler, 2000 - ~15% more effort, ~15% fewer defects
+- Arisholm et al., 2007 (84 professionals) - effort up sharply; gains concentrated in **complex tasks** and **junior developers**
+- Hannay et al., 2009 (meta-analysis) - small quality gain, real effort cost
 
-```text
-+----------------+----------------+----------------+
-|    To Do       |   In Progress  |     Done       |
-+----------------+----------------+----------------+
-| - Task 1       | - Task 4       | - Task 7       |
-| - Task 2       | - Task 5       | - Task 8       |
-| - Task 3       | - Task 6       | - Task 9       |
-+----------------+----------------+----------------+
+::: {.fragment}
+A review and training tool. Not a free lunch.
+:::
+
+### Test driven development: the evidence
+
+- Nagappan et al., 2008 - Microsoft and IBM teams: 40–90% lower defect density, 15–35% more development time
+
+### Continuous integration and small releases
+
+- XP, 1999 - integrate at least daily
+
+::: {.fragment}
+- Amazon, 2011 - a deployment every 11.6 seconds on average
+:::
+
+### Collective ownership and coding standard
+
+Anyone may change any file.
+
+::: {.fragment}
+Which only works with a shared standard, tests, and review.
+:::
+
+::: {.fragment}
+This is why pull requests exist.
+:::
+
+### XP technically won, but practically disappeared
+
+Continuous integration, automated tests, refactoring, small releases, code review.
+
+::: {.fragment}
+Today: defaults. Nobody calls them XP.
+:::
+
+::: {.fragment}
+Agile won the naming battle.
+:::
+
+## Scrum
+
+The most used Agile framework - and the one most often blamed.
+
+Scrum adds to the Agile idea:
+
+- **Roles**: product owner, scrum master, developers
+- **Events**: sprint planning, daily scrum, sprint review, retrospective
+- **Artifacts**: product backlog, sprint backlog, increment
+
+::: {.fragment}
+Scrum is deliberately a management framework: it says nothing about how to write code.
+:::
+
+### Scrum poster
+
+Scrum.org has a [poster](https://www.scrum.org/resources/scrum-framework-poster) illustrating the process.
+
+### How common is it, really
+
+Digital.ai *18th State of Agile Report*, 2025:
+
+::: {.fragment}
+**63%** use Scrum at team level
+:::
+
+::: {.fragment}
+**74%** use a hybrid, blended or homegrown process
+:::
+
+::: {.fragment}
+*A bit biased report though.*
+:::
+
+## Agile sprints visualized
+
+Sprint is a Scrum term, but it illustrates the Agile loop well: work happens in small batches, and detailed planning covers only the immediate work.
+
+```{mermaid}
+graph LR
+    A[Product backlog] --> R[Refinement]
+    R --> B[Sprint planning]
+    B --> C[Sprint]
+    C --> D[Daily stand-up]
+    D --> C
+    C --> E[Increment]
+    E --> F[Review]
+    F --> G[Retrospective]
+    G --> A
 ```
 
-## Agile criticism
+### Backlog
 
-While Agile undoubtedly delivers some benefits to the software engineering process, even if it is done "*correctly*" it does have issues that Agile opponents like to highlight:
+| | |
+| --- | --- |
+| **Purpose** | one ordered list of everything that might be built |
+| **Looks like** | user stories, ordered by value, coarse at the bottom |
+| **Artifact** | GitHub issues, labelled, ordered in a project board |
+| **Failure mode** | issues titled "frontend stuff" |
 
-- Unpredictability: hard to forecast delivery dates into the future, while the business context still needs them.
-- Scope creep: since scope is only vaguely understood at the beginning it is easy to left features slide in.
-- Documentation: skipped documentation does not always get created later, which defers problems for the future.
-- Client inclusion: usually getting quick and reliable feedback from clients is way easier said than done.
+
+::: {.fragment}
+
+User story template:
+
+`As a <role>, I want to <feature>, so that <benefit>.`
+:::
+
+::: {.fragment}
+`As a commuter, I want to search for routes, so that I can pick the best way to get to my destination.`
+:::
+
+### Refinement
+
+| | |
+| --- | --- |
+| **Purpose** | make the top of the backlog ready before planning |
+| **Looks like** | splitting, clarifying, adding acceptance criteria |
+| **Artifact** | issues with checklists, linked to a parent issue |
+| **Failure mode** | refinement discovered mid-sprint |
+
+::: {.fragment}
+Rule of thumb: an issue nobody can finish in a day is not one issue.
+
+Artifact: an issue that is detailed enough to be picked up and completed within a day.
+:::
+
+### Sprint planning
+
+| | |
+| --- | --- |
+| **Purpose** | commit to a goal, not to a pile of tickets |
+| **Looks like** | one sentence goal, then issues chosen to serve it |
+| **Artifact** | a milestone named `Sprint 3` whose description is the goal |
+| **Failure mode** | pulling in everything, finishing nothing |
+
+::: {.fragment}
+Sprint 3: a guest can join a room by link and see the current question
+:::
+
+### Definition of Done
+
+| | |
+| --- | --- |
+| **Purpose** | one shared meaning of "finished" |
+| **Looks like** | a short checklist every change must satisfy |
+| **Artifact** | `docs/definition-of-done.md`, mirrored in the PR template |
+| **Failure mode** | "done" meaning "works on my machine" |
+
+::: {.fragment}
+>Reviewed + tested + merged to main + deployed + documented
+:::
+
+### Daily stand-up
+
+| | |
+| --- | --- |
+| **Purpose** | re-plan the day, surface blockers |
+| **Looks like** | 10 minutes, walking the board right to left |
+| **Artifact** | board state that changes daily, blockers as issue comments |
+| **Failure mode** | three ritual questions reported "what I did yesterday, what I will do today, what is blocking me" |
+
+### Increment
+
+| | |
+| --- | --- |
+| **Purpose** | produce something a user could actually use |
+| **Looks like** | end-to-end and deployed, however thin |
+| **Artifact** | a new release, a git tag, as per your definition of done |
+| **Failure mode** | three finished layers that have never met |
+
+::: {.fragment}
+**Walking skeleton**: the thinnest end-to-end slice that runs in production.
+:::
+
+### Review
+
+| | |
+| --- | --- |
+| **Purpose** | get feedback from outside the team |
+| **Looks like** | a demo of the deployed system, by a **user** path |
+| **Artifact** | a closed milestone, plus notes on the feedback and resulting changes |
+| **Failure mode** | slides about the app instead of the app |
+
+### Retrospective
+
+| | |
+| --- | --- |
+| **Purpose** | improve the process, not the product |
+| **Looks like** | 30 minutes, everyone speaks, the past sprint only |
+| **Artifact** | `docs/retros/sprint-03.md` and **one** action item with an owner |
+| **Failure mode** | complaints with no owner, repeated every sprint |
+
+### Artifacts in your project
+
+- Issues as user stories, ordered
+- A milestone per sprint, with a goal in its description
+- `docs/definition-of-done.md` + PR template
+- Defined increments in some way
+- `docs/retros/sprint-NN.md` + one `retro-action` issue each sprint
+
+## Kanban and flow
+
+Work is visualized as items moving through fixed stages.
+
+```text
++----------------+--------------------+----------------+
+|    To Do       |  In Progress (2)   |     Done       |
++----------------+--------------------+----------------+
+| - Task 1       | - Task 4           | - Task 7       |
+| - Task 2       | - Task 5           | - Task 8       |
+| - Task 3       |                    | - Task 9       |
++----------------+--------------------+----------------+
+```
+
+The number in the column header is a **WIP limit**
+
+## Estimation
+
+- **Story points** - relative size, not hours
+- **Planning poker** - estimate simultaneously, discuss the disagreements
+- **Velocity** - points finished per sprint, used as capacity
+
+### The cone of uncertainty
+
+Estimates at the start of a project are off by a large factor in **both** directions.
+
+::: {.fragment}
+The cone narrows by building, not by planning harder.
+:::
+
+### Or: skip the estimates
+
+Fix the time, vary the scope.
+
+::: {.fragment}
+Basecamp's Shape Up: set fixed time cycle, start cutting the scope to fit.
+:::
+
+## Agile in the industry
+
+Nobody runs the textbook.
+
+### Agile criticism
+
+Even done "*correctly*", the approach has recurring problems:
+
+- **Unpredictability** - delivery dates are hard to forecast, while the business still needs them
+- **Scope creep** - a vaguely understood scope lets features slide in
+- **Documentation** - what is skipped is rarely written later
+- **Client inclusion** - quick, reliable customer feedback is easier said than done
+
+***
+
+The "agile projects succeed 3x more often" figure comes from the Standish CHAOS reports.
+
+::: {.fragment}
+Eveleens & Verhoef, 2010: the methodology does not support the claim.
+:::
+
+::: {.fragment}
+Most numbers in this field are produced by someone selling something.
+:::
+
+### The critics are the authors
+
+- Dave Thomas, 2015 - *Agile is Dead (Long Live Agility)*
+- Ron Jeffries, 2018 - *Developers Should Abandon Agile*
+- Martin Fowler, 2018 - the *Agile Industrial Complex*
+
+***
+
+There is no correct process. There is a process that fits the risk.
+
+::: {.fragment}
+In practice: 74% hybrid.
+:::
+
+## Further reading
+
+- [agilemanifesto.org](https://agilemanifesto.org/) - the manifesto and its 12 principles
+- [extremeprogramming.org](http://www.extremeprogramming.org/) - XP practices and philosophy
+- [Scrum Guide](https://scrumguides.org/) - the current definition of Scrum, ~13 pages
+- [Shape Up](https://basecamp.com/shapeup) - Basecamp's alternative, free online
+- [DORA research](https://dora.dev/) - the four keys and the annual reports
+- [Scaling Agile @ Spotify](https://blog.crisp.se/wp-content/uploads/2012/11/SpotifyScaling.pdf) - the model, and [what it looked like from inside](https://www.jeremiahlee.com/posts/failed-squad-goals/)
+- [Digital.ai State of Agile](https://digital.ai/resource-center/analyst-reports/state-of-agile-report/) - annual adoption survey
