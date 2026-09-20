@@ -27,6 +27,20 @@ public sealed class Mutation
         return new BatchedBook(book);
     }
 
+    public async Task<bool> DeleteBookAsync(
+        Guid id,
+        CatalogFiles files,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!await files.RemoveBookAsync(id, cancellationToken))
+        {
+            throw new GraphQLException($"Book {id} does not exist.");
+        }
+
+        return true;
+    }
+
     public async Task<Author> AddAuthorAsync(
         string name,
         string country,

@@ -3,11 +3,7 @@
 Software Engineering lecture material.
 
 The material is written in [Quarto](https://quarto.org) (`.qmd` files — plain
-markdown with a small amount of front matter). Every lecture renders from the
-same source into two forms:
-
-- `<lecture>.html` — a readable course-notes page
-- `<lecture>.slides.html` — a reveal.js slide deck used during the lecture
+markdown with a small amount of front matter).
 
 The C# code inside the lectures is executable and is verified by CI on every
 change, so code samples cannot silently rot (see _How code verification works_
@@ -28,13 +24,7 @@ below).
 Live-reloading preview of a lecture page while editing:
 
 ```bash
-quarto preview 06-linq.qmd
-```
-
-Render one lecture's format slides:
-
-```bash
-quarto render 06-linq.qmd --to revealjs
+quarto preview 06-linq.qmd --to revealjs
 ```
 
 ## Running the lecture code

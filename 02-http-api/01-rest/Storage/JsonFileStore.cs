@@ -13,6 +13,7 @@ public sealed class JsonFileStore
     private readonly Lock gate = new();
     private readonly string authorsPath;
     private readonly string booksPath;
+    private readonly string editionsPath;
 
     public JsonFileStore(IHostEnvironment environment)
     {
@@ -21,6 +22,7 @@ public sealed class JsonFileStore
 
         authorsPath = Path.Combine(directory, "authors.json");
         booksPath = Path.Combine(directory, "books.json");
+        editionsPath = Path.Combine(directory, "editions.json");
     }
 
     public List<Author> ReadAuthors() => Read<Author>(authorsPath);
@@ -30,6 +32,10 @@ public sealed class JsonFileStore
     public void WriteAuthors(List<Author> authors) => Write(authorsPath, authors);
 
     public void WriteBooks(List<Book> books) => Write(booksPath, books);
+
+    public List<Edition> ReadEditions() => Read<Edition>(editionsPath);
+
+    public void WriteEditions(List<Edition> editions) => Write(editionsPath, editions);
 
     private List<T> Read<T>(string path)
     {
@@ -73,30 +79,74 @@ public sealed class JsonFileStore
             "Poland"
         );
 
+        var nineteenEightyFour = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
+        var animalFarm = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002");
+        var solaris = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000003");
+
         SeedIfEmpty(authorsPath, [orwell, lem]);
         SeedIfEmpty(
             booksPath,
             [
                 new Book(
-                    Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"),
+                    nineteenEightyFour,
                     "Nineteen Eighty-Four",
                     orwell.Id,
                     1949,
                     "978-0451524935"
                 ),
                 new Book(
-                    Guid.Parse("aaaaaaaa-0000-0000-0000-000000000002"),
+                    animalFarm,
                     "Animal Farm",
                     orwell.Id,
                     1945,
                     "978-0452284241"
                 ),
                 new Book(
-                    Guid.Parse("aaaaaaaa-0000-0000-0000-000000000003"),
+                    solaris,
                     "Solaris",
                     lem.Id,
                     1961,
                     "978-0156027601"
+                ),
+            ]
+        );
+        SeedIfEmpty(
+            editionsPath,
+            [
+                new Edition(
+                    Guid.Parse("ee000000-0000-0000-0000-000000000001"),
+                    nineteenEightyFour,
+                    "Hardcover",
+                    328,
+                    1949
+                ),
+                new Edition(
+                    Guid.Parse("ee000000-0000-0000-0000-000000000002"),
+                    nineteenEightyFour,
+                    "Paperback",
+                    336,
+                    1950
+                ),
+                new Edition(
+                    Guid.Parse("ee000000-0000-0000-0000-000000000003"),
+                    animalFarm,
+                    "Paperback",
+                    112,
+                    1946
+                ),
+                new Edition(
+                    Guid.Parse("ee000000-0000-0000-0000-000000000004"),
+                    solaris,
+                    "Hardcover",
+                    204,
+                    1961
+                ),
+                new Edition(
+                    Guid.Parse("ee000000-0000-0000-0000-000000000005"),
+                    solaris,
+                    "Paperback",
+                    224,
+                    1970
                 ),
             ]
         );

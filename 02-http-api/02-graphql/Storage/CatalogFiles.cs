@@ -48,6 +48,20 @@ public sealed class CatalogFiles
         await WriteAsync("books.json", books, cancellationToken);
     }
 
+    public async Task<bool> RemoveBookAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var books = await ReadBooksAsync(cancellationToken);
+
+        if (books.RemoveAll(book => book.Id == id) == 0)
+        {
+            return false;
+        }
+
+        await WriteAsync("books.json", books, cancellationToken);
+
+        return true;
+    }
+
     public async Task AppendAuthorAsync(Author author, CancellationToken cancellationToken)
     {
         var authors = await ReadAuthorsAsync(cancellationToken);

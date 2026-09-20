@@ -1,9 +1,9 @@
 <Solution>
   <Folder Name="/01-rest/">
-    <Project Path="01-rest/RestApi/RestApi.csproj" />
+    <Project Path="01-rest/RestApi.csproj" />
   </Folder>
   <Folder Name="/02-graphql/">
-    <Project Path="02-graphql/GraphQlApi/GraphQlApi.csproj" />
+    <Project Path="02-graphql/GraphQlApi.csproj" />
   </Folder>
   <Folder Name="/03-grpc/">
     <Project Path="03-grpc/Catalog.Client/Catalog.Client.csproj" />
