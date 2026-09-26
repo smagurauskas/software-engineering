@@ -7,13 +7,17 @@ verify: run # output depends on current date/time
 
 C# has several classes for working with time related matters: `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly` and `Stopwatch`.
 
+***
+
 When thinking about time we can think about it in 2 ways:
+
 - "Wall time" - time that represents a time of day, or in other words a specific moment in time.
 - "Monotonic time" - time that specifies duration between 2 events.
 
 ### `DateTime`
 
 `DateTime` class stores date and time, has 3 `.Kind`s:
+
 - `DateTimeKind.Utc`: Coordinated Universal Time
 - `DateTimeKind.Local`: Local system time
 - `DateTimeKind.Unspecified`: No time zone context
@@ -79,6 +83,7 @@ timeOnly.ToString().Display();
 ### Wall time pitfalls
 
 Wall time in practice is not always linear. Some of the common pitalls you can encounter are:
+
 - Time zone changes
 - System time synchronizations
 - Leap seconds

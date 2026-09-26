@@ -48,3 +48,14 @@
 .reveal .slides section.slide.scrollable {
   justify-content: flex-start;
 }
+
+/* Cell output (injected by cell-outputs.lua): sits directly under the code
+ * block, visibly separate from it. */
+.reveal div.cell-output-stdout pre {
+  margin-top: 0;
+  padding: 0.4em 0.8em;
+  border-left: 3px solid #bbb;
+  background: #f7f7f7;
+  box-shadow: none;
+  box-sizing: border-box;
+}

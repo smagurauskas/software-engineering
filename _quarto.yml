@@ -28,3 +28,8 @@ format:
     include-after-body: assets/fragment-indicator.html
 
 engine: markdown
+
+# Show each executable C# cell's output under it, taken from the CI-verified
+# golden expected/<name>.txt (Quarto itself does not run C#).
+filters:
+  - assets/cell-outputs.lua

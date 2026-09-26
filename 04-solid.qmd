@@ -6,6 +6,7 @@ verify: output
 SOLID is a set of 5 software design principles that intends to make code more understandable and maintainable.
 
 SOLID is a mnemonic acronym:
+
 - Single-Responsibility Principle
 - Open-Close Principle
 - Liskov Substitution Principle
@@ -15,14 +16,6 @@ SOLID is a mnemonic acronym:
 ***
 
 SOLID principles originally were published in paper [Design Principles and Design Pattern](https://staff.cs.utu.fi/~jounsmed/doos_06/material/DesignPrinciplesAndPatterns.pdf) by Robert C. Martin (Uncle Bob).
-
-::: {.fragment}
-Robert C. Martin is an author of several other courses and books. Some of the most famous of which are Clean Code series. Ideas in clean code series, just like in SOLID, are reasonable when looked at from the high level perspective. However they have a danger to be overused and backfire.
-:::
-
-***
-
-Function with 1000 lines of code is hard to understand, because there are lots things happening in it, and just the sheer amount of code causes high mental load because you need to think about it as a single unit (single function). But the same applies to a class with 100s of 3 line long methods, where the single method might be more obvious to understand in isolation, but the amount of indirection happening makes the mental load unbearable as well.
 
 ***
 
@@ -47,6 +40,7 @@ Additional reading:
 If a class has more than one responsibility, then the responsibilities become coupled. Changes to one responsibility may break the class’ ability to fulfil other responsibilities.
 
 This can apply to:
+
 - Methods
 - Classes
 - Modules
@@ -95,6 +89,7 @@ class NameRegistry
 ***
 
 Possible reasons to change for the `NameRegistry` class:
+
 - Name parts should come from different source than `Console`.
 - Name should be assembled into different format.
 - Name should be serialized to different format than JSON.
@@ -245,10 +240,6 @@ class GoldCustomer : Customer
 
 ***
 
-In this example if the behaviour is tied to the customer, and there is a class `Customer` which represents it, it is produces better code by moving all the corresponding behaviour to a subclass. In such case a new instance of appropriate sub-class of customer would have to be created and then passed forward to other classes, but this would prevent need to modify the same `Customer` class or other users of this class.
-
-***
-
 ```{.csharp}
 // Another bad example
 // For every new shape that would be added, the AreaCalculator class would need to be modified.
@@ -332,13 +323,10 @@ class AreaCalculator
 
 > Objects in a program should be replaceable with instances of their subtypes without altering the correctness of that program.
 
-::: {.fragment}
-In other words - it should be possible to pass any subclass instead of base class, and the program should work correctly in every case. If it is no possible pass a subclass instead of the base class, then it most likely means that the subclass should not be inheriting the main class.
-:::
-
 ***
 
 LSP Checklist:
+
 - No new exceptions should be thrown in derived class: if your base class threw `ArgumentException` then your subclasses are only allowed to throw exceptions of type `ArgumentException` or any exceptions derived from it. Throwing `IndexOutOfRangeException` is a violation of LSP.
 - Pre-conditions cannot be strengthened: assume your base class works with a member `int`. Now your subtype requires that `int` to be positive. This is strengthened pre-conditions, and now any code that worked perfectly fine before with negative ints is broken.
 - Post-conditions cannot be weakened: assume your base class required all connections to database to be closed before the method returned. In your subclass you overrode that method and left connection open for further reuse. 
@@ -525,6 +513,7 @@ graph LR
 ***
 
 Ways to implement DIP:
+
 - Dependency injection – most common way.  
 - Service Locator
 - Events
@@ -606,42 +595,18 @@ class SalaryCalculator
 
 Just like SOLID, there are a bunch of other quite popular mnemonic devices aimed at promoting writing of more readable code.
 
-## GRASP
-
-> General Responsibility Assignment Software Principles.
-
-- Information expert
-- Creator
-- Controller
-- Indirection
-- Low coupling
-- High cohesion
-- Polymorphism
-- Protected variations
-- Pure fabrication
-
 ## KISS
 
 > Keep It Simple, Stupid.
-
-Acronym suggests not to overengineer the solutions and aim for the simpler implementation.
 
 ## DRY
 
 > Don't repeat yourself.
 
-If the exact same code, for the exact same purpose is in multiple places - then you are repeating yourself.
-
-Acronym suggests to move the repetitive code into a common place and reference it from there.
-
 ## YAGNI
 
 > You aren't gonna need it.
 
-Don't create reusabilty and abstractions where there is no obvious need for them.
-
 ## CoC
 
 > Conventions over Configuration.
-
-Provide sensible default for your code which would allow it to work out of the box, instead of asking user to explicitly configure everything.

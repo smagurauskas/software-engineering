@@ -8,7 +8,11 @@ This notebook covers C# language basic building blocks: types, operators, cycles
 
 ## Built-in types
 
-C# has 18 built-in types. These types are built into .NET, but they have keywords (aliases in C#). All of these types can be referenced using they full qualifiers, but it is more common practice to reference them by their C# keyword instead.
+C# has 18 built-in types.
+
+These types are built into .NET, but they have keywords (aliases in C#).
+
+All of these types can be referenced using they full qualifiers, but it is more common practice to reference them by their C# keyword instead.
 
 ***
 
@@ -178,8 +182,6 @@ Nullable<int> nullableInteger = integerNumber;
 It must be noted that C# 10 allows to specify reference types nullable as well. This can be made available using `<Nullable>enable</Nullable>` element in `csproj`.
 
 ## Operators
-
-Each type comes with a list of predefined operators. C# also allows overriding of operators for specific types.
 
 ### Arithmetic operators
 
@@ -367,11 +369,10 @@ Console.WriteLine("a || b: " + (a || b));
 Console.WriteLine("!a: " + (!a));
 ```
 
+***
 #### Short circuits
 
 Logical expressions are evaluated left-to-right. Short circuit happens when the result of expression can be determined without evaluating all parts.
-
-***
 
 ```{.csharp}
 bool MethodA()
@@ -467,7 +468,7 @@ a.Display();
 b.Display();
 ```
 
-***
+then
 
 ```{.csharp}
 (a + b).Display();
@@ -515,7 +516,6 @@ outcome.Display();
 
 ### `switch`
 
-::: {.fragment}
 ```{.csharp}
 // switch allows to different code paths based on the value of a variable
 
@@ -537,7 +537,8 @@ switch (a)
         break;
 }
 ```
-:::
+
+***
 
 ```{.csharp}
 // Fallthrough is not allowed in C# switch statements, yet goto can be used to achieve similar effect
@@ -1304,15 +1305,18 @@ catch (Exception e)
 
 ## Type conversions
 
+***
+
 ### Casting
 
 Casting is converting variables of one type to another. Because C# is a type-safe language - type conversions are only available when types are compatible for conversion. If types cannot be converted from one to another, then it will result in either runtime or compile time exception.
 
+***
 #### Implicit cast
 
 Implicit casts happen when variable of one type is assigned to the variable of another type. Implicit casting does not require any additional syntax - simple assignment is enough. Implicit casts are typically safe.
 
-Implicit casts happen from more specific to mess specific types, or from equivalent more precise types to less precise types.
+Implicit casts happen from more specific to less specific types, or from equivalent more precise types to less precise types.
 
 ***
 
@@ -1329,6 +1333,7 @@ var moreSpecificType = new MoreSpecificType();
 LessSpecificType lessSpecificType = moreSpecificType;
 ```
 
+***
 #### User defined cast operators
 
 Explicit or implicit cast operations can be defined for user defined types. `implicit` cast is used to define conversion from user-defined type to another. `explicit` cast is used to define cast to user-defined type.

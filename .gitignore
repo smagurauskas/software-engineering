@@ -3,10 +3,12 @@
 /_site/
 /_freeze/
 
-# Rendered output (slides/pages are built by CI or locally, never committed)
-**/*.html
-# ...except this one, which is slide source injected into every deck.
-!assets/fragment-indicator.html
+# Rendered output (slides/pages are built by CI or locally, never committed).
+# Quarto writes these next to the .qmd files, i.e. only in the repo root -
+# example apps (Vite, Blazor wwwroot) have real index.html sources.
+/*.html
+# Support files (bootstrap, clipboard, ...) left behind by a local render.
+/*_files/
 
 # Verification scratch (generated .csx scripts and actual outputs)
 /.verify/
