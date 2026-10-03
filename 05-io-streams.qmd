@@ -19,6 +19,8 @@ foreach (DirectoryInfo directory in directoryInfo.GetDirectories())
 }
 ```
 
+***
+
 ```{.csharp}
 // Similarly FileInfo can be used to get information about files
 foreach (FileInfo file in directoryInfo.GetFiles())
@@ -26,6 +28,8 @@ foreach (FileInfo file in directoryInfo.GetFiles())
     Console.WriteLine(file.Name);
 }
 ```
+
+***
 
 ```{.csharp}
 // Both classes can be leverage together to get the full information about the available files and directories
@@ -48,6 +52,8 @@ void PrintContentsRecursively(DirectoryInfo root, int depth = 0)
 
 PrintContentsRecursively(new DirectoryInfo("."), 0);
 ```
+
+***
 
 ```{.csharp}
 // Any errors will be provded as exceptions
@@ -89,11 +95,15 @@ In simplest cases files can be read and written to using the `File` class.
 File.WriteAllText("test.txt", "Hello World");
 ```
 
+***
+
 ```{.csharp}
 // Read from the same file
 
 Console.WriteLine(File.ReadAllText("test.txt"));
 ```
+
+***
 
 ```{.csharp}
 // File can be written line by line
@@ -104,6 +114,8 @@ for (int i = 0; i < 10; i++)
 }
 ```
 
+***
+
 ```{.csharp}
 // File can also be read line by line
 
@@ -112,6 +124,8 @@ foreach (var line in File.ReadLines("test.txt"))
     Console.WriteLine(line);
 }
 ```
+
+***
 
 ```{.csharp}
 // File can be cleared
@@ -137,6 +151,8 @@ using (var streamWriter = new StreamWriter("test.txt"))
 }
 ```
 
+****
+
 ```{.csharp}
 // Stream allows to continually write to the file with the same handle
 
@@ -149,6 +165,8 @@ using (var fileStream = new FileStream("test.txt", FileMode.Append))
     }
 }
 ```
+
+***
 
 ```{.csharp}
 // Using the stream to write to file you don't need to have all the data in memory at once,
@@ -163,6 +181,8 @@ for (var i = 0; i < 1_000_000; i++)
     fileStream.Write(byteString);
 }
 ```
+
+***
 
 ```{.csharp}
 // Using a stream reader, bytes at an offset can be read
@@ -198,6 +218,8 @@ using (var fileStream = new FileStream("test.txt", FileMode.Create))
 }
 ```
 
+***
+
 ```{.csharp}
 void PrintMemoryUsage()
 {
@@ -207,6 +229,8 @@ void PrintMemoryUsage()
     Console.WriteLine(memory);
 }
 ```
+
+***
 
 ```{.csharp}
 // Find the biggest number inside the file
@@ -232,6 +256,8 @@ Console.WriteLine($"Biggest number: {max}");
 Console.WriteLine("After reading to memory:");
 PrintMemoryUsage();
 ```
+
+***
 
 ```{.csharp}
 // Find the biggest number while stream reading from the file
@@ -270,9 +296,11 @@ PrintMemoryUsage();
 Unix pipes are a mechanism for interprocess communication widely used by tools in Unix like environments.
 
 A simplest examples is `ls | grep 05` - it combines 2 processes:
+
 - `ls` for listing the directory structure,
 - `grep` for finding the rows with `05` in them.
 
+::: {.content-visible unless-format="revealjs"}
 The `|` indicates to pass the standard output of the left process to the standard input of the right process.
 
 What makes these pipes relate to streaming is that their input size is not known ahead of time. The program will have to process arbitrary amount of data, provided by the left process.
@@ -282,6 +310,7 @@ In C# the `Console` class provides the abstraction for standard input and output
 Meaning that `Console.ReadLine` and similar can be used to consume the standard input, and `Console.WriteLine` and similar can be used to produce it.
 
 The next example will showcase a code for simple C# console program that uppercases the given input and outputs it back.
+:::
 
 ```{.csharp}
 public static void Main()

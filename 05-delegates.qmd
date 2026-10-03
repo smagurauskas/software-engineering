@@ -3,11 +3,18 @@ title: "Delegates"
 verify: output
 ---
 
-This notebook covers C# delegates, named and anonymous methods as well as lambdas.
+You can think of delegates as "function as a parameter".
 
 ## `delegate`
 
-Most simple delegates can be declared using the `delegate` keyword. Delegate defines a type that represents method with particular parameter list and return type. 
+Most simple delegates can be declared using the `delegate` keyword.
+
+Delegate defines a type that represents method with particular parameter list and return type. 
+
+```{.chsarp}
+delegate string OperationOnString(string str);
+```
+
 
 ***
 
@@ -80,7 +87,6 @@ Console.WriteLine(genericClassWithDelegate.Operation("Hello World!"));
 
 ### Multicasting delegates
 
-::: {.fragment}
 ```{.csharp}
 // Interestingly enough, delegates can be joined using the + operator
 
@@ -92,7 +98,6 @@ OperationOnString combinedOperation = operation1 + operation2;
 
 Console.WriteLine(combinedOperation("Hello World!"));
 ```
-:::
 
 ***
 
@@ -166,7 +171,7 @@ var event3 = new Event
 {
     Name = "Event 3",
     DateOfEvent = new DateTime(2026, 3, 14),
-    FormatDate = (date) => date.ToString("yyyy-MM-dd")
+    FormatDate = (date) => "==" + date.ToString("yyyy-MM-dd") + "=="
 };
 
 Console.WriteLine(event3.Title);
@@ -175,6 +180,8 @@ Console.WriteLine(event3.Title);
 ## Lambda expressions
 
 Lambda expressions in C# can be used to declare anonymous methods.
+
+It's a more modern way of defining delegates, which saves some boilerplate code.
 
 ***
 
@@ -244,8 +251,6 @@ var lambda10 = (int num1, int num2) =>
 ```
 
 ## Expression trees
-
-***
 
 ```{.csharp}
 // Lambda expressions can be used to define expression trees

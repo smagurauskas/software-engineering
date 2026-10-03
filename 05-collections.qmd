@@ -3,7 +3,9 @@ title: "Collections"
 verify: output
 ---
 
-Collections refers to types in C# that are intended to store and manage groups of objects within them. Some of the collections are located within the `System.Collections` namespace in .NET framework, some, like arrays or memory spans, are within the defined in the `System` namespace and supported by the C# language itself.
+Collections refers to types in C# that are intended to store and manage groups of objects within them.
+
+Some of the collections are located within the `System.Collections` namespace in .NET framework, some, like arrays or memory spans, are within the defined in the `System` namespace and supported by the C# language itself.
 
 Collections are designed for different use cases, and each of their usage as well as performance will benefit some situations more than others. It is important to learn to to determine which collection fits which situation.
 
@@ -19,6 +21,14 @@ int[] arr = {1, 2, 3, 4, 5};
 // Alternatively you can specify the size of the array manually
 int[] arr2 = new int[5];
 ```
+
+***
+
+Array elements are allocated in a continous memory block. This is essential for offset access to work.
+
+https://devblogs.microsoft.com/premier-developer/managed-object-internals-part-3-the-layout-of-a-managed-array-3
+
+***
 
 ```{.csharp}
 // Array can be multi-dimensional
@@ -45,6 +55,16 @@ int[,,] arr4 = {
 };
 ```
 
+***
+
+Multi-dimensional arrays must be rectangular.
+
+For `int[2, 3]`, the memory sequence is:
+
+- `[0,0], [0,1], [0,2], [1,0], [1,1], [1,2]`
+
+***
+
 ```{.csharp}
 // Not to be confused with array of arrays, called jagged arrays
 int[][] arr5 = new int[2][];
@@ -52,6 +72,12 @@ int[][] arr5 = new int[2][];
 arr5[0] = new int[] {1, 2, 3};
 arr5[1] = new int[] {4, 5, 6, 7, 8};
 ```
+
+Jagged array causes N+1 allocation.
+
+Every internal array will be allocated separately on the heap.
+
+***
 
 ```{.csharp}
 // Array class can be used to access some helpful methods for working with arrays
@@ -65,12 +91,6 @@ var lengthArray = Array.CreateInstance(typeof(int), 5);
 
 // LINQ has some better alternatives for methods in Array class and is generally preferred
 ```
-
-### `Array` memory allocation
-
-Array elements are allocated in a continous memory block. This is essential for offset access to work.
-
-https://devblogs.microsoft.com/premier-developer/managed-object-internals-part-3-the-layout-of-a-managed-array-3
 
 ## `List`
 
@@ -94,6 +114,8 @@ list.Remove(6);
 Console.WriteLine(list.Count);
 ```
 
+***
+
 ```{.csharp}
 // List has a backing array that can be accessed directly
 for (int i = 0; i < 20; i++)
@@ -102,6 +124,8 @@ for (int i = 0; i < 20; i++)
     Console.WriteLine($"Count = {list.Count}, Capacity = {list.Capacity}");
 }
 ```
+
+***
 
 ```{.csharp}
 // Because List implement IEnumerable, you can iterate over it using foreach
@@ -132,6 +156,8 @@ var value = dict["two"];
 Console.WriteLine(value);
 ```
 
+***
+
 ```{.csharp}
 // As with List, Dictionary also implements IEnumerable, so you can iterate over it
 foreach (var pair in dict)
@@ -155,6 +181,8 @@ queue.Enqueue(1);
 var dequeued = queue.Dequeue();
 ```
 
+***
+
 ```{.csharp}
 // Push multiple elements
 for (var i = 0; i < 5; i++)
@@ -164,6 +192,8 @@ for (var i = 0; i < 5; i++)
 }
 ```
 
+***
+
 ```{.csharp}
 // Dequeue all elements. Dequeuing an element removes it from the queue
 while (queue.Count > 0)
@@ -171,6 +201,8 @@ while (queue.Count > 0)
     Console.WriteLine($"Dequeuing {queue.Dequeue()}");
 }
 ```
+
+***
 
 ```{.csharp}
 // If the queue is empty, Dequeue will throw an exception
@@ -184,11 +216,15 @@ catch (InvalidOperationException)
 }
 ```
 
+***
+
 ```{.csharp}
 // Get the count of elements in the queue
 var queueCount = queue.Count;
 Console.WriteLine(queueCount);
 ```
+
+***
 
 ```{.csharp}
 // Queue implements IEnumerable, so you can iterate over it using foreach
@@ -216,11 +252,15 @@ stack.Push(1);
 var popped = stack.Pop();
 ```
 
+***
+
 ```{.csharp}
 // Count the number of elements in the Stack
 var count = stack.Count;
 Console.WriteLine(count);
 ```
+
+***
 
 ```{.csharp}
 // Push multiple elements to stack
@@ -231,6 +271,8 @@ for (var i = 0; i < 5; i++)
 }
 ```
 
+***
+
 ```{.csharp}
 // Pop all elements from the stack
 while (stack.Count > 0)
@@ -238,6 +280,8 @@ while (stack.Count > 0)
     Console.WriteLine($"Popping {stack.Pop()}");
 }
 ```
+
+***
 
 ```{.csharp}
 // Trying to pop from an empty stack will throw an exception
@@ -250,6 +294,8 @@ catch (InvalidOperationException)
     Console.WriteLine("Stack is empty");
 }
 ```
+
+***
 
 ```{.csharp}
 // Stack can be iterated over using foreach as well
@@ -278,6 +324,8 @@ Console.WriteLine(contains);
 hashSet.Remove(1);
 ```
 
+***
+
 ```{.csharp}
 // Add multiple elements to the HashSet
 hashSet.Add(1);
@@ -286,6 +334,8 @@ hashSet.Add(1);
 // HashSet will only contain unique elements
 Console.WriteLine(hashSet.Count);
 ```
+
+***
 
 ```{.csharp}
 // Larger example
@@ -301,6 +351,8 @@ for (var i = 0; i < 5; i++)
 // Only unique elements were added
 Console.WriteLine($"Count of elements: {hashSet.Count}");
 ```
+
+***
 
 ```{.csharp}
 // As all other collections HashSet can be iterated as well
@@ -330,14 +382,20 @@ public class IndexerExample
 var instance = new IndexerExample();
 ```
 
+***
+
 ```{.csharp}
 Console.WriteLine(instance[0]);
 ```
+
+***
 
 ```{.csharp}
 instance[0] = 42;
 Console.WriteLine(instance[0]);
 ```
+
+***
 
 ```{.csharp}
 // Other types than int can be used
@@ -365,14 +423,17 @@ int[] spread = [..arrayToSpread, 6];
 spread.Display();
 ```
 
+***
+
 ```{.csharp}
 List<int> spreadList = [..arrayToSpread, 6, 7, 8];
 spreadList.Display();
 ```
 
-## Homemade collection
+## Custom made collection
 
 Assume that we need to create collection that satisfies the following criteria:
+
 1. It should provide type safety (`object` doesn't fit),
 2. It should be dynamically sizeable, meaning any amount of elements can be added or removed,
 3. It should be indexable,
@@ -391,6 +452,8 @@ class HomemadeList<T>
     public T Get(int index) { return default(T); }
 }
 ```
+
+***
 
 ```{.csharp}
 // Use an array as a backing store
@@ -430,6 +493,8 @@ class HomemadeList<T>
 }
 ```
 
+***
+
 ```{.csharp}
 // However now it has a problem if more items are added than the initial capacity
 var list = new HomemadeList<int>();
@@ -439,6 +504,8 @@ for (var i = 0; i < 6; i++)
     list.Add(i);
 }
 ```
+
+***
 
 ```{.csharp}
 // If there is not enough space in the current backing array
@@ -485,6 +552,8 @@ class HomemadeList<T>
     }
 }
 ```
+
+***
 
 ```{.csharp}
 // Because the list has to be indexed, a this[] blocks needs to be added
@@ -533,6 +602,8 @@ class HomemadeList<T>
     // Get can be removed as the indexer replaces it completely
 }
 ```
+
+***
 
 ```{.csharp}
 // Final requirement is to make it iterable using foreach
@@ -595,6 +666,8 @@ class HomemadeList<T> : IEnumerable<T>
 }
 ```
 
+***
+
 ```{.csharp}
 // Short detour on how yield return works
 // It allows to return enumerable values one by one
@@ -617,6 +690,8 @@ foreach (var number in GetNumbers())
 }
 ```
 
+***
+
 ```{.csharp}
 // Now let's verify that all the requirements work
 
@@ -630,6 +705,8 @@ int element = list[0];
 // Assuming the above compiles
 ```
 
+***
+
 ```{.csharp}
 // 2. Verify that it dynamically adapts to any size
 // While we cannot easily verify that it would fit any size, we can check if would fit quite a large size
@@ -639,6 +716,8 @@ for (var i = 0; i < 1_000_000; i++)
     list.Add(i);
 }
 ```
+
+***
 
 ```{.csharp}
 // 3. Verify that the list is indexable
@@ -651,6 +730,8 @@ for (var i = 0; i < 5; i++)
 
 Console.WriteLine(list[4]);
 ```
+
+***
 
 ```{.csharp}
 // 4. Verify that the list is iterable with foreach
