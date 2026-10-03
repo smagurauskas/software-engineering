@@ -1432,6 +1432,7 @@ class GenericClass<T>
 Generic types are referred to as "<Type> of T". Using the example above, if the `GenericClass<>` were instantiated as `GenericExample<int>`, then it would be referred to as "GenericClass of int".
 
 More examples:
+
 - `List<string>` would be "List of string",
 - `Queue<int>` would be "Queue of int",
 - etc...

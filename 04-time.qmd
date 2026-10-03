@@ -90,15 +90,20 @@ Wall time in practice is not always linear. Some of the common pitalls you can e
 
 ::: {.fragment}
 ```{.csharp}
-var utcTime = new DateTime(2025, 10, 26, 0, 58, 0, DateTimeKind.Utc);
+// On 2025-10-26 Lithuania switches from summer to winter time:
+// at 04:00 local time clocks are turned back to 03:00
+var utcTime = new DateTime(2025, 10, 26, 0, 57, 0, DateTimeKind.Utc);
 
 TimeZoneInfo vilniusZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
 
-// You would expect time be continously increasing, but due to DST change it is not
-// which you cannot know, unless you know the time zone it is happening in
-TimeZoneInfo.ConvertTimeFromUtc(utcTime, vilniusZone).Display();
-TimeZoneInfo.ConvertTimeFromUtc(utcTime.AddMinutes(1), vilniusZone).Display();
-TimeZoneInfo.ConvertTimeFromUtc(utcTime.AddMinutes(2), vilniusZone).Display();
+var before = TimeZoneInfo.ConvertTimeFromUtc(utcTime, vilniusZone);
+
+for (var i = 1; i <= 5; i++)
+{
+    var after = TimeZoneInfo.ConvertTimeFromUtc(utcTime.AddMinutes(i), vilniusZone);
+
+    (after > before).Display();    
+}
 ```
 :::
 
