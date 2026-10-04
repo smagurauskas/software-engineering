@@ -285,6 +285,8 @@ Console.WriteLine("After reading to memory:");
 PrintMemoryUsage();
 ```
 
+***
+
 ```{.csharp}
 // Every line in this file is exactly 8 bytes, so it can also be read in fixed size chunks
 // without looking for line endings. This only works for fixed size records

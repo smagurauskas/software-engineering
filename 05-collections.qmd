@@ -371,7 +371,7 @@ The main difference between the collections is how much time each operation take
 |---|---|---|---|---|---|
 | Array | O(1) | O(n) | - | - | n |
 | `List` | O(1) | O(n) | O(1)¹ at the end | O(n) | up to 2n (capacity) |
-| `Dictionary` | O(1)² by key | O(1)² by key | O(1)¹ | O(1)² | n + hash buckets |
+| `Dictionary` | O(1)² by key | O(n) | O(1)¹ | O(1)² | n + hash buckets |
 | `HashSet` | - | O(1)² | O(1)¹ | O(1)² | n + hash buckets |
 | `Queue` / `Stack` | - | O(n) | O(1)¹ | O(1) at its end | up to 2n (capacity) |
 
