@@ -252,6 +252,15 @@ var lambda10 = (int num1, int num2) =>
 
 ## Expression trees
 
+### Code as data
+
+The same lambda can be turned into one of two things:
+
+-  `Func<>`: the compiler turns it into executable code.
+-  `Expression<Func<>>`: the compiler turns it into a data structure that describes the code, which other code can inspect.
+
+***
+
 ```{.csharp}
 // Lambda expressions can be used to define expression trees
 using System.Linq.Expressions;
@@ -268,9 +277,6 @@ Console.WriteLine(compiledLambda11(1, 2));
 
 ```{.csharp}
 // Deconstruct expression into parts
-using System.Reflection;
-
-// Expressions can be used to build complex logic
 Expression<Func<int, int, int>> lambda12 = (num1, num2) => num1 + num2;
 
 var binaryExpression = (BinaryExpression)lambda12.Body;
@@ -278,9 +284,71 @@ var binaryExpression = (BinaryExpression)lambda12.Body;
 var leftParameter = (ParameterExpression)binaryExpression.Left;
 var rightParameter = (ParameterExpression)binaryExpression.Right;
 
-var methodCallExpression = lambda12.Body.NodeType;
+var nodeType = lambda12.Body.NodeType;
 
 Console.WriteLine(leftParameter.Name);
 Console.WriteLine(rightParameter.Name);
-Console.WriteLine(methodCallExpression);
+Console.WriteLine(nodeType);
+```
+
+***
+
+```{.csharp}
+// Exactly the same lambda, assigned to two different types
+Func<int, int, int> asDelegate = (num1, num2) => num1 + num2;
+Expression<Func<int, int, int>> asExpression = (num1, num2) => num1 + num2;
+
+// A delegate can only be called, an expression knows what it is made of
+Console.WriteLine(asDelegate);
+Console.WriteLine(asExpression);
+```
+
+***
+
+```csharp
+// Only lambdas without a {} body can be converted to expression trees
+Expression<Func<int, int>> statementLambda = num => { return num; };
+
+// error CS0834: A lambda expression with a statement body cannot be converted to an expression tree
+```
+
+### From expression to SQL
+
+```{.csharp}
+class Person
+{
+    public string FirstName { get; set; }
+    public int Age { get; set; }
+}
+
+string ToSql(Expression expression) => expression switch
+{
+    BinaryExpression { NodeType: ExpressionType.Equal } binary => $"{ToSql(binary.Left)} = {ToSql(binary.Right)}",
+    BinaryExpression { NodeType: ExpressionType.AndAlso } binary => $"{ToSql(binary.Left)} AND {ToSql(binary.Right)}",
+    MemberExpression { Expression: ParameterExpression } member => member.Member.Name,
+    ConstantExpression { Value: string text } => $"'{text}'",
+    ConstantExpression constant => $"{constant.Value}",
+    _ => throw new NotSupportedException($"Cannot translate {expression.NodeType} to SQL")
+};
+
+string Where<T>(Expression<Func<T, bool>> predicate)
+{
+    return $"SELECT * FROM {typeof(T).Name} WHERE {ToSql(predicate.Body)}";
+}
+
+Console.WriteLine(Where<Person>(p => p.FirstName == "Dan" && p.Age == 30));
+```
+
+***
+
+```{.csharp}
+// Anything the translator does not know about cannot be translated
+try
+{
+    Console.WriteLine(Where<Person>(p => p.FirstName.StartsWith("D")));
+}
+catch (NotSupportedException e)
+{
+    Console.WriteLine(e.Message);
+}
 ```

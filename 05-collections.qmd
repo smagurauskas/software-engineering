@@ -5,9 +5,9 @@ verify: output
 
 Collections refers to types in C# that are intended to store and manage groups of objects within them.
 
-Some of the collections are located within the `System.Collections` namespace in .NET framework, some, like arrays or memory spans, are within the defined in the `System` namespace and supported by the C# language itself.
+Most of the collections are located within the `System.Collections.Generic` namespace, while arrays are defined in the `System` namespace and are supported by the C# language itself.
 
-Collections are designed for different use cases, and each of their usage as well as performance will benefit some situations more than others. It is important to learn to to determine which collection fits which situation.
+Collections are designed for different use cases, and each of their usage as well as performance will benefit some situations more than others. It is important to learn to determine which collection fits which situation.
 
 ## Arrays
 
@@ -24,7 +24,7 @@ int[] arr2 = new int[5];
 
 ***
 
-Array elements are allocated in a continous memory block. This is essential for offset access to work.
+Array elements are allocated in a continuous memory block. This is essential for offset access to work.
 
 https://devblogs.microsoft.com/premier-developer/managed-object-internals-part-3-the-layout-of-a-managed-array-3
 
@@ -94,7 +94,7 @@ var lengthArray = Array.CreateInstance(typeof(int), 5);
 
 ## `List`
 
-List is a generic collection that does not have a fixed size allows to easily add or remove elements. List acts like "bag" as in you just throw items into, but if you need to get 1 specific item from it, then you have manually go through them.
+List is a generic collection that does not have a fixed size and allows to easily add or remove elements. Elements keep the order in which they were added and can be accessed by index, but finding an element by its value requires going through the elements one by one.
 
 ```{.csharp}
 // Initialize the list
@@ -117,7 +117,8 @@ Console.WriteLine(list.Count);
 ***
 
 ```{.csharp}
-// List has a backing array that can be accessed directly
+// List stores elements in a backing array. When the array is full, a new one twice the size is allocated
+// Count is the number of elements, Capacity is the size of the backing array
 for (int i = 0; i < 20; i++)
 {
     list.Add(i);
@@ -137,7 +138,7 @@ foreach (var item in list)
 
 ## `Dictionary`
 
-Dictionary is a generic key-value collection. Items are placed with a unique key and retrieved using the same key was well.
+Dictionary is a generic key-value collection. Items are placed with a unique key and retrieved using the same key as well.
 
 ```{.csharp}
 // Create a dictionary with initialiser
@@ -362,6 +363,21 @@ foreach (var element in hashSet)
 }
 ```
 
+## Choosing a collection
+
+The main difference between the collections is how much time each operation takes as the number of elements $n$ grows.
+
+| Collection | Access by index | Search by value | Add | Remove | Memory |
+|---|---|---|---|---|---|
+| Array | O(1) | O(n) | - | - | n |
+| `List` | O(1) | O(n) | O(1)¹ at the end | O(n) | up to 2n (capacity) |
+| `Dictionary` | O(1)² by key | O(1)² by key | O(1)¹ | O(1)² | n + hash buckets |
+| `HashSet` | - | O(1)² | O(1)¹ | O(1)² | n + hash buckets |
+| `Queue` / `Stack` | - | O(n) | O(1)¹ | O(1) at its end | up to 2n (capacity) |
+
+¹ Amortized: usually O(1), but occasionally the backing array is full and all elements have to be copied into a bigger one.  
+² Average: relies on a good `GetHashCode` implementation. If many elements have the same hash, it degrades to O(n).
+
 ## Indexers
 
 Some collections allow to access their elements with indexers, by specifying some value between `[]`. In array that is typically a numerical value indicating the index, but for instance with `Dictionary` that can be any type. Any type can be given this behavior by specifying the indexers.
@@ -564,8 +580,24 @@ class HomemadeList<T>
 
     public T this[int index]
     {
-        get => _data[index];
-        set => _data[index] = value;
+        get
+        {
+            CheckIndex(index);
+            return _data[index];
+        }
+        set
+        {
+            CheckIndex(index);
+            _data[index] = value;
+        }
+    }
+
+    private void CheckIndex(int index)
+    {
+        if (index < 0 || index >= _count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
     }
 
     public void Add(T item)
@@ -616,8 +648,24 @@ class HomemadeList<T> : IEnumerable<T>
 
     public T this[int index]
     {
-        get => _data[index];
-        set => _data[index] = value;
+        get
+        {
+            CheckIndex(index);
+            return _data[index];
+        }
+        set
+        {
+            CheckIndex(index);
+            _data[index] = value;
+        }
+    }
+
+    private void CheckIndex(int index)
+    {
+        if (index < 0 || index >= _count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
     }
 
     public void Add(T item)
@@ -671,7 +719,7 @@ class HomemadeList<T> : IEnumerable<T>
 ```{.csharp}
 // Short detour on how yield return works
 // It allows to return enumerable values one by one
-// Excecution is paused until the next value is requested
+// Execution is paused until the next value is requested
 
 IEnumerable<int> GetNumbers()
 {
@@ -729,6 +777,15 @@ for (var i = 0; i < 5; i++)
 }
 
 Console.WriteLine(list[4]);
+
+try
+{
+    Console.WriteLine(list[7]);
+}
+catch (ArgumentOutOfRangeException)
+{
+    Console.WriteLine("Index out of range");
+}
 ```
 
 ***

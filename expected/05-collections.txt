@@ -177,6 +177,7 @@ Ping
 ── cell 40 ──
 ── cell 41 ──
 4
+Index out of range
 ── cell 42 ──
 0
 1

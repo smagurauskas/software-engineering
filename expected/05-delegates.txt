@@ -29,3 +29,10 @@ System.Action`2[System.Int32,System.Int32]
 num1
 num2
 Add
+── cell 16 ──
+System.Func`3[System.Int32,System.Int32,System.Int32]
+(num1, num2) => (num1 + num2)
+── cell 17 ──
+SELECT * FROM Person WHERE FirstName = 'Dan' AND Age = 30
+── cell 18 ──
+Cannot translate Call to SQL

@@ -3,7 +3,7 @@ title: "IO and streams"
 verify: none # generates and scans an ~800MB file
 ---
 
-.NET provides classes for working with files and streaming data. This notebook will go through some of these classes and some examples how to make best use of them.
+.NET provides classes for working with files and streaming data. This lecture will go through some of these classes and some examples how to make best use of them.
 
 ## Working with files and directories
 
@@ -32,7 +32,7 @@ foreach (FileInfo file in directoryInfo.GetFiles())
 ***
 
 ```{.csharp}
-// Both classes can be leverage together to get the full information about the available files and directories
+// Both classes can be leveraged together to get the full information about the available files and directories
 
 void PrintContentsRecursively(DirectoryInfo root, int depth = 0)
 {
@@ -56,7 +56,7 @@ PrintContentsRecursively(new DirectoryInfo("."), 0);
 ***
 
 ```{.csharp}
-// Any errors will be provded as exceptions
+// Any errors will be provided as exceptions
 
 var directory = new DirectoryInfo("K://");
 
@@ -129,7 +129,7 @@ foreach (var line in File.ReadLines("test.txt"))
 
 ```{.csharp}
 // File can be cleared
-// WriteLine appends to the end of file, while WriteAllText clears the file and writes the content
+// AppendAllText appends to the end of file, while WriteAllText clears the file and writes the content
 
 File.WriteAllText("test.txt", "");
 ```
@@ -185,12 +185,14 @@ for (var i = 0; i < 1_000_000; i++)
 ***
 
 ```{.csharp}
-// Using a stream reader, bytes at an offset can be read
+// Using a FileStream, bytes at an offset can be read
 
 using (var fileStream = new FileStream("test.txt", FileMode.Open))
 {
     var buffer = new byte[8];
     fileStream.Seek(8 * 123556, SeekOrigin.Begin);
+
+    // Read is allowed to return fewer bytes than requested
     fileStream.Read(buffer, 0, 8);
     Console.WriteLine(Encoding.UTF8.GetString(buffer));
 }
@@ -198,7 +200,7 @@ using (var fileStream = new FileStream("test.txt", FileMode.Open))
 
 ## Example of processing large file
 
-This example will focus on how to read large from the disk while still maintaining small memory footprint in the process.
+This example will focus on how to read large files from the disk while still maintaining small memory footprint in the process.
 
 ```{.csharp}
 // Seed a file with lots of random numbers
@@ -207,11 +209,11 @@ using System.IO;
 using (var fileStream = new FileStream("test.txt", FileMode.Create))
 {
     var random = new Random();
-    // Will effectively write 10000000 * 8 bytes to file (~800MB)
+    // Will effectively write 100_000_000 * 8 bytes to file (~800MB)
 
     for (var i = 0; i < 100_000_000; i++)
     {
-        var number = random.Next(0, 100_000_00);
+        var number = random.Next(0, 10_000_000);
         var byteString = Encoding.UTF8.GetBytes(number.ToString("D7") + "\n");
         fileStream.Write(byteString);
     }
@@ -260,7 +262,32 @@ PrintMemoryUsage();
 ***
 
 ```{.csharp}
-// Find the biggest number while stream reading from the file
+// Find the biggest number while reading the file line by line
+// File.ReadLines uses a StreamReader under the hood, only one line is kept in memory at a time
+
+Console.WriteLine("Before reading to memory:");
+PrintMemoryUsage();
+
+int max = int.MinValue;
+foreach (var line in File.ReadLines("test.txt"))
+{
+    var number = int.Parse(line);
+
+    if (number > max)
+    {
+        max = number;
+    }
+}
+
+Console.WriteLine($"Biggest number: {max}");
+
+Console.WriteLine("After reading to memory:");
+PrintMemoryUsage();
+```
+
+```{.csharp}
+// Every line in this file is exactly 8 bytes, so it can also be read in fixed size chunks
+// without looking for line endings. This only works for fixed size records
 
 using System.IO;
 
@@ -327,4 +354,4 @@ public static void Main()
 
 To run this - a new `csproj` will have to be created.
 
-After creating the project (provided you are in it's directory) it can now be executed by `ls | dotnet run` and it should printout all the contents of that directory in uppercase.
+After creating the project (provided you are in its directory) it can now be executed by `ls | dotnet run` and it should printout all the contents of that directory in uppercase.
