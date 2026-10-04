@@ -5,10 +5,6 @@ Software Engineering lecture material.
 The material is written in [Quarto](https://quarto.org) (`.qmd` files — plain
 markdown with a small amount of front matter).
 
-The C# code inside the lectures is executable and is verified by CI on every
-change, so code samples cannot silently rot (see _How code verification works_
-below).
-
 > The material previously lived in Polyglot Notebooks (`.ipynb`). That stack
 > [was deprecated by Microsoft in 2026](https://github.com/dotnet/interactive/issues/4163),
 > which prompted the move to Quarto.
@@ -27,68 +23,25 @@ Live-reloading preview of a lecture page while editing:
 quarto preview 06-linq.qmd --to revealjs
 ```
 
-## Running the lecture code
+## Verifying lecture code
 
-Lecture code blocks are real, executable C#. To replay a whole lecture's code
-the way the old notebooks executed it (cell by cell, state carried across
-cells):
-
-```bash
-dotnet run --project tools/LectureRunner -- 06-linq.qmd
-```
-
-## How code verification works
-
-Every lecture declares a tier in its front matter:
-
-| Tier             | Meaning                                                                                                                |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `verify: output` | CI runs the lecture's code and its stdout must match `expected/<lecture>.txt` exactly                                  |
-| `verify: run`    | CI runs the code and only asserts there are no compile errors (output is nondeterministic — threads, time, randomness) |
-| `verify: none`   | Code is not executed by CI (needs external services/NuGet packages, very long runtime, or the lecture has no code)     |
-
-The pieces:
-
-- `tools/LectureRunner/` — a small .NET tool that extracts the ` ```{.csharp} `
-  blocks from a `.qmd` and executes them as chained Roslyn scripting
-  submissions, replicating notebook semantics: later cells see earlier state,
-  may shadow variables, and a cell that throws prints the exception and
-  execution continues. Compile errors mean the material has rotted and fail
-  the run.
-- `expected/*.txt` — committed "golden" outputs for `verify: output` lectures.
-  This is snapshot testing: if you change lecture code and its output changes,
-  CI fails until you re-record the snapshot, and the snapshot diff shows up in
-  your pull request for review.
-- `tools/verify_lectures.py` — the orchestrator that CI runs.
-
-Verify locally:
-
-```bash
-python tools/verify_lectures.py                # everything
-python tools/verify_lectures.py 06-linq.qmd    # one lecture
-```
-
-After intentionally changing code output, re-record the snapshots and commit
-the diff:
+Record the expected output (after intentionally changing code output):
 
 ```bash
 python tools/verify_lectures.py --update
 ```
 
-When adding a new lecture, pick the strictest tier the content allows:
-`output` if two consecutive runs produce identical stdout, `run` if the code
-is sound but output varies, `none` only when the code cannot run standalone.
-If only a few cells are volatile (e.g. printing live memory usage), keep the
-`output` tier and list them as `verify-volatile-cells: [87]` — their output is
-masked before comparison while the rest of the lecture stays snapshot-verified.
+Verify that the code output matches the recording:
+
+```bash
+python tools/verify_lectures.py
+```
 
 ## Writing conventions
 
-Markdown-authored code fences (` ```csharp `) are illustrative only and
-are never executed. Executable cells use the attribute form
-(` ```{.csharp} `) — the verifier picks up exactly those. Keep executable
-cells small enough to fit a slide; prefer several small cells over one large
-one.
+Code fences written as ` ```csharp ` are never executed; executable cells use
+` ```{.csharp} `. Keep executable cells small enough to fit a slide; prefer
+several small cells over one large one.
 
 - Text should be in passive tense where possible.
 - Use mermaid diagrams (` ```{mermaid} ` blocks) instead of image
