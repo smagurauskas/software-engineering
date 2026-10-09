@@ -1,0 +1,47 @@
+body {
+  font-family: system-ui, sans-serif;
+  background: #f6f7f9;
+  color: #1d2329;
+  margin: 0;
+}
+
+main {
+  max-width: 28rem;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+input {
+  font: inherit;
+  padding: 0.5rem;
+  border: 1px solid #b8c0c8;
+  border-radius: 4px;
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background: #2f6fd6;
+  color: white;
+  cursor: pointer;
+}
+
+[role='status'] {
+  font-weight: 600;
+}

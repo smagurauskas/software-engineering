@@ -40,3 +40,33 @@ jobs:
         with:
           name: actual-outputs
           path: .verify
+
+  # The testing lecture demo (07-testing/): unit, integration and E2E tests.
+  test-demo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 07-testing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Build frontend
+        working-directory: 07-testing/WordGame.Web
+        run: npm ci && npm run build
+      - name: Build
+        run: dotnet build
+      - name: Install Playwright browser and its system dependencies
+        run: pwsh WordGame.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+      - name: Test
+        run: dotnet test --no-build
+      - name: Upload Playwright traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: 07-testing/WordGame.E2ETests/bin/Debug/net10.0/traces

@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="WordGame.Api/WordGame.Api.csproj" />
+  <Project Path="WordGame.E2ETests/WordGame.E2ETests.csproj" />
+  <Project Path="WordGame.IntegrationTests/WordGame.IntegrationTests.csproj" />
+  <Project Path="WordGame.Testing/WordGame.Testing.csproj" />
+  <Project Path="WordGame.UnitTests/WordGame.UnitTests.csproj" />
+</Solution>

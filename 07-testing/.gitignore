@@ -1,0 +1,8 @@
+# Built by `npm run build` in WordGame.Web
+WordGame.Api/wwwroot/
+# Created when the API runs locally
+WordGame.Api/users.json
+# Playwright traces and coverage reports
+traces/
+TestResults/
+coverage-report/
