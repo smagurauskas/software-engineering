@@ -1,20 +1,20 @@
 ── cell 1 ──
 ── cell 2 ──
-FirstName=David, LastName=Davis, Age=60
-FirstName=Danielle, LastName=Davis, Age=61
-FirstName=Daniel, LastName=Davis, Age=65
-FirstName=Diana, LastName=Davis, Age=66
-FirstName=Dennis, LastName=Davis, Age=70
+David Davis (60)
+Danielle Davis (61)
+Daniel Davis (65)
+Diana Davis (66)
+Dennis Davis (70)
 ── cell 3 ──
-46
+46.78947368421053
 ── cell 4 ──
 John Doe, Jane Doe, John Smith, Jane Smith, John Johnson, Jane Johnson, John Williams, Jane Williams, John Brown, Jane Brown, Anthony Davis, Jessica Davis, Michael Davis, Michelle Davis, David Davis, Danielle Davis, Daniel Davis, Diana Davis, Dennis Davis
 ── cell 5 ──
-FirstName=David, LastName=Davis, Age=60
-FirstName=Danielle, LastName=Davis, Age=61
-FirstName=Daniel, LastName=Davis, Age=65
-FirstName=Diana, LastName=Davis, Age=66
-FirstName=Dennis, LastName=Davis, Age=70
+David Davis (60)
+Danielle Davis (61)
+Daniel Davis (65)
+Diana Davis (66)
+Dennis Davis (70)
 ── cell 6 ──
 John Doe
 Jane Doe
@@ -46,30 +46,55 @@ Dennis Davis
 889
 ── cell 9 ──
 889
+JJJJJJJJJJAJMMDDDDD
+── cell 10 ──
+889
 46.78947368421053
 70
 25
-── cell 10 ──
-False
+9
 ── cell 11 ──
-True
+Dennis Davis (70)
+John Doe (25)
 ── cell 12 ──
-True
-── cell 13 ──
 False
+── cell 13 ──
+True
 ── cell 14 ──
-System.Linq.Grouping`2[System.String,Submission#0+Person]
-System.Linq.Grouping`2[System.String,Submission#0+Person]
-System.Linq.Grouping`2[System.String,Submission#0+Person]
-System.Linq.Grouping`2[System.String,Submission#0+Person]
-System.Linq.Grouping`2[System.String,Submission#0+Person]
-System.Linq.Grouping`2[System.String,Submission#0+Person]
-System.Linq.Grouping`2[System.String,Submission#0+Person]
-System.Linq.Grouping`2[System.String,Submission#0+Person]
-System.Linq.Grouping`2[System.String,Submission#0+Person]
-System.Linq.Grouping`2[System.String,Submission#0+Person]
-System.Linq.Grouping`2[System.String,Submission#0+Person]
+False
 ── cell 15 ──
+Jane Brown (46)
+John Brown (45)
+Dennis Davis (70)
+Diana Davis (66)
+Daniel Davis (65)
+Danielle Davis (61)
+David Davis (60)
+Michelle Davis (56)
+Michael Davis (55)
+Jessica Davis (51)
+Anthony Davis (50)
+Jane Doe (26)
+John Doe (25)
+Jane Johnson (36)
+John Johnson (35)
+Jane Smith (31)
+John Smith (30)
+Jane Williams (41)
+John Williams (40)
+── cell 16 ──
+John: Doe, Smith, Johnson, Williams, Brown
+Jane: Doe, Smith, Johnson, Williams, Brown
+Anthony: Davis
+Jessica: Davis
+Michael: Davis
+Michelle: Davis
+David: Davis
+Danielle: Davis
+Daniel: Davis
+Diana: Davis
+Dennis: Davis
+── cell 17 ──
 { FirstName = Jane, Count = 5 }
 { FirstName = John, Count = 5 }
 { FirstName = Anthony, Count = 1 }
@@ -81,64 +106,111 @@ System.Linq.Grouping`2[System.String,Submission#0+Person]
 { FirstName = Jessica, Count = 1 }
 { FirstName = Michael, Count = 1 }
 { FirstName = Michelle, Count = 1 }
-── cell 16 ──
-Submission#0+Person
-── cell 17 ──
-[exception] InvalidOperationException: Sequence contains no elements
 ── cell 18 ──
-
+Doe
+Smith
+Johnson
+Williams
+Brown
+Davis
+John Doe (25)
+John Smith (30)
+John Johnson (35)
+John Williams (40)
+John Brown (45)
+Anthony Davis (50)
 ── cell 19 ──
-[exception] InvalidOperationException: Sequence contains no elements
+25, 26, 30, 31, 35
+36, 40, 41, 45, 46
+50, 51, 55, 56, 60
+61, 65, 66, 70
 ── cell 20 ──
-
+[Doe, 2]
+[Smith, 2]
+[Johnson, 2]
+[Williams, 2]
+[Brown, 2]
+[Davis, 9]
+Diana Davis (66)
 ── cell 21 ──
-[exception] InvalidOperationException: Sequence contains more than one element
+John Doe (25)
+Jessica Davis (51)
+Dennis Davis (70)
 ── cell 22 ──
-FirstName=Anthony, LastName=Davis, Age=50
-FirstName=Daniel, LastName=Davis, Age=65
-FirstName=Danielle, LastName=Davis, Age=61
-FirstName=David, LastName=Davis, Age=60
-FirstName=Dennis, LastName=Davis, Age=70
-FirstName=Diana, LastName=Davis, Age=66
-FirstName=Jane, LastName=Brown, Age=46
-FirstName=Jane, LastName=Doe, Age=26
-FirstName=Jane, LastName=Johnson, Age=36
-FirstName=Jane, LastName=Smith, Age=31
-FirstName=Jane, LastName=Williams, Age=41
-FirstName=Jessica, LastName=Davis, Age=51
-FirstName=John, LastName=Brown, Age=45
-FirstName=John, LastName=Doe, Age=25
-FirstName=John, LastName=Johnson, Age=35
-FirstName=John, LastName=Smith, Age=30
-FirstName=John, LastName=Williams, Age=40
-FirstName=Michael, LastName=Davis, Age=55
-FirstName=Michelle, LastName=Davis, Age=56
-FirstName=Danielle, LastName=Davis, Age=61
-FirstName=David, LastName=Davis, Age=60
-FirstName=Dennis, LastName=Davis, Age=70
-FirstName=Diana, LastName=Davis, Age=66
-FirstName=Jane, LastName=Brown, Age=46
+[exception] InvalidOperationException: Sequence contains no elements
 ── cell 23 ──
-FirstName=Jane, LastName=Smith, Age=31
-FirstName=John, LastName=Johnson, Age=35
-FirstName=Jane, LastName=Johnson, Age=36
-FirstName=John, LastName=Williams, Age=40
-FirstName=Jane, LastName=Williams, Age=41
-FirstName=John, LastName=Brown, Age=45
-FirstName=Jane, LastName=Brown, Age=46
-FirstName=Jessica, LastName=Davis, Age=51
+True
 ── cell 24 ──
+Dennis Davis (70)
 ── cell 25 ──
+[exception] InvalidOperationException: Sequence contains no elements
+── cell 26 ──
+True
+── cell 27 ──
+[exception] InvalidOperationException: Sequence contains more than one element
+── cell 28 ──
+Anthony Davis (50)
+Daniel Davis (65)
+Danielle Davis (61)
+David Davis (60)
+Dennis Davis (70)
+Diana Davis (66)
+Jane Brown (46)
+Jane Doe (26)
+Jane Johnson (36)
+Jane Smith (31)
+Jane Williams (41)
+Jessica Davis (51)
+John Brown (45)
+John Doe (25)
+John Johnson (35)
+John Smith (30)
+John Williams (40)
+Michael Davis (55)
+Michelle Davis (56)
+Danielle Davis (61)
+David Davis (60)
+Dennis Davis (70)
+Diana Davis (66)
+Jane Brown (46)
+── cell 29 ──
+2, 3, 4
+── cell 30 ──
+Evaluations without ToList: 8
+Evaluations with ToList: 4
+── cell 31 ──
+False
+p => (p.Age > 30)
+GreaterThan
+── cell 32 ──
+Jane Smith (31)
+John Johnson (35)
+Jane Johnson (36)
+John Williams (40)
+Jane Williams (41)
+John Brown (45)
+Jane Brown (46)
+Jessica Davis (51)
+── cell 33 ──
+51
+── cell 34 ──
 John
 John
 John
 Anthony
-── cell 26 ──
+── cell 35 ──
+── cell 36 ──
+── cell 37 ──
+── cell 38 ──
 Where called
-FirstName=David, LastName=Davis, Age=60
-FirstName=Danielle, LastName=Davis, Age=61
-FirstName=Daniel, LastName=Davis, Age=65
-FirstName=Diana, LastName=Davis, Age=66
-FirstName=Dennis, LastName=Davis, Age=70
+David Davis (60)
+Danielle Davis (61)
+Daniel Davis (65)
+Diana Davis (66)
+Dennis Davis (70)
+── cell 39 ──
+Query built
+FirstOrDefault called
 Select called
 Where called
+Jane

@@ -3,11 +3,13 @@ title: "Extension methods"
 verify: output
 ---
 
-Extensions methods allows to add additional methods to an existing type without actually modifying or extending that type. The method is added to the different actual class, but the method can be used as being in the extended class.
+::: {.content-visible unless-format="revealjs"}
+Extension methods allow additional methods to be added to an existing type without modifying or inheriting from that type. The method is declared in a separate class, but it is called as if it were a member of the extended type.
 
-This is useful when dealing with `sealed` classes, the types that are coming from external libraries or when there is some shared behavior between group of types, that is not well represented in the inheritance hierarchy.
+This is useful when dealing with `sealed` classes, with types that come from external libraries, or when some behavior is shared between a group of types but is not well represented in the inheritance hierarchy.
 
-Extension method is created by prepending `this` keyword to first argument to the `static` method in the `static` class. The first argument with the prepended `this` keyword indicates which to what type this extension method is being added to. Extension method can have any additional following arguments, just like any other regular method could.
+An extension method is created by prepending the `this` keyword to the first parameter of a `static` method declared in a `static` class. The type of that first parameter determines which type the method is added to. An extension method can have any number of additional parameters, just like any other method.
+:::
 
 ```{.csharp}
 internal sealed class SealedClass
@@ -19,26 +21,43 @@ internal sealed class SealedClass
 }
 ```
 
-```{.csharp}
-// Imagine that the following commented out lines are actually uncommented.
-// Static classes must be defined at the top level. Because of how these interactive
-// notebooks work, there is already "hidden" class wrapping these cells, so it is not
-// possible to define a static class here.
+***
 
-// The example with the uncommended class declaration would work perfectly fine in a
-// regular C# project.
-
-// internal static sealed class SealedStaticClass
-// {
+```csharp
+// In a regular C# project extension methods must be declared in a static,
+// non-nested, non-generic class.
+public static class SealedClassExtensions
+{
     public static void ExtensionMethod(this SealedClass sealedClass)
     {
         Console.WriteLine("Hello, World! (from extension method)");
     }
-// }
+}
+```
+
+***
+
+```{.csharp}
+// The runnable examples in this lecture leave out the wrapping static class,
+// because the script runner already wraps every cell in a hidden class.
+
+public static void ExtensionMethod(this SealedClass sealedClass)
+{
+    Console.WriteLine("Hello, World! (from extension method)");
+}
 
 var sealedClass = new SealedClass();
 sealedClass.ExtensionMethod();
 ```
+
+***
+
+```{.csharp}
+// An extension method is still a regular static method and can be called as one.
+ExtensionMethod(sealedClass);
+```
+
+***
 
 ```{.csharp}
 // Basic types can be extended as well.
@@ -54,22 +73,20 @@ int incrementedNumber = number.Increment();
 Console.WriteLine(incrementedNumber);
 ```
 
+***
+
 ```{.csharp}
-// Extension method can be used on derived types as well.
+// Extension method declared on a base class can be used on derived types as well.
 
-internal class TopLevelClass
-{
-    public void Method()
-    {
-        Console.WriteLine("Hello, World!");
-    }
-}
-
-internal class DerivedClass : TopLevelClass
+internal class BaseClass
 {
 }
 
-public static void ExtensionMethod(this DerivedClass derivedClass)
+internal class DerivedClass : BaseClass
+{
+}
+
+public static void ExtensionMethod(this BaseClass baseClass)
 {
     Console.WriteLine("Hello, World! (from extension method)");
 }
@@ -78,8 +95,11 @@ var derivedClass = new DerivedClass();
 derivedClass.ExtensionMethod();
 ```
 
+***
+
 ```{.csharp}
-// Same would work by adding extension mehtod on the object class.
+// Taken to the extreme, an extension method on object is available on every type.
+// This should be used sparingly, as the method shows up on everything.
 
 public static void ExtensionMethod(this object obj)
 {
@@ -90,18 +110,63 @@ var str = "Hello, World!";
 str.ExtensionMethod();
 ```
 
-Extensions methods are also useful in cases only when an interface is shared between types, but there is no inheritance hierarchy. Interfaces are usually more lightweight than inheritance and it is easier to add them if needed. For example, let's say there was an interface `IGeometricShape`:
+***
 
-```csharp
-interface IGeometricShape
+```{.csharp}
+// If the type already has an instance method with the same signature,
+// the instance method always wins and the extension method is ignored.
+
+internal class Greeter
+{
+    public void Greet()
+    {
+        Console.WriteLine("Hello from instance method");
+    }
+}
+
+public static void Greet(this Greeter greeter)
+{
+    Console.WriteLine("Hello from extension method");
+}
+
+new Greeter().Greet();
+```
+
+***
+
+```{.csharp}
+// Extension methods can be called on null, as null is just passed as the first argument.
+
+public static bool IsMissing(this string str)
+{
+    return string.IsNullOrEmpty(str);
+}
+
+string missing = null;
+Console.WriteLine(missing.IsMissing());
+```
+
+***
+
+::: {.content-visible unless-format="revealjs"}
+Extension methods are also useful when an interface is shared between types, but there is no inheritance hierarchy. Interfaces are usually more lightweight than inheritance and it is easier to add them when needed. For example, let's say there was an interface `IGeometricShape`:
+:::
+
+```{.csharp}
+public interface IGeometricShape
 {
     double[] GetSideLengths();
 }
 ```
 
-There might be many different geometrical shapes, which might not have all that many behavior in common with each other for the inheritance hierarchy to make sense, but the small interface might be sensible.
+::: {.content-visible unless-format="revealjs"}
+There might be many different geometric shapes which do not have enough behavior in common for an inheritance hierarchy to make sense, but a small interface might still be sensible.
 
-In such case a extension method could be added, that makes use of public methods available from that interface:
+In such case an extension method can be added that makes use of the public methods available from that interface:
+:::
+
+***
+
 ```csharp
 public static class GeometricShapeExtensions
 {
@@ -110,4 +175,56 @@ public static class GeometricShapeExtensions
         return shape.GetSideLengths().Sum();
     }
 }
+```
+
+***
+
+```{.csharp}
+public static double GetPerimeter(this IGeometricShape shape)
+{
+    return shape.GetSideLengths().Sum();
+}
+
+internal class Triangle : IGeometricShape
+{
+    public double[] GetSideLengths() => [3, 4, 5];
+}
+
+internal class Square : IGeometricShape
+{
+    public double[] GetSideLengths() => [2, 2, 2, 2];
+}
+
+Console.WriteLine(new Triangle().GetPerimeter());
+Console.WriteLine(new Square().GetPerimeter());
+```
+
+***
+
+::: {.content-visible unless-format="revealjs"}
+Since C# 14 (.NET 10) extension members can also be declared using `extension` blocks. Besides methods, they allow extension properties and static extension members, which were not possible with the `this` parameter syntax.
+:::
+
+```{.csharp}
+public static class StringExtensions
+{
+    // Extension block for instances of string
+    extension(string str)
+    {
+        public bool IsMissing => string.IsNullOrEmpty(str);
+
+        public string Shout() => str.ToUpper() + "!";
+    }
+
+    // Extension block for the string type itself (static members)
+    extension(string)
+    {
+        public static string Repeat(string value, int count) =>
+            string.Concat(Enumerable.Repeat(value, count));
+    }
+}
+
+bool missing = "".IsMissing;          // extension property
+string loud = "hello".Shout();        // extension method
+string many = string.Repeat("ab", 3); // static extension method
 ```
