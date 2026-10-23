@@ -1,0 +1,16 @@
+# The database for local development, the same for every developer:
+#   docker compose up -d      start it (the data is kept in a volume between restarts)
+#   docker compose down -v    stop it and delete the data
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: wordgame
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
