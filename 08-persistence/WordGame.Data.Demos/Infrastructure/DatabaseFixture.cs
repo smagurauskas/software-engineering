@@ -35,6 +35,8 @@ public class DatabaseFixture : IAsyncLifetime
 
     public ValueTask DisposeAsync() => _container.DisposeAsync();
 
+    public string ConnectionString => _container.GetConnectionString();
+
     // A new context for every unit of work, the same way a web application creates one per request.
     // Pass a SqlLog to see and count the SQL commands the context sends.
     public WordGameContext CreateContext(SqlLog? log = null, params IInterceptor[] interceptors)

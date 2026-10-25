@@ -7,6 +7,67 @@ verify: none # the demo code lives in 08-persistence/ and is run by `dotnet test
 
 ORM stands for object-relational mapper. With an ORM the database is used through classes and methods instead of writing SQL queries by hand: rows become objects, and LINQ queries become SQL.
 
+## Without an ORM
+
+### Reading a row
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="read-ado"}
+```
+
+***
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="read-ef"}
+```
+
+### SQL in strings is not checked
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="typo"}
+```
+
+```
+column "experiance" does not exist
+```
+
+### Loading related data
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="graph-ado"}
+```
+
+***
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="graph-ef"}
+```
+
+### Saving related data
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="save-ado"}
+```
+
+***
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="save-ef"}
+```
+
+### Queries built at run time
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="search"}
+```
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="search-ado"}
+```
+
+***
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="search-ef"}
+```
+
+***
+
+Both versions return the same players. Except for one input:
+
+```{.csharp include="08-persistence/WordGame.Data.Demos/WithoutOrmDemo.cs" region="wildcard"}
+```
+
 ::: {.content-visible unless-format="revealjs"}
 Pros of using an ORM:
 
