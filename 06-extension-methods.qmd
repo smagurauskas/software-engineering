@@ -205,7 +205,7 @@ Console.WriteLine(new Square().GetPerimeter());
 Since C# 14 (.NET 10) extension members can also be declared using `extension` blocks. Besides methods, they allow extension properties and static extension members, which were not possible with the `this` parameter syntax.
 :::
 
-```{.csharp}
+```csharp
 public static class StringExtensions
 {
     // Extension block for instances of string
