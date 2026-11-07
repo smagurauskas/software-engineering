@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../07-testing/WordGame.Api/WordGame.Api.csproj" />
+  <Project Path="WordGame.Construction/WordGame.Construction.csproj" />
+  <Project Path="WordGame.Construction.Tests/WordGame.Construction.Tests.csproj" />
+  <Project Path="WordGame.Construction.WeakTests/WordGame.Construction.WeakTests.csproj" />
+</Solution>

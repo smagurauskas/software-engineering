@@ -1,0 +1,30 @@
+# Output of hotspots.py for https://github.com/dotnet/eShop at commit 913acea (2026-10-15):
+#   git clone https://github.com/dotnet/eShop.git
+#   python hotspots.py eShop --rev 913acea --include "*.cs" --exclude "*/Migrations/*" --top 8
+# Not re-measured by measure.py, because it needs the clone.
+
+# #region hotspots
+Hotspots (top 8)
+Changes | Lines | Complexity | File
+     11 |   408 |        886 | src/Catalog.API/Apis/CatalogApi.cs
+      9 |   424 |        753 | tests/Catalog.FunctionalTests/CatalogApiTests.cs
+     13 |   160 |        342 | src/WebApp/Components/Chatbot/ChatState.cs
+     13 |   127 |        305 | src/eShop.AppHost/Extensions.cs
+      8 |   165 |        474 | src/eShop.ServiceDefaults/OpenApiOptionsExtensions.cs
+     19 |   107 |        199 | src/WebApp/Extensions/Extensions.cs
+      6 |   288 |        562 | src/ClientApp/ViewModels/SettingsViewModel.cs
+      5 |   261 |        661 | src/EventBusRabbitMQ/RabbitMQEventBus.cs
+# #endregion hotspots
+
+# #region coupling
+Change coupling (top 8, at least 3 shared commits)
+Shared | Degree | Files
+     3 |    86% | src/WebhookClient/Extensions/Extensions.cs  <->  src/WebhookClient/Services/WebHooksClient.cs
+     4 |    80% | tests/Catalog.FunctionalTests/CatalogApiFixture.cs  <->  tests/Ordering.FunctionalTests/OrderingApiFixture.cs
+     3 |    75% | tests/Ordering.UnitTests/Domain/BuyerAggregateTest.cs  <->  tests/Ordering.UnitTests/Domain/OrderAggregateTest.cs
+     7 |    70% | src/eShop.ServiceDefaults/OpenApi.Extensions.cs  <->  src/eShop.ServiceDefaults/OpenApiOptionsExtensions.cs
+     6 |    60% | src/Catalog.API/Apis/CatalogApi.cs  <->  tests/Catalog.FunctionalTests/CatalogApiTests.cs
+     3 |    60% | src/Basket.API/Extensions/Extensions.cs  <->  src/eShop.ServiceDefaults/Extensions.cs
+     9 |    55% | src/Catalog.API/Extensions/Extensions.cs  <->  src/WebApp/Extensions/Extensions.cs
+     4 |    53% | src/Catalog.API/Program.cs  <->  src/eShop.ServiceDefaults/OpenApiOptionsExtensions.cs
+# #endregion coupling

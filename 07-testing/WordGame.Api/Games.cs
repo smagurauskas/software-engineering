@@ -60,10 +60,12 @@ public class GameService(IWordPicker wordPicker, IGameStore games, UserService u
 
     private bool IsExpired(Game game) => time.GetUtcNow() - game.StartedAt > TimeLimit;
 
+    // #region are-correct
     private static bool AreCorrect(string[] words, string[] translations) =>
         words.Length == translations.Length
         && words.Zip(translations).All(pair =>
             string.Equals(WordBank.EnglishToGerman[pair.First], pair.Second.Trim(), StringComparison.OrdinalIgnoreCase));
+    // #endregion are-correct
 
     // #region experience
     // Games completed on a weekend award double experience

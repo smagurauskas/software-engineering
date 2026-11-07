@@ -1,0 +1,46 @@
+root = true
+
+# #region editorconfig
+[*.cs]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+insert_final_newline = true
+
+# Code style, checked by the build (EnforceCodeStyleInBuild in Directory.Build.props)
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_prefer_braces = true:warning
+dotnet_style_prefer_conditional_expression_over_return = true:suggestion
+dotnet_diagnostic.IDE0161.severity = warning
+dotnet_diagnostic.IDE0011.severity = warning
+
+# Complexity rules are off by default; thresholds are in CodeMetricsConfig.txt
+dotnet_diagnostic.CA1501.severity = warning
+dotnet_diagnostic.CA1502.severity = warning
+dotnet_diagnostic.CA1505.severity = warning
+dotnet_diagnostic.CA1506.severity = warning
+
+# Security: System.Random is predictable, so it must not be used for anything secret
+dotnet_diagnostic.CA5394.severity = warning
+# #endregion editorconfig
+
+# #region tests
+# Test names follow Method_Scenario_Result (as in the testing lecture), so underscores are allowed there
+[{WordGame.Construction.Tests,WordGame.Construction.WeakTests}/**.cs]
+dotnet_diagnostic.CA1707.severity = none
+# #endregion tests
+
+# #region suppression
+# A seeded Random is intended here: every player must get the same words on the same day.
+# Not a security concern, so "do not use insecure randomness" does not apply.
+[WordGame.Construction/Verification/DailyChallenge*.cs]
+dotnet_diagnostic.CA5394.severity = none
+# #endregion suppression
+
+# #region baseline
+# The *Before, *OverSplit and Readability examples are kept as they are on purpose. Like legacy code
+# in a real project, they are excluded from the style rules instead of being reformatted:
+# new code has to follow the standard, old code is fixed when it is changed anyway.
+[WordGame.Construction/**/{*Before,*OverSplit,Readability}.cs]
+dotnet_diagnostic.CA1822.severity = suggestion
+# #endregion baseline

@@ -21,6 +21,7 @@ public interface IWordPicker
     string[] Pick(int count);
 }
 
+// #region random-picker
 public class RandomWordPicker : IWordPicker
 {
     public string[] Pick(int count)
@@ -30,3 +31,4 @@ public class RandomWordPicker : IWordPicker
         return words[..count];
     }
 }
+// #endregion random-picker

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- New features of the word game from the testing lecture, each written twice:
+       as it tends to grow (*Before) and after construction practices are applied. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\07-testing\WordGame.Api\WordGame.Api.csproj" />
+  </ItemGroup>
+
+</Project>

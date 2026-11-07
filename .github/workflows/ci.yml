@@ -85,3 +85,29 @@ jobs:
           dotnet-version: "10.0.x"
       - name: Test
         run: dotnet test --output Detailed
+
+  # The software construction lecture demo (09-construction/), which builds on the
+  # word game of 07-testing. The lecture quotes measured numbers from reports/:
+  # measure.py re-measures them and fails if the code and the reports drifted apart.
+  construction-demo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 09-construction
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Build (analyzers enforce the coding standard)
+        run: dotnet build WordGame.Construction.slnx
+      - name: Check formatting
+        run: |
+          dotnet format whitespace WordGame.Construction.slnx --verify-no-changes
+          dotnet format style WordGame.Construction.slnx --verify-no-changes
+      - name: Test
+        run: dotnet test --solution WordGame.Construction.slnx
+      - name: Check the measurements quoted in the lecture
+        run: |
+          dotnet tool restore
+          python3 measure.py --check

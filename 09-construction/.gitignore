@@ -1,0 +1,4 @@
+# Mutation testing reports (`dotnet stryker`)
+StrykerOutput/
+# Created when the daily challenge example runs
+users.json

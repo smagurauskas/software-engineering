@@ -45,6 +45,7 @@ public class JsonFileUserRepository(string filePath) : IUserRepository
 
 public class UserService(IUserRepository repository)
 {
+    // #region add-experience
     public void AddExperience(string email, int amount)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(amount);
@@ -53,6 +54,7 @@ public class UserService(IUserRepository repository)
         user.Experience += amount;
         repository.AddOrUpdate(user);
     }
+    // #endregion add-experience
 
     public User? GetUserByEmail(string email) => repository.FindByEmail(email);
 }

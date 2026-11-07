@@ -1,0 +1,29 @@
+<Project>
+
+  <!-- Applies to every project in this folder: the coding standard, enforced by the build. -->
+
+  <!-- #region standards -->
+  <PropertyGroup>
+    <!-- The recommended set of .NET code quality rules for the current SDK -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <!-- The code style rules of .editorconfig are checked by the build, not only in the IDE -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Complexity is reported, but does not fail the build: a number over the threshold
+         is a reason to look at the code in review, not proof that it is wrong -->
+    <WarningsNotAsErrors>CA1502;CA1505;CA1506</WarningsNotAsErrors>
+  </PropertyGroup>
+  <!-- #endregion standards -->
+
+  <!-- #region thresholds -->
+  <!-- Thresholds for the complexity rules. `dotnet build -p:MeasureAll=true` swaps them for
+       zero thresholds, so every method is reported with its value (used by measure.py). -->
+  <ItemGroup Condition="'$(MeasureAll)' != 'true'">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)CodeMetricsConfig.txt" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(MeasureAll)' == 'true'">
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)measure-all/CodeMetricsConfig.txt" />
+  </ItemGroup>
+  <!-- #endregion thresholds -->
+
+</Project>

@@ -1,542 +1,693 @@
 ---
 title: "Software Construction"
-verify: none # no executable cells
+verify: none # the demo code lives in 09-construction/; its measurements are checked by measure.py in CI
 ---
-
-As taken from SWEBOK:
-
->Software construction refers to the detailed creation and maintenance of software through coding, verification, unit testing, integration testing and debugging.
-
-***
-
-```{mermaid}
-flowchart LR
-    Plan[Figure out what to do]
-    Construct[Software Construction]
-    Users[Users use the software]
-
-    Plan -->|Defines requirements| Construct
-    Construct -->|Ships product| Users
-    Users -->|Get feedback| Plan
-```
-
-::: {.content-visible unless-format="revealjs"}
-This notebook explores the software construction in general. Software construction process is based on how SWEBOK describes it. However, because software construction doesn't happen in a vacuum, adjacent business areas and how they relate to software engineering will be explored as well.
-
-In places where it is relevant, common industry practices are inserted. It is not meant to describe the definitive or best way how the software can be constructed, but rather just to introduce some of the most common practices and rationale behind time.
-:::
-
-## SWEBOK
-
-**SWEBOK** stands for **S**oft**w**are **E**ngineering **B**ody **o** **K**nowledge. It refers to all common knowledge that exists about the software engineering discipline.
-
-"*SWEBOK Guide*" is a book that provides an organized overview of that knowledge
-
-## Software development process
-
-In a simplified view the software development process can be broken down into 3 major steps:
-
-```{mermaid}
-flowchart LR
-    requirements(Define the requirements)
-    development(Develop the software)
-    maintenance(Maintain the software)
-
-    requirements --> development
-    development --> maintenance
-```
-
-## Defining the requirements
-
-Requirements expresses the needs and constraints for software product that contributes to the solution of a real world problem.
-
-The software product or project is supposed to introduce some change on the real world. The change might be allowing people to do something they wanted, but could not do before; allowing to perform some desireable task faster, allowing to perform something more pleasurably; allowing to perform something more cost efficiently etc.
-
-### Developing the software
-
-Developing the software is the process of transforming requirements for software into a working product. This process is area is very wide. It can be further broken down into smaller areas, like the software architecture, software design, software development and so on.
-
-### Maintaining the software
-
-Maintaining the software is (generally speaking) what is done to the software after it is initially launched. 
-
-Business and the world around software keeps constantly changing. The software that was perfectly serving user's needs one day, might need to be extended with new functionality to serve the users tomorrow.
-
-::: {.content-visible unless-format="revealjs"}
-Even if the needs of users do not change, the software degrades over time and it needs to be regularly revisited to ensure that it keeps serving the requirements that were initially set to it. For example the requirement for the software product could be that it must strive for the upmost security standard, so no security vulnerabilities are acceptable. Even if the software has no known security vulnerabilities today, a new vulnerability in one of the packages used could be tomorrow, and so the product would not be of satisfactory quality, and would have to be updated to get back in line the initial requirements.
-:::
-
-## Teams
-
-Software delivery is a team process.
-
-Teams typically consist of several roles with different responsibilities between them.
-
-
-```{mermaid}
-flowchart LR
-    PM[Product Manager]
-    EM[Engineering Manager]
-    SE[Software Engineer]
-    QA[Quality Assurance Engineer]
-    Users([Users])
-    Dev([Development / Coding])
-
-    PM -->|Defines requirements & priorities| EM
-    EM -->|Assigns construction tasks| SE
-    EM -->|Assigns construction tasks| QA
-    SE -->|Performs coding & testing| Dev
-    Dev -->|Validates quality| QA
-    QA -->|Reports issues| SE
-    SE -->|Ships release| Users
-    Users -->|Provides feedback| PM
-```
-
-### Software Engineer
-
-Develops the actual software. 
-
-Job usually involves not only developing the software, but also making design decisions, making configurations (DevOps), or helping other roles with tasks like data exporting and so on.
-
-The backbone and most important role in software development.
-
-### Engineering Manager
-
-Manages the team of engineers.
-
-Makes sure the team spends the time on most important things and follows the required practices. 
-
-Helps members to the team to grow in terms of their careers.
-
-### Product Manager
-
-Responsible for defining vision and strategy, and acting as a voice of a user.
-
-In practice this means defining the product direction, expressing user requirements and acting as an overall expert of the product. Product Managers play a big role in prioritizing the product roadmap.
-
-::: {.content-visible unless-format="revealjs"}
-Not to be confused with Product Owner, which is a Scrum role. Due to the naming similarity these titles are sometimes used interchangeably, but the proper role should still be called *Product Manager*.
-:::
-
-### Quality Assurance Engineer
-
-Ensures the quality of the software deliver.
-
-This can be done via different means, which can involve manual or automatic testing. Other options can involve providing guidance to organization, promoting better quality practices etc.
-
-## Business needs analysis
-
-Business needs analysis relates to "figuring out what to do" in the diagram at the start.
-
-It is something that would most likely be done the Product Managers in the modern software development teams.
-
-***
-
-Before creating requirements, you need to be figure out what problem you are solving. Without knowing having the problem (the goal), the requirements would be just an arbitrary list of tasks/things to accomplish.
-
-Business needs analysis deals with identifying valuable problems to solve.
-
-Business needs analysis has many techniques. However these techniques focus not on providing definitive answers on how to do the business, but on structuring the thinking process.
-
-### Vision, Mission, Strategy
-
-![Vision, mission, strategy pyramid](assets/vision-mission-strategy.png)
-
-***
-
-- Vision - what is the ideal situation you would like to live in?
-- Mission - how will you help to achieve that?
-- Strategy - how are you going to do that?
-- Roadmap - what steps are you taking to implement the strategy?
-- OKRs - how will you measure if you are succeeding?
-- Tasks - daily activities to reach the goals
-
-***
-
-Vision (sometimes – mission) is the reason why the product exists.
-
-- Disney: To make people happy.
-- Ikea: To create a better everyday life for the many people.
-- Google: to provide access to the world's information in one click.
-- Microsoft: to help people and businesses throughout the world realize their full potential.
-
-::: {.content-visible unless-format="revealjs"}
-Various versions of such pyramid exists. The levels can be different, and the number of these levels can differ as well. However the shared theme is that at the top there is at the top are the most abstract level, and at the bottom the most concrete one.
-:::
-
-### MOST Analysis
-
-```text
-+-------------------------------+
-|           Mission             |
-| (Purpose of the organization) |
-+-------------------------------+
-|          Objectives           |
-| (Key goals to achieve mission)|
-+-------------------------------+
-|           Strategy            |
-|  (Approach to meet objectives)|
-+-------------------------------+
-|            Tactics            |
-|  (Specific actions to execute)|
-+-------------------------------+
-```
-
-### Business model canvas
-
-![Business model canvas](https://upload.wikimedia.org/wikipedia/commons/1/10/Business_Model_Canvas.png)
-
-### SWOT
-
-```text
-+-------------------------+-------------------------+
-|        Strengths        |        Weaknesses       |
-|-------------------------|-------------------------|
-| - Internal capabilities | - Internal limitations  |
-| - Positive attributes   | - Areas for improvement |
-| - Competitive advantages| - Competitive           |
-|                         |   disadvantages         |
-+-------------------------+-------------------------+
-|       Opportunities     |         Threats         |
-|-------------------------|-------------------------|
-| - External conditions   | - External risks        |
-| - Market trends         | - Competition           |
-| - Potential for growth  | - Market challenges     |
-+-------------------------+-------------------------+
-```
-
-::: {.content-visible unless-format="revealjs"}
-SWOT analysis can be used to guide decisions and strategy the product takes.
-:::
-
-### 5 Whys
-
-```{mermaid}
-flowchart TD
-    A["Problem Statement"]
-    A --> B["Why #1: First reason identified"]
-    B --> C["Why #2: Reason for Why #1"]
-    C --> D["Why #3: Reason for Why #2"]
-    D --> E["Why #4: Reason for Why #3"]
-    E --> F["Why #5: Root cause identified"]
-
-
-```
-
-::: {.content-visible unless-format="revealjs"}
-Five whys (or 5 whys) is an iterative interrogative technique used to explore the cause-and-effect relationships underlying a particular problem.
-
-The primary goal of the technique is to determine the root cause of a defect or problem by repeating the question "Why?". The idea is that if you ask 5 recursively 5 times, then you should arrive at the root cause. Of course the number 5 is arbitrary here, but the notion of recursively asking question "why?" until you arrive to the root causes is a widely used technique for unwrap complex problems.
-:::
-
-### Stakeholder management
-
-Stakeholder: a member of "groups without whose support the organization would cease to exist".
-
-Each stakeholder group has different stakes at company or product.
-
-#### Examples of stakeholders
-
-- Software Engineer - develops the actual software.
-- Product Manager - sets direction of the product.
-- End User - person that uses the product.
-- Economic buyer - in B2C context a person that makes the decision to purchase the product.
-- Customer Support/Success Specialist - needs to helps users to use the product successfully.
-- Marketing Specialist - promotes the product to potential clients.
-- Sales Representative - closes the deals with the clients.
-- Legal - makes sure the product is legally compliant.
-- Executive Sponsor - decides if the product idea worth pursuing.
-- Investor - expects return on investment from the product.
-
-::: {.content-visible unless-format="revealjs"}
-From SWEBOK:
-
-- Stakeholders should provide support, information, and feedback at all stages of the software life cycle process. 
-- For example, during the early stages, it is critical to identify all stakeholders and discover how the product will affect them.
-- So that sufficient definition of the stakeholder requirements can be properly and completely captured.
-- It is vital to maintain open and productive communication with stakeholders for the duration of the software product’s lifetime.
-:::
-
-### SMART Goals
-
-```text
-+---------------+--------------------------------------+
-|     SMART     |           Goal Criteria             |
-+---------------+--------------------------------------+
-|    Specific   | Clear and specific goal              |
-+---------------+--------------------------------------+
-|   Measurable  | Progress can be tracked and measured |
-+---------------+--------------------------------------+
-|   Achievable  | Realistic and attainable             |
-+---------------+--------------------------------------+
-|   Relevant    | Aligned with broader objectives      |
-+---------------+--------------------------------------+
-|   Time-Bound  | Has a defined timeline or deadline   |
-+---------------+--------------------------------------+
-```
-
-### OKRs
-
-OKR stands for **O**bjective and **K**ey **R**esults.
-
-John Doerr introduced Google to OKR, has a formula for setting goals:
-
->I will ________ as measured by ____________.
-
-Example of OKR:
->I will (Objective) as measured by (this set of Key Results).
-
-#### OKR example
-
-Objective: Create an Awesome Customer Experience.
-
-Key Results:
-- Improve Net Promoter Score from X to Y.
-- Increase Repurchase Rate from X to Y.
-- Maintain Customer Acquisition cost under Y.
-
-***
-
-Objective: Delight our customers.
-
-Key Results:
-- Reduce revenue churn (cancellation) from X% to Y%.
-- Increase Net Promoter Score from X to Y.
-- Improve average weekly visits per active user from X to Y.
-- Increase non-paid (organic) traffic to from X to Y.
-- Improve engagement (users that complete a full profile) from X to Y.
-
-***
-
-Objective : Refactor our old user management module.
-
-Key Results:
-- Survey 5 external API users regarding issues with our authentication.
-- Discuss the user management code usage with 5 engineers having used it in production.
-- Rewrite and launch new version of our user management module.
-- Rewrite the API user authentication for new version.
-
-***
-
-Objective: Improve our testing procedures.
-
-Key Results:
-- Implement test-driven development in 3 new development teams.
-- Increase unit test coverage to 75% of code.
-- Conduct a security assessment of our codebase using automated tools.
-- Make sure satisfaction score of product management to the testing team is at least 7.5.
-- Discover at least 100 bugs and open issues in old code not reviewed in 6 months.
-
-### Requirements analysis
-
-At its most basic, a software requirement is a property that must be exhibited in order to solve some problem in the real world.
-
-Software requirements should be stated as clearly and as unambiguously as possible, and, where appropriate, quantitatively.
-
-An essential property of all software requirements is that they be verifiable. Sometimes that might be difficult.
-
-#### Functional requirements
-
->Functional requirements specify observable behaviors that the software is to provide — policies to be enforced and processes to be carried out. Example policies in banking software might be “an account shall always have at least one customer as its owner,” and “the balance of an account shall never be negative.”
-
-#### Non-functional requirements
-
->Nonfunctional requirements in some way constrain the technologies to be used in the implementation: What computing platform(s)? What database engine(s)? How accurate do results need to be? How quickly must results be presented? How many records of a certain type need to be stored?
-
-### Recap
-
-- Business needs analysis deals with figuring out what to do.
-- In practice these activities relate most to what PMs do, but not necessarily.
-- To define requirements you need to have broader vision of what you want to achieve.
-- You need some kind of measurement process to know if you getting closer to your goal.
-- It is easier to define requirements, once you have a good mental model of you vision and goals.
 
 ## Software construction
 
->Software construction refers to the detailed creation and maintenance of software through coding, verification, unit testing, integration testing and debugging
+SWEBOK (the *Software Engineering Body of Knowledge*, published by IEEE) defines it as:
 
-### Fundamental concepts
+>Software construction refers to the detailed creation and maintenance of software through coding, verification, unit testing, integration testing and debugging.[^swebok-definition]
 
-Software construction has 5 fundamental concepts:
+[^swebok-definition]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering) (IEEE Computer Society, 2024), chapter 4 "Software Construction", p. 4-1.
 
-1. Minimizing complexity.
-1. Anticipating change.
-1. Constructing for verification.
-1. Reusing assets.
-1. Applying standards.
+```{mermaid}
+flowchart LR
+    Requirements --> Design
+    Design --> Construction
+    Construction -->|release| Users
+    Users -->|feedback, new needs| Requirements
+    classDef focus stroke-width:3px
+    class Construction focus
+```
 
-These concepts are heavily intertwined and influence each other.
+### How SWEBOK is organized
 
-#### Minimizing complexity
+- **18 knowledge areas**[^swebok-kas]: requirements, architecture, design, **construction**, testing, operations, maintenance, configuration management, management, process, models and methods, quality, security, professional practice, economics, and three foundations (computing, mathematical, engineering).
+- Every knowledge area is a hierarchy of **topics**. The first topic is the area's **fundamentals** - the principles everything else builds on.
+- Software Construction[^swebok-construction-topics]: 1. Fundamentals, 2. Managing construction, 3. Practical considerations, 4. Construction technologies, 5. Tools.
 
-People are limited by the amount of things they can maintain in the working memory at any given time.
+[^swebok-kas]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), Introduction, Table I.1 "The 18 SWEBOK KAs".
+[^swebok-construction-topics]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), chapter 4, "Breakdown of topics for Software Construction".
 
-Complexity is reduced by writing code easy to read, rather than writing smart code.
+### Construction fundamentals
+
+SWEBOK lists five fundamentals of software construction[^swebok-fundamentals]:
+
+1. **Minimizing complexity** - code that people can understand.
+1. **Anticipating and embracing change** - code that can be changed cheaply.
+1. **Constructing for verification** - code in which faults are easy to find.
+1. **Reusing assets** - using existing assets, and creating reusable ones.
+1. **Applying standards in construction** - agreeing on how code is written, and enforcing it.
+
+[^swebok-fundamentals]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), section 4.1 "Software Construction Fundamentals", pp. 4-2 – 4-4.
+
+### Demo: word game, extended
+
+```text
+09-construction/
+├── WordGame.Construction/        new features, before and after
+│   ├── Complexity/               experience rules
+│   ├── Change/                   vocabulary, more languages
+│   └── Verification/             daily challenge
+├── WordGame.Construction.Tests/      characterization and unit tests
+├── WordGame.Construction.WeakTests/  tests that cover everything and check nothing
+├── measure.py                    measures the code, writes reports/
+└── hotspots.py                   finds hotspots in any git repository
+```
+
+▶ Build (the analyzers report the complexity) and run the tests:
+
+```bash
+dotnet build
+dotnet test
+```
+
+## Measuring construction
+
+### Goal, question, metric
+
+A metric is useful only when it answers a question that matters. The *Goal-Question-Metric* approach[^gqm] starts from the goal:
+
+[^gqm]: V. Basili, G. Caldiera, H. D. Rombach, ["The Goal Question Metric Approach"](https://www.cs.umd.edu/~mvz/handouts/gqm.pdf), Encyclopedia of Software Engineering, 1994.
+
+| Goal | Question | Metric |
+|---|---|---|
+| Adding experience rules should take hours, not days | Which code is hardest to understand? | Cyclomatic complexity |
+| | Which code changes most often? | Churn |
+| Bugs should be caught before release | Would the tests notice a wrong rule? | Mutation score |
+| Dependencies should not put users at risk | Do we ship known vulnerabilities? | Vulnerable packages |
+
+### What SWEBOK suggests to measure
+
+>Numerous construction activities and artifacts can be measured, including code developed, modified, reused, and destroyed; code complexity; code inspection statistics; fault-fix and fault-find rates; effort; and scheduling.[^swebok-measurement]
+
+[^swebok-measurement]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), section 4.2.3 "Construction Measurement", p. 4-5.
+
+### Goodhart's law
+
+>When a measure becomes a target, it ceases to be a good measure.[^goodhart]
+
+Every code metric can be gamed. Rules of thumb that keep metrics useful:
+
+- Use a metric as a question in a code review, not as a verdict.[^space]
+- Watch trends, not absolute values: is the code getting better or worse?[^tornhill]
+- Compare numbers only from the same tool: tools count differently (an example is in [Reducing complexity](#reducing-complexity)).
+- Measure what changed in a pull request, not the whole codebase at once.[^clean-as-you-code]
+
+[^goodhart]: Marilyn Strathern's 1997 wording of [Goodhart's law](https://en.wikipedia.org/wiki/Goodhart%27s_law); Charles Goodhart's original (1975) was about monetary policy.
+[^space]: N. Forsgren, M.-A. Storey et al., ["The SPACE of Developer Productivity"](https://doi.org/10.1145/3454122.3454124), ACM Queue, 2021; N. Forsgren, J. Humble, G. Kim, [*Accelerate*](https://itrevolution.com/product/accelerate/), 2018.
+[^tornhill]: A. Tornhill, [*Your Code as a Crime Scene*](https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/), 2nd ed., 2024.
+[^clean-as-you-code]: SonarSource, ["Clean as You Code"](https://docs.sonarsource.com/sonarqube-server/latest/core-concepts/clean-as-you-code/introduction/).
+
+## Minimizing complexity
+
+### What is complexity
+
+>Complexity is anything related to the structure of a software system that makes it hard to understand and modify the system.
+>
+>John Ousterhout[^aposd]
+
+[^aposd]: J. Ousterhout, [*A Philosophy of Software Design*](https://web.stanford.edu/~ouster/cgi-bin/aposd.php), chapter 2 "The Nature of Complexity".
+
+>Most people have limited ability to hold complex structures and information in their working memories, especially over long periods.
+>
+>SWEBOK[^swebok-complexity]
+
+[^swebok-complexity]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), section 4.1.1 "Minimizing Complexity", p. 4-2.
+
+### Working memory
+
+- Miller (1956): people hold about **7 ± 2** items in mind at once.[^miller]
+- Cowan (2001): closer to **4 chunks** (3 to 5), once items cannot be rehearsed or grouped.[^cowan]
+- A **chunk** is whatever is recognized as one unit: `for (var i = 0; i < n; i++)` is one chunk for an experienced programmer, but several for a beginner.
+
+While reading code, every value to remember, every enclosing condition and every unfinished calculation takes one of those few slots.
+
+[^miller]: G. A. Miller, ["The magical number seven, plus or minus two"](https://doi.org/10.1037/h0043158), Psychological Review, 1956.
+[^cowan]: N. Cowan, ["The magical number 4 in short-term memory"](https://doi.org/10.1017/S0140525X01003922), Behavioral and Brain Sciences, 2001.
+
+### Essential and accidental complexity
+
+Fred Brooks divided complexity into two kinds[^brooks]:
+
+- **Essential** - comes from the problem. Experience rules with weekend bonuses, streaks and hint penalties are complex because the requirements are.
+- **Accidental** - comes from how the solution is written: deep nesting, unclear names, a rule hidden in an unexpected place.
+
+Essential complexity can only be organized. Accidental complexity can be removed.
+
+[^brooks]: F. Brooks, ["No Silver Bullet: Essence and Accidents of Software Engineering"](https://doi.org/10.1109/MC.1987.1663532), IEEE Computer, 1987 (first presented in 1986).
+
+### Symptoms
+
+Ousterhout lists three symptoms of complexity[^aposd-symptoms]:
+
+- **Change amplification** - a simple change requires modifications in many places.
+- **Cognitive load** - a lot has to be known to make a change.
+- **Unknown unknowns** - it is not obvious what has to be changed, or what a change breaks.
+
+[^aposd-symptoms]: J. Ousterhout, [*A Philosophy of Software Design*](https://web.stanford.edu/~ouster/cgi-bin/aposd.php), section 2.2 "Symptoms of complexity".
+
+### Causes
+
+Complexity is caused by **dependencies** (code cannot be understood or changed in isolation) and **obscurity** (important information is not obvious).[^aposd-causes] In code they look like:
+
+[^aposd-causes]: J. Ousterhout, [*A Philosophy of Software Design*](https://web.stanford.edu/~ouster/cgi-bin/aposd.php), section 2.3 "Causes of complexity".
+
+- deep nesting and long chains of conditions,
+- long methods and long parameter lists, boolean flag parameters,
+- shared mutable state and hidden inputs (the clock, files, static fields),
+- the same decision repeated in many places,
+- deep inheritance hierarchies and high coupling between classes,
+- names that do not say what something is, or say something else.
+
+### Example: experience rules
+
+A year of feature requests for the word game added rules on how much experience a game is worth:
+
+| Rule | Experience |
+|---|---|
+| Every word | 10, or 15 if longer than 8 letters |
+| Hints | −5 per hint, or half if a hint was used for every word |
+| Completed within a minute without hints | +5 per word |
+| Weekend | ×2 |
+| Streak of 3+ days / 7+ days | +20 / +50 |
+| First game of the day | +20 |
+| Premium player | ×1.5, rounded down |
+| Maximum | 200 |
 
 ***
 
-Very good repository explaining the most important points about the cognitive load in software engineering: https://github.com/zakirullin/cognitive-load.
+```{.csharp include="09-construction/WordGame.Construction/Complexity/CompletedGame.cs" region="input"}
+```
 
 ***
 
-Metrics that measure complexity:
+```{.csharp include="09-construction/WordGame.Construction/Complexity/ExperienceCalculatorBefore.cs" region="before"}
+```
 
-- McCabe's cyclomatic complexity metric
-- Halstead complexity measures metric
-- Chidamber & Kemerer object-oriented metrics suite
+### Lines of code
 
-#### Anticipating change
+The simplest metric: the number of lines (usually without blank lines and comments).
 
-It is accepted that software will have to change overtime. Code should be written in such a way that it should be possible to change to adapt to future needs.
+- Easy to measure, and correlates with the number of defects.[^el-emam]
+- Says nothing about structure: 60 lines of sequential code are simpler than 30 lines of nested conditions.
+- Depends on formatting and style.
 
-Problem is:
-- If the code is not properly design to allow making changes, then the development cost might increase unsustainably over time.
-- If the code is too optimized for change, then it will likely too many abstractions and indirection.
+[^el-emam]: K. El Emam et al., ["The confounding effect of class size on the validity of object-oriented metrics"](https://doi.org/10.1109/32.935855), IEEE TSE, 2001: after controlling for size, many object-oriented metrics no longer predicted faults.
 
-Goal is too properly identify what is most likely to change and optimize only these areas to the needed degree.
+### Cyclomatic complexity
 
-#### Constructing for verification
+Thomas McCabe[^mccabe]: the number of linearly independent paths through a method.
 
->Constructing for verification builds software in such a way that faults can be readily found by
-the software engineers writing the software as well as by the testers and users during independent testing and operational activities.
+- Counted as **decisions + 1**: every `if`, `case`, loop, `catch`, `&&`, `||` and `?:` adds one.
+- In terms of the control flow graph: **E − N + 2**, where E is the number of edges and N the number of nodes.
+- It is the minimum number of tests needed to run every branch at least once.
 
->Specific techniques that support constructing for verification include following coding standards to support code reviews and unit testing, organizing code to support automated testing, restricting the use of complex or difficult-to-understand language structures, and recording software behaviors with logs.
+McCabe suggested 10 as the upper limit for a method.
 
-#### Reusing assets
+[^mccabe]: T. McCabe, ["A Complexity Measure"](https://doi.org/10.1109/TSE.1976.233837), IEEE Transactions on Software Engineering, 1976.
 
-Modern software development is absolutely based on reusing assets. Almost no software is being written without any frameworks or libraries.
+***
 
-Libraries can be created to promote asset reuse within the same or different projects.
-
-Main problem is to correctly identify what is worth reusing and what is worth reusing and what is not.
-
-#### Applying standards
-
-It is generally accepted that applying standards helps to increase quality and efficiency.
-
-Examples where standards can be applied:
-- Programming languages used.
-- Standardizing formats and protocols used (i.e. every project must expose OpenAPI specification).
-- Code standards (style).
-- Solving common problems, i.e. how exceptions should be handled.
-- What tools are used by developers (i.e. IDEs).
-
-### Practical considerations
-
-Examples of things software engineers need to consider during the software development process:
-
-- Choosing a language,
-- Coding conventions,
-- What to reuse,
-- What to make reusable.
-
-#### Choosing a language
-
-What language to use for the job?
-
-Criteria for consideration:
-- What language are engineers on the team are familiar with?
-- Does the performance (speed) of language matter?
-- How big is the language's ecosystem?
-- How easy it is hire engineers working with this language?
-- And more...
-
-#### Coding conventions
-
-It is accepted that any unified code style is better than mix of styles. However there are questions with more nuances:
-
-- How big the classes should be?
-- How long the method should be?
-- What should be the upper limit on the number of parameters a method can have?
-- Should you have standardized library for solving specific use case (i.e. automappers)?
-- Should there be a policy how the exceptions should be handled?
-- And more...
-
-#### Reuse in construction
-
-When to reuse existing assets?
-
-Pros of reusing:
-- Readily solves the problem at hand (maybe).
-- Provides standardization between projects or organizations (if using some shared libraries).
-- If it is a common problem, then external library might be better maintained than what you could build yourself.
-
-Potential problems of reusing:
-- Is it worth to include whole library if only 1 method is needed?
-- Is it better to use readily available implementation that is 90% perfects or to build your own?
-- Potentially introducing security risks with external package.
-
-#### Construction for reuse
-
-Should the code being written should be made reusable?
-
-Things to consider:
-- Is this already a recurring problem?
-- Can this implementation serve more than a single use case?
-
-### Defensive programming
-
-Defensive programming is a software development practice to always validate all the inputs. To do defensive programming means not to assume anywhere that the inputs are going to be always valid.
+The streak bonus of `ExperienceCalculatorBefore`:
 
 ```csharp
-public class BankAccount
+if (completed.StreakDays > 0)
 {
-    public decimal Balance { get; private set; }
-
-    public void Withdraw(decimal amount)
-    {
-        if (amount <= 0) throw new ArgumentException("Withdrawal must be positive.");
-        if (amount > Balance) throw new InvalidOperationException("Insufficient funds.");
-        Balance -= amount;
-    }
+    if (completed.StreakDays >= 7) experience += 50;
+    else if (completed.StreakDays >= 3) experience += 20;
 }
 ```
 
-### Choosing deployment model
+```{mermaid}
+flowchart LR
+    A{"StreakDays > 0"} -->|yes| B{">= 7"}
+    A -->|no| E([end])
+    B -->|yes| C["+50"]
+    B -->|no| D{">= 3"}
+    D -->|yes| F["+20"]
+    D -->|no| E
+    C --> E
+    F --> E
+```
 
-Microservices vs. Monolith.
+3 decisions + 1 = 4. Graph: 8 edges − 6 nodes + 2 = 4.
 
-Microservices:
-- Complex.
-- Introduces development overhead.
-- Can help with scaling for more users or more teams.
+### Cognitive complexity
 
-Monolith:
-- Easy to start with.
-- Easy to understand, all the references can typically be navigable within the same project.
-- Can be vertically scaled with cloud technologies quite well.
-- Blast radius increases when more teams are onboarded.
+Cyclomatic complexity counts paths, but not how hard they are to follow. *Cognitive complexity*[^cognitive] was designed to measure understandability:
 
-## Maintenance and modification
+- **+1** for every break in the linear flow: `if`, `else`, `switch`, loops, `catch`, sequences of `&&`/`||`, recursion.
+- **+1 for every level of nesting** on top of that: an `if` inside a loop inside an `if` costs 3.
+- Nothing for constructs that make code shorter to read, like `?.` and `??`.
 
-Software maintenance in software engineering is the modification of a software product after delivery to correct faults, to improve performance or other attributes.
+[^cognitive]: G. Ann Campbell, ["Cognitive Complexity: A new way of measuring understandability"](https://www.sonarsource.com/docs/CognitiveComplexity.pdf), SonarSource white paper, 2017.
 
-A common perception of maintenance is that it is bug-fixing, although ~80% of maintenance effort is used for non-corrective actions.
+***
 
-### Maintenance objectives
+Same cyclomatic complexity (5), but cognitive complexity **1** vs **10**:
 
-Maintenance is done in order to:
-- correct faults,
-- improve the design,
-- implement enhancements,
-- interface with other software,
-- adapt programs so that different hardware, software, system features, and telecommunications facilities can be used,
-- migrate legacy software,
-- retire software.
+```{.csharp include="09-construction/WordGame.Construction/Complexity/Readability.cs" region="flat"}
+```
 
-### Maintainability
+```{.csharp include="09-construction/WordGame.Construction/Complexity/Readability.cs" region="nested"}
+```
 
-The ease with which a product can be maintained in order to:
-- correct defects or their cause,
-- repair or replace faulty or worn-out components without having to replace still working parts,
-- prevent unexpected working conditions,
-- maximize a product's useful life,
-- maximize efficiency, reliability, and safety,
-- meet new requirements,
-- make future maintenance easier, or
-- cope with a changed environment.
+### Maintainability index
 
-## Further reading
+A single number from 0 to 100, as calculated by Visual Studio and rule [`CA1505`](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1505)[^mi-vs]:
 
-- https://berthub.eu/articles/posts/on-long-term-software-development/ - challenges faced during long term software project development.
-- https://www.writethedocs.org/guide/ - writing software documentation.
+```text
+MI = max(0, (171 − 5.2 × ln(Halstead volume) − 0.23 × cyclomatic complexity − 16.2 × ln(lines of code)) × 100 / 171)
+```
+
+*Halstead volume*[^halstead] measures the size of the code by the number of operators and operands it uses.
+
+| Index | Visual Studio |
+|---|---|
+| 20 – 100 | good |
+| 10 – 19 | moderate |
+| 0 – 9 | low |
+
+[^mi-vs]: Microsoft, ["Code metrics - Maintainability index range and meaning"](https://learn.microsoft.com/visualstudio/code-quality/code-metrics-maintainability-index-range-and-meaning).
+[^halstead]: M. Halstead, *Elements of Software Science*, 1977; summary: [Halstead complexity measures](https://en.wikipedia.org/wiki/Halstead_complexity_measures).
+
+### Coupling and cohesion
+
+| Metric | Measures | .NET rule |
+|---|---|---|
+| Class coupling | How many other types a type or method uses | `CA1506` |
+| Depth of inheritance | How many base classes a type has | `CA1501` |
+| Afferent / efferent coupling | How many types use this one / are used by it | - |
+| Instability | Efferent / (afferent + efferent): 0 is stable, 1 easy to change | - |
+| Lack of cohesion (LCOM) | Whether methods of a class use the same fields | - |
+
+Class coupling, depth of inheritance and LCOM are from the Chidamber & Kemerer suite[^ck]; afferent/efferent coupling and instability from Robert C. Martin[^martin].
+
+[^ck]: S. Chidamber, C. Kemerer, ["A metrics suite for object oriented design"](https://doi.org/10.1109/32.295895), IEEE TSE, 1994.
+[^martin]: R. C. Martin, *Agile Software Development: Principles, Patterns, and Practices*, 2002; summary: [Software package metrics](https://en.wikipedia.org/wiki/Software_package_metrics).
+
+***
+
+The whole method, measured during the build:
+
+```{.text include="09-construction/reports/complexity.txt" region="before"}
+```
+
+- **Cyclomatic** - explained above.
+- **Maintainability** - a single score from 0 to 100; see [Maintainability index](#maintainability-index).
+- **Coupling** - how many different types the method uses; see [Coupling and cohesion](#coupling-and-cohesion).
+
+How the numbers are measured: [Roslyn analyzers](#roslyn-analyzers).
+
+### Roslyn analyzers
+
+The metrics in this lecture are measured by **Roslyn analyzers**: plugins of the C# compiler that inspect the code on every build and in the IDE. The ones used here are part of the .NET SDK (`Microsoft.CodeAnalysis.NetAnalyzers`).
+
+```{mermaid}
+flowchart LR
+    Code[C# code] --> Compiler["Roslyn compiler<br/>syntax and operation trees"]
+    Compiler --> Analyzers
+    Analyzers --> Warnings["Warnings in the build<br/>and in the IDE"]
+```
+
+| Metric | Rule |
+|---|---|
+| Cyclomatic complexity | `CA1502` |
+| Maintainability index | `CA1505` |
+| Class coupling | `CA1506` |
+| Depth of inheritance | `CA1501` |
+
+### Measuring complexity in .NET
+
+The metrics rules are part of the .NET SDK, but disabled by default.[^ca-rules] They are enabled in `.editorconfig`:
+
+[^ca-rules]: Microsoft, ["Code quality rules: maintainability rules"](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/maintainability-warnings); thresholds: [CA1502 configuration](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1502#configure-threshold).
+
+```{.ini include="09-construction/.editorconfig" region="editorconfig"}
+```
+
+***
+
+The thresholds are configured in a file next to the projects:
+
+```{.text include="09-construction/CodeMetricsConfig.txt"}
+```
+
+```{.xml include="09-construction/Directory.Build.props" region="thresholds"}
+```
+
+***
+
+The build reports the methods over the thresholds:
+
+```{.text include="09-construction/reports/build.txt" region="build"}
+```
+
+### Reducing complexity
+
+The same rules, refactored:
+
+```{.csharp include="09-construction/WordGame.Construction/Complexity/ExperienceCalculator.cs" region="after"}
+```
+
+***
+
+What was done:
+
+- **Guard clause** - the special case (no words) returns first, so the rest is not nested.
+- **Extract method** - every rule got a name: `SpeedBonus`, `StreakBonus`.
+- **Separate the order from the rules** - `Calculate` is the only place that says in which order the rules apply. That the weekend doubles the speed bonus, but not the streak bonus, is now visible in two lines.
+- **Switch expressions instead of nested `if`s** - `StreakBonus` is a table, not a sequence of steps.
+
+***
+
+```{.text include="09-construction/reports/complexity.txt" region="after"}
+```
+
+```{.text include="09-construction/reports/complexity.txt" region="summary"}
+```
+
+### Refactoring safely
+
+Refactoring changes the structure of code without changing its behavior.[^refactoring] To know that the behavior did not change, it is pinned down by *characterization tests*[^characterization] **before** refactoring:
+
+[^refactoring]: M. Fowler, [*Refactoring*](https://martinfowler.com/books/refactoring.html), 2nd ed., 2018; definition at [refactoring.com](https://refactoring.com/).
+[^characterization]: M. Feathers, *Working Effectively with Legacy Code*, 2004, chapter 13; summary: [Characterization test](https://en.wikipedia.org/wiki/Characterization_test).
+
+```{.csharp include="09-construction/WordGame.Construction.Tests/ExperienceCalculatorTests.cs" region="characterization"}
+```
+
+### Splitting until the numbers look good
+
+A team sets a rule: no method may have a cyclomatic complexity over 3. Someone splits the method until it passes:
+
+```{.csharp include="09-construction/WordGame.Construction/Complexity/ExperienceCalculatorOverSplit.cs" region="over-split"}
+```
+
+***
+
+```{.text include="09-construction/reports/complexity.txt" region="summary"}
+```
+
+## Anticipating and embracing change
+
+### Information hiding
+
+>Most software changes over time, and anticipating change drives many aspects of software construction.
+>
+>SWEBOK[^swebok-change]
+
+David Parnas[^parnas]: divide a system into modules so that every module hides **a design decision that is likely to change**. When the decision changes, only that module changes.
+
+[^swebok-change]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), section 4.1.2 "Anticipating and Embracing Change", p. 4-2.
+[^parnas]: D. Parnas, ["On the Criteria To Be Used in Decomposing Systems into Modules"](https://doi.org/10.1145/361598.361623), Communications of the ACM, 1972.
+
+### Example: one more language
+
+Players ask for Lithuanian. In the game from the testing lecture, the decision "the game teaches German" is in several places:
+
+```{.csharp include="07-testing/WordGame.Api/Words.cs" region="random-picker"}
+```
+
+```{.csharp include="07-testing/WordGame.Api/Games.cs" region="are-correct"}
+```
+
+***
+
+The decision hidden in one class:
+
+```{.csharp include="09-construction/WordGame.Construction/Change/Vocabulary.cs" region="vocabulary"}
+```
+
+```{.csharp include="09-construction/WordGame.Construction/Change/Vocabulary.cs" region="lithuanian"}
+```
+
+### Measuring change
+
+The history in git shows where change actually happens:
+
+- **Churn** - how often a file changes.
+- **Hotspots** - files that are both complex and changed often. Complex code that never changes is not a problem; complex code changed every week is where effort pays off most.
+- **Change coupling** - files that change in the same commits, which shows dependencies the code does not.
+
+All three are described by Adam Tornhill.[^crime-scene]
+
+[^crime-scene]: A. Tornhill, [*Your Code as a Crime Scene*](https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/), 2nd ed., 2024.
+
+***
+
+Hotspots of [eShop](https://github.com/dotnet/eShop), Microsoft's reference .NET application:
+
+```{.text include="09-construction/reports/hotspots-eshop.txt" region="hotspots"}
+```
+
+***
+
+Change coupling of eShop:
+
+```{.text include="09-construction/reports/hotspots-eshop.txt" region="coupling"}
+```
+
+***
+
+▶ Find the hotspots of your own project:
+
+```bash
+python 09-construction/hotspots.py path/to/your/repo --include "*.cs" --exclude "*/Migrations/*"
+```
+
+## Constructing for verification
+
+>**Verification**: the process of evaluating a system or component to determine whether the products of a given development phase satisfy the conditions imposed at the start of that phase.
+>
+>IEEE 1012, quoted in SWEBOK[^swebok-vv]
+
+[^swebok-vv]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), chapter 12 "Software Quality", section 3.4 "V&V and Testing", p. 12-12; from IEEE Std 1012-2016.
+
+>Constructing for verification builds software in such a way that faults can be readily found by the software engineers writing the software as well as by the testers and users during independent testing and operational activities.
+>
+>SWEBOK[^swebok-verification]
+
+Techniques: coding standards that support reviews and tests, code organized for automated testing, simple language constructs, logging.
+
+[^swebok-verification]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), section 4.1.3 "Constructing for Verification", p. 4-4.
+
+### Hidden inputs
+
+A daily challenge: the same five words for every player on the same day.
+
+```{.csharp include="09-construction/WordGame.Construction/Verification/DailyChallengeBefore.cs" region="before"}
+```
+
+***
+
+All inputs explicit:
+
+```{.csharp include="09-construction/WordGame.Construction/Verification/DailyChallenge.cs" region="after"}
+```
+
+***
+
+```{.csharp include="09-construction/WordGame.Construction.Tests/DailyChallengeTests.cs" region="tests"}
+```
+
+### Mutation testing
+
+Test coverage shows which lines ran during the tests (see the [testing lecture](07-testing.qmd#measuring-test-coverage)), not whether the tests would notice a bug. Mutation testing measures that.
+
+A mutation testing tool changes the code in small ways - `>=` to `>`, `+` to `-`, removes a statement - and runs the tests against every change (a *mutant*):
+
+- If a test fails, the mutant is **killed**: the tests noticed the change.
+- If all tests pass, the mutant **survived**: a bug like this would not be noticed.
+
+**Mutation score** = killed mutants / all mutants.[^stryker]
+
+[^stryker]: [Stryker Mutator documentation](https://stryker-mutator.io/docs/stryker-net/introduction/).
+
+***
+
+Three of the mutants Stryker.NET makes of `ExperienceCalculator`:
+
+```diff
+-        >= 7 => 50,
++        > 7 => 50,
+```
+
+Killed by the characterization tests: a 7-day streak now gets +20 instead of +50, so the expected 80 becomes 50.
+
+```diff
+-        experience += SpeedBonus(completed);
++        experience -= SpeedBonus(completed);
+```
+
+Survives the weak tests: the result is still between 1 and 200.
+
+```diff
+-        _ when hintsUsed >= wordCount => experience / 2,
++        _ when hintsUsed > wordCount => experience / 2,
+```
+
+Survives all tests: for three short words both branches give 15 (30 / 2 = 30 − 3 × 5).
+
+***
+
+Stryker.NET on `ExperienceCalculator`, once with each test project:
+
+```{.text include="09-construction/reports/mutation.txt" region="score"}
+```
+
+▶ Run it from a test project's folder:
+
+```bash
+dotnet tool restore
+dotnet stryker --test-runner mtp --project WordGame.Construction.csproj --mutate "**/Complexity/ExperienceCalculator.cs"
+```
+
+***
+
+Why the weak tests kill only 2 of 35 mutants - they run every line, but check almost nothing:
+
+```{.csharp include="09-construction/WordGame.Construction.WeakTests/ExperienceCalculatorWeakTests.cs" region="weak"}
+```
+
+***
+
+Mutants that survived the characterization tests:
+
+```{.text include="09-construction/reports/mutation.txt" region="survivors"}
+```
+
+### Assertions and defensive programming
+
+Where the input comes from decides how it is checked:
+
+- **At a trust boundary** (an HTTP request, a file, user input) invalid input is expected: it is validated and rejected with an error the caller can act on (`400 Bad Request`).
+- **Inside the application** invalid input means a bug in the caller: the method **fails fast**[^fail-fast] by throwing, so the bug is found where it is, not three calls later.
+
+[^fail-fast]: J. Shore, ["Fail Fast"](https://doi.org/10.1109/MS.2004.1331296), IEEE Software, 2004.
+
+```{.csharp include="07-testing/WordGame.Api/Users.cs" region="add-experience"}
+```
+
+## Reuse
+
+>Reuse has two closely related facets: construction for reuse and construction with reuse. The former means creating reusable software assets, whereas the latter means reusing software assets to construct a new solution.
+>
+>SWEBOK[^swebok-reuse]
+
+[^swebok-reuse]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), section 4.1.4 "Reusing Assets", p. 4-4.
+
+### Measuring dependencies
+
+Almost no software is written without libraries, and every library brings its own dependencies[^swebok-dependencies]:
+
+[^swebok-dependencies]: Managing dependencies is a topic of its own in SWEBOK: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), section 4.2.4 "Managing Dependencies", p. 4-5.
+
+```{.text include="09-construction/reports/dependencies.txt" region="dependencies"}
+```
+
+***
+
+```bash
+# Every package, including the transitive ones
+dotnet list package --include-transitive
+# Packages with known vulnerabilities
+dotnet list package --vulnerable --include-transitive
+# Packages with newer versions, and packages marked deprecated by their authors
+dotnet list package --outdated
+dotnet list package --deprecated
+```
+
+### Risks of reuse
+
+- **Removed packages** - left-pad (2016): an 11-line npm package was unpublished, and builds all over the world broke.[^left-pad]
+- **Malicious code** - the xz utils backdoor (2024) was planted by a maintainer who had gained trust over two years.[^xz]
+- **Unexpected behavior** - Moq 4.20 (2023) shipped SponsorLink, which read the e-mail addresses of developers from their git configuration during build.[^moq]
+- **License changes** - FluentAssertions 8 (2025) moved to a commercial license for commercial use.[^fluent-assertions]
+
+[^left-pad]: [npm left-pad incident](https://en.wikipedia.org/wiki/Npm_left-pad_incident).
+[^xz]: [XZ Utils backdoor](https://en.wikipedia.org/wiki/XZ_Utils_backdoor).
+[^moq]: [devlooped/moq#1372: Privacy issues with SponsorLink, starting from version 4.20](https://github.com/devlooped/moq/issues/1372).
+[^fluent-assertions]: [fluentassertions/fluentassertions#2943: Update ownership and license](https://github.com/fluentassertions/fluentassertions/pull/2943).
+
+### Construction for reuse
+
+- **Duplication** is measured by clone detection: [jscpd](https://github.com/kucherenko/jscpd) (MIT license) reports the percentage of duplicated lines.
+- **Rule of three**[^rule-of-three] - code is made reusable when it is needed for the third time, not the first: by then it is known which parts actually vary.
+- **The wrong abstraction** - code shared between two places that later need different things grows flags and special cases.
+
+>Duplication is far cheaper than the wrong abstraction.
+>
+>Sandi Metz[^wrong-abstraction]
+
+[^rule-of-three]: Attributed to Don Roberts in M. Fowler, [*Refactoring*](https://martinfowler.com/books/refactoring.html); summary: [Rule of three](https://en.wikipedia.org/wiki/Rule_of_three_(computer_programming)).
+[^wrong-abstraction]: S. Metz, ["The Wrong Abstraction"](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction), 2016.
+
+## Applying standards
+
+SWEBOK lists the standards that directly affect construction[^swebok-standards]: communication methods (document formats), programming languages, coding standards (naming, layout), exception handling policies, platforms and tools. They are:
+
+- **External** - programming languages, formats and protocols (OpenAPI, ISO 8601 dates), platform conventions ([.NET coding conventions](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)).
+- **Internal** - the team's own: code style, how errors are handled, which libraries are used for what, how projects are structured.
+
+[^swebok-standards]: [SWEBOK Guide v4.0](https://www.computer.org/education/bodies-of-knowledge/software-engineering), section 4.1.5 "Applying Standards in Construction", p. 4-4.
+
+A standard that is not checked automatically is a suggestion. In .NET the build checks it.
+
+### Standards enforced by the build
+
+```{.xml include="09-construction/Directory.Build.props" region="standards"}
+```
+
+### Exceptions are decisions too
+
+Every exception to a rule is written down with its reason:
+
+```{.ini include="09-construction/.editorconfig" region="tests"}
+```
+
+```{.ini include="09-construction/.editorconfig" region="suppression"}
+```
+
+### Adopting standards in existing code
+
+Turning on a rule in an existing codebase can produce hundreds of warnings. Instead of fixing all of them at once:
+
+```{.ini include="09-construction/.editorconfig" region="baseline"}
+```
+
+## Summary
+
+### Complexity metrics
+
+| Metric | Shows | .NET tool | Gamed by |
+|---|---|---|---|
+| Lines of code | Size | any | formatting |
+| Cyclomatic complexity | Paths, minimum tests | `CA1502` | splitting methods |
+| Cognitive complexity | How hard code is to follow | - (counted by hand) | splitting methods |
+| Maintainability index | Rough overall state | `CA1505` | short methods |
+| Class coupling | Dependencies between types | `CA1506` | merging classes |
+
+### Change, tests, reuse, standards
+
+| Metric | Shows | Tool | Gamed by |
+|---|---|---|---|
+| Hotspots, change coupling | Where change happens | git history | rare, large commits |
+| Coverage | Code the tests ran | Coverlet | tests without assertions |
+| Mutation score | Whether tests notice bugs | Stryker.NET | equivalent mutants |
+| Dependencies, vulnerabilities | Risk of reuse | `dotnet list package` | - |
+| Warnings | Adherence to standards | Roslyn analyzers | suppressions |
+
+# Additional reading
+
+- ⭐[Cognitive load is what matters](https://github.com/zakirullin/cognitive-load)
+- [SWEBOK Guide v4, chapter 4: Software Construction](https://www.computer.org/education/bodies-of-knowledge/software-engineering)
+- John Ousterhout, [*A Philosophy of Software Design*](https://web.stanford.edu/~ouster/cgi-bin/aposd.php)
+- Adam Tornhill, [*Your Code as a Crime Scene*](https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/)
+- Michael Feathers, *Working Effectively with Legacy Code*
+- [G. Ann Campbell: Cognitive Complexity (SonarSource white paper)](https://www.sonarsource.com/docs/CognitiveComplexity.pdf)
+- [David Parnas: On the Criteria To Be Used in Decomposing Systems into Modules (1972)](https://dl.acm.org/doi/10.1145/361598.361623)
+- [Code metrics values in Visual Studio](https://learn.microsoft.com/visualstudio/code-quality/code-metrics-values)
+- [On long-term software development](https://berthub.eu/articles/posts/on-long-term-software-development/)
