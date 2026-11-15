@@ -1,38 +1,70 @@
 ---
 title: "UI/UX"
-verify: none # no executable cells
+verify: none # no code in this lecture; the playable examples are built from 10-ui-ux/
+format:
+  revealjs:
+    # Every `##` heading is a slide: this lecture has no section title slides
+    slide-level: 2
 ---
 
-What is UI/UX and what how to apply it in practice.
+## 1.1 · UI and UX
 
-Main content can be found here:
-- Figma file where you can explore the practical aspects of app design: [link to Figma](https://www.figma.com/design/kGTVt2mugpQb986YV0NAew/UX%2FUI-Design-lecture-Case-Study?node-id=0-1&t=tnyH4SnsTfqEBkfK-1).
-- Slides use for presentation: [link to OneDrive](https://vult-my.sharepoint.com/:b:/g/personal/tomas_smagurauskas_mif_vu_lt/EZWLl--Gq6lOpLP-Qd_JJasBszzkDmX2S7_jZZI4N9YJNA?e=WUAyD6). Will need to login with VU email to access them.
+| | User interface (UI) | User experience (UX) |
+|---|---|---|
+| What it is | What is seen and touched: layout, colours, controls | What a person perceives and feels when using the product |
+| Question | How does it look? | Was the task done, and how did it feel? |
+| Judged by | Looking at it | Watching people use it, and measuring |
 
-Rest of the notebook to be considered as "quick references", rather than the actual material at the moment.
+The user interface is one part of the experience. Response times, error messages, the API behind the screen and the rules of the game are other parts.
 
-### What is UI and what is UX
 
-User Interface (UI) focuses on how a product/web looks and interacts visually.
+## 1.2 · Three levels of design
 
-User Experience (UX) focuses on how a product feels and functions.
+| Level | Meaning | What happens | In this lecture |
+|---|---|---|---|
+| **Visceral** | From *viscera*, the inner organs: a gut feeling, before any thinking | An immediate reaction to how it looks | The user interface |
+| **Behavioural** | The behaviour of the person: what is done with the product | Using it: is the task understood, done, under control? | Usability: most of the lecture |
+| **Reflective** | Thinking back: conscious thought about the product | What is remembered and told to others afterwards | The end of a game |
 
-### UX vs UI
+D. Norman, *Emotional Design*, 2004.
 
-Purpose: UX solves user needs; UI creates visual appeal.
+## 1.3 · Which one is easier to use?
 
-Focus: UX is functionality centered; UI is appearance centered.
+::: {.ux-example name="first-screen" height="305"}
+:::
 
-Order: UX often comes first (foundation), and UI builds on top (decoration).
+The better-looking interface is rated as easier to use, before it is used.[^aesthetic] An opinion of a page is formed in about 50 ms.[^50ms]
 
-## UX
+[^aesthetic]: N. Tractinsky, A. S. Katz, D. Ikar, ["What is beautiful is usable"](https://doi.org/10.1016/S0953-5438(00)00031-X), Interacting with Computers 13(2), 2000.
+[^50ms]: G. Lindgaard, G. Fernandes, C. Dudek, J. Brown, ["Attention web designers: You have 50 milliseconds to make a good first impression!"](https://doi.org/10.1080/01449290500330448), Behaviour & Information Technology 25(2), 2006.
 
-UX design is about solving problems for users.
+## 1.4 · Why looks mislead
 
-UX involves researching user needs, organizing content logically, and designing interactions that create a friendly user experience.
+| Reason | What happens |
+|---|---|
+| **Looks are the only evidence** | Before use, nothing else can be judged |
+| **The halo effect** | One good quality spills over to the others: what is beautiful is taken to be good |
+| **Easy to see feels easy to use** | A clear screen takes little effort to perceive, and that ease is felt as simplicity |
+| **A good mood forgives** | After a pleasant first impression, small problems feel smaller[^emotional] |
 
-### Design Thinking
+Not always: beauty is linked more to how pleasant a product is than to how usable.[^hassenzahl]
 
+[^emotional]: D. Norman, *Emotional Design*, 2004, chapter 1, "Attractive things work better".
+[^hassenzahl]: M. Hassenzahl, ["The interplay of beauty, goodness, and usability in interactive products"](https://doi.org/10.1207/s15327051hci1904_2), 2004.
+
+## 1.5 · Usability can be measured
+
+Usability is defined by three properties, each of them measurable[^iso-11]:
+
+| | Question | Metrics |
+|---|---|---|
+| **Effectiveness** | Is the goal reached, completely and correctly? | Completion rate, attempts per game |
+| **Efficiency** | At what cost? | Time on task, key presses, clicks |
+| **Satisfaction** | How does the person feel about it? | Seen in behaviour: second-game rate |
+
+[^iso-11]: ISO 9241-11:2018, *Usability: Definitions and concepts*: "the extent to which a system, product or service can be used by specified users to achieve specified goals with effectiveness, efficiency and satisfaction in a specified context of use".
+
+## 1.6 · Where it fits in the design process
 
 ```{mermaid}
 flowchart LR
@@ -41,44 +73,678 @@ flowchart LR
     C --> D[Prototype]
     D --> E[Test]
     E --> A
-
-    subgraph DesignThinking[Design Thinking Process]
-        A
-        B
-        C
-        D
-        E
-    end
-
-    style A fill:#FFDDC1,stroke:#333,stroke-width:1px
-    style B fill:#FFABAB,stroke:#333,stroke-width:1px
-    style C fill:#FFC3A0,stroke:#333,stroke-width:1px
-    style D fill:#D5AAFF,stroke:#333,stroke-width:1px
-    style E fill:#85E3FF,stroke:#333,stroke-width:1px
+    classDef focus stroke-width:3px
+    class D,E focus
 ```
+
+- Design thinking is one of several descriptions of the same loop. Others: the *Double Diamond* (Design Council), *Inspire, Ideate, Implement* (IDEO).
+- All of them are loops: a design is a hypothesis until it is tested with people.
+- This lecture covers the last two steps: what to build so that it can be used, and how to tell that it worked.
+
+## 2.1 · The Model Human Processor
+
+```{mermaid}
+flowchart LR
+    Senses([Eyes, ears]) --> P["Perceptual processor<br/>~100 ms per cycle"]
+    P --> WM[("Working memory<br/>~4 chunks")]
+    LTM[("Long-term memory")] <--> WM
+    WM <--> C["Cognitive processor<br/>~70 ms per cycle"]
+    C --> M["Motor processor<br/>~70 ms per cycle"]
+    M --> Hands([Hands])
+```
+
+A person described like a computer: three processors and two memories, each with measured limits. One cycle of each takes about 240 ms: the time needed to press a key when a light turns on.
+
+## 2.2 · The limits are known
+
+| Limit | What is known[^mhp] | Consequence |
+|---|---|---|
+| Perception | Events under ~100 ms apart are seen as one | A response within 0.1 s feels instant |
+| Working memory | About 4 chunks, lost within seconds | Show it, do not make people remember it |
+| Decision | Time grows with the number of choices, logarithmically | Fewer, clearer choices |
+| Movement | Far and small targets take longer | Large targets, close to the hand |
+
+[^mhp]: S. K. Card, T. P. Moran, A. Newell, *The Psychology of Human-Computer Interaction*, 1983: the source of all four limits.
+[^cowan]: N. Cowan, ["The magical number 4 in short-term memory"](https://doi.org/10.1017/S0140525X01003922), Behavioral and Brain Sciences 24(1), 2001.
+
+## 2.3 · The action cycle
+
+```{mermaid}
+flowchart LR
+    Goal((Goal)) --> Plan --> Specify --> Perform --> System[(System)]
+    System --> Perceive --> Interpret --> Compare --> Goal
+    classDef execution fill:#e8f0fb,stroke:#1f5fbf,color:#1d2329
+    classDef evaluation fill:#e9f6ec,stroke:#1a7f37,color:#1d2329
+    class Plan,Specify,Perform execution
+    class Perceive,Interpret,Compare evaluation
+```
+
+Every interaction is a trip around this cycle.[^action-cycle] It can fail in two places only:
+
+- **Gulf of execution** (plan, specify, perform): the person cannot work out how to do what they want.
+- **Gulf of evaluation** (perceive, interpret, compare): the person cannot tell what the system did.
+
+[^action-cycle]: D. Norman, *The Design of Everyday Things*, revised edition, 2013.
+
+## 2.4 · The cycle in the word game
+
+| Part | What is known | Problems in the word game |
+|---|---|---|
+| **Execution: plan** | 3&nbsp;·&nbsp;Mental models<br>4&nbsp;·&nbsp;People want to start | Hidden rules, the email wall |
+| **Execution: specify, perform** | 5&nbsp;·&nbsp;Grouping<br>6&nbsp;·&nbsp;Movement and choice<br>7&nbsp;·&nbsp;Slips and mistakes | No clear next step, the mouse is required, answers lost in one click |
+| **Evaluation: perceive** | 8&nbsp;·&nbsp;Attention is narrow<br>9&nbsp;·&nbsp;Three limits of waiting | One result for three words, silent failure, an invisible time limit |
+| **Evaluation: interpret** | 10&nbsp;·&nbsp;Errors: explained or repeated | One message for every error |
+| **Reflective: the ending** | 11&nbsp;·&nbsp;The peak and the end | An ending without a next step |
+
+::: {.notes}
+What is known, in one sentence each:
+
+- **Mental models**: people plan with a model of the system built only from what the screen shows; a rule that is not shown is not known.
+- **Starting at once**: people act before they read; anything asked before the first value is a cost that loses people.
+- **Grouping**: things that are close together or look alike are seen as belonging together.
+- **Emphasis**: one thing that differs is found at once; when many things differ, nothing stands out.
+- **Movement**: pointing takes longer the farther and smaller the target is; a key under the finger needs no pointing.
+- **Slips**: the plan is right, the action is wrong; they are made hard to do and easy to undo.
+- **Narrow attention**: changes outside the focus of attention are missed, so feedback goes where the eyes already are.
+- **Limits of waiting**: 0.1 s feels instant, 1 s keeps the train of thought, 10 s is the limit of attention.
+- **Errors explained or repeated**: a mistake comes from a wrong model; a message that does not correct the model leads to the same mistake again.
+- **The peak and the end**: an experience is remembered by its most intense moment and by how it ended.
+:::
+
+## 3.1 · Mental models
+
+```{mermaid}
+flowchart LR
+    D["Designer's model<br/>(the code, the rules)"] -->|is built into| S["System image<br/>(what the screen shows)"]
+    S -->|is learned from| U["User's model<br/>(what the person believes)"]
+    D -.-|no direct line| U
+```
+
+- The designer's model becomes the screen; the user's model is learned from the screen alone.
+- The two never talk to each other: the screen is the only channel.
+- A rule that is in the code but not on the screen never reaches the user's model.
+
+
+## 3.2 · Hidden rules
+
+::: {.ux-example name="weekend" before="No rules on the screen: the XP per word, the time limit and the weekend bonus live only in the code" after="The rules are shown before the game starts, today's bonus included" try="Find out how much XP a game gives today (a Saturday)" principle="Only what is shown becomes part of the user's model" metric="Weekend return rate"}
+:::
+
+## 4.1 · People want to start
+
+- People do not read first and act later: they start at once, and learn while doing.
+- The goal of the player is to play. Anything asked before that is a cost paid before any value is seen.
+- Every step before the first value loses a share of the people.
+
+
+## 4.2 · The email wall
+
+::: {.ux-example name="first-screen" height="420" before="An email is required before anything else can be done" after="Play starts a game at once; the email is asked after a win, to keep the XP" try="Start a game" principle="Value first, cost later: the email is asked when there is experience to keep" metric="Start rate"}
+:::
+
+## 5.1 · Grouping
+
+```{=html}
+<svg viewBox="0 0 900 270" style="width: 100%; max-height: 300px" role="img" aria-label="Dots seen as a grid, as rows and as columns">
+  <circle cx="40" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="85" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="130" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="175" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="220" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="40" cy="65" r="11" fill="#1d2329"/>
+  <circle cx="85" cy="65" r="11" fill="#1d2329"/>
+  <circle cx="130" cy="65" r="11" fill="#1d2329"/>
+  <circle cx="175" cy="65" r="11" fill="#1d2329"/>
+  <circle cx="220" cy="65" r="11" fill="#1d2329"/>
+  <circle cx="40" cy="110" r="11" fill="#1d2329"/>
+  <circle cx="85" cy="110" r="11" fill="#1d2329"/>
+  <circle cx="130" cy="110" r="11" fill="#1d2329"/>
+  <circle cx="175" cy="110" r="11" fill="#1d2329"/>
+  <circle cx="220" cy="110" r="11" fill="#1d2329"/>
+  <circle cx="40" cy="155" r="11" fill="#1d2329"/>
+  <circle cx="85" cy="155" r="11" fill="#1d2329"/>
+  <circle cx="130" cy="155" r="11" fill="#1d2329"/>
+  <circle cx="175" cy="155" r="11" fill="#1d2329"/>
+  <circle cx="220" cy="155" r="11" fill="#1d2329"/>
+  <circle cx="40" cy="200" r="11" fill="#1d2329"/>
+  <circle cx="85" cy="200" r="11" fill="#1d2329"/>
+  <circle cx="130" cy="200" r="11" fill="#1d2329"/>
+  <circle cx="175" cy="200" r="11" fill="#1d2329"/>
+  <circle cx="220" cy="200" r="11" fill="#1d2329"/>
+  <circle cx="350" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="400" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="450" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="500" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="550" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="350" cy="48" r="11" fill="#1d2329"/>
+  <circle cx="400" cy="48" r="11" fill="#1d2329"/>
+  <circle cx="450" cy="48" r="11" fill="#1d2329"/>
+  <circle cx="500" cy="48" r="11" fill="#1d2329"/>
+  <circle cx="550" cy="48" r="11" fill="#1d2329"/>
+  <circle cx="350" cy="104" r="11" fill="#1d2329"/>
+  <circle cx="400" cy="104" r="11" fill="#1d2329"/>
+  <circle cx="450" cy="104" r="11" fill="#1d2329"/>
+  <circle cx="500" cy="104" r="11" fill="#1d2329"/>
+  <circle cx="550" cy="104" r="11" fill="#1d2329"/>
+  <circle cx="350" cy="132" r="11" fill="#1d2329"/>
+  <circle cx="400" cy="132" r="11" fill="#1d2329"/>
+  <circle cx="450" cy="132" r="11" fill="#1d2329"/>
+  <circle cx="500" cy="132" r="11" fill="#1d2329"/>
+  <circle cx="550" cy="132" r="11" fill="#1d2329"/>
+  <circle cx="350" cy="188" r="11" fill="#1d2329"/>
+  <circle cx="400" cy="188" r="11" fill="#1d2329"/>
+  <circle cx="450" cy="188" r="11" fill="#1d2329"/>
+  <circle cx="500" cy="188" r="11" fill="#1d2329"/>
+  <circle cx="550" cy="188" r="11" fill="#1d2329"/>
+  <circle cx="350" cy="216" r="11" fill="#1d2329"/>
+  <circle cx="400" cy="216" r="11" fill="#1d2329"/>
+  <circle cx="450" cy="216" r="11" fill="#1d2329"/>
+  <circle cx="500" cy="216" r="11" fill="#1d2329"/>
+  <circle cx="550" cy="216" r="11" fill="#1d2329"/>
+  <circle cx="680" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="725" cy="20" r="11" fill="#1f5fbf"/>
+  <circle cx="770" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="815" cy="20" r="11" fill="#1f5fbf"/>
+  <circle cx="860" cy="20" r="11" fill="#1d2329"/>
+  <circle cx="680" cy="65" r="11" fill="#1d2329"/>
+  <circle cx="725" cy="65" r="11" fill="#1f5fbf"/>
+  <circle cx="770" cy="65" r="11" fill="#1d2329"/>
+  <circle cx="815" cy="65" r="11" fill="#1f5fbf"/>
+  <circle cx="860" cy="65" r="11" fill="#1d2329"/>
+  <circle cx="680" cy="110" r="11" fill="#1d2329"/>
+  <circle cx="725" cy="110" r="11" fill="#1f5fbf"/>
+  <circle cx="770" cy="110" r="11" fill="#1d2329"/>
+  <circle cx="815" cy="110" r="11" fill="#1f5fbf"/>
+  <circle cx="860" cy="110" r="11" fill="#1d2329"/>
+  <circle cx="680" cy="155" r="11" fill="#1d2329"/>
+  <circle cx="725" cy="155" r="11" fill="#1f5fbf"/>
+  <circle cx="770" cy="155" r="11" fill="#1d2329"/>
+  <circle cx="815" cy="155" r="11" fill="#1f5fbf"/>
+  <circle cx="860" cy="155" r="11" fill="#1d2329"/>
+  <circle cx="680" cy="200" r="11" fill="#1d2329"/>
+  <circle cx="725" cy="200" r="11" fill="#1f5fbf"/>
+  <circle cx="770" cy="200" r="11" fill="#1d2329"/>
+  <circle cx="815" cy="200" r="11" fill="#1f5fbf"/>
+  <circle cx="860" cy="200" r="11" fill="#1d2329"/>
+  <g font-family="system-ui, sans-serif" font-size="20" text-anchor="middle" fill="#55606b">
+    <text x="130" y="262">A grid</text>
+    <text x="450" y="262">Rows: closer together</text>
+    <text x="770" y="262">Columns: alike</text>
+  </g>
+</svg>
+```
+
+- Elements that are **close** to each other, or **alike**, are seen as one group, before any thinking happens.
+- Spacing and likeness are read as meaning, whether it was intended or not.
+
+
+## 5.2 · One thing stands out
+
+```{=html}
+<svg viewBox="0 0 900 250" style="width: 100%; max-height: 300px" role="img" aria-label="One distinct item is found at once, several distinct items are not">
+  <circle cx="35" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="515" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="85" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="565" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="135" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="615" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="185" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="665" cy="30" r="13" fill="#b3261e"/>
+  <circle cx="235" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="715" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="285" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="765" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="335" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="815" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="385" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="865" cy="30" r="13" fill="#9aa5b1"/>
+  <circle cx="35" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="515" cy="80" r="13" fill="#1f5fbf"/>
+  <circle cx="85" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="565" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="135" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="615" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="185" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="665" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="235" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="715" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="285" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="765" cy="80" r="13" fill="#1a7f37"/>
+  <circle cx="335" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="815" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="385" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="865" cy="80" r="13" fill="#9aa5b1"/>
+  <circle cx="35" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="515" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="85" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="565" cy="130" r="13" fill="#f2a900"/>
+  <circle cx="135" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="615" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="185" cy="130" r="13" fill="#b3261e"/>
+  <circle cx="665" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="235" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="715" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="285" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="765" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="335" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="815" cy="130" r="13" fill="#b3261e"/>
+  <circle cx="385" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="865" cy="130" r="13" fill="#9aa5b1"/>
+  <circle cx="35" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="515" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="85" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="565" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="135" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="615" cy="180" r="13" fill="#1f5fbf"/>
+  <circle cx="185" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="665" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="235" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="715" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="285" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="765" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="335" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="815" cy="180" r="13" fill="#1a7f37"/>
+  <circle cx="385" cy="180" r="13" fill="#9aa5b1"/>
+  <circle cx="865" cy="180" r="13" fill="#9aa5b1"/>
+  <g font-family="system-ui, sans-serif" font-size="20" text-anchor="middle" fill="#55606b">
+    <text x="210" y="240">Found at once</text>
+    <text x="690" y="240">Which one matters?</text>
+  </g>
+</svg>
+```
+
+- A single item that differs in one feature (colour, size) is found without searching, however many others there are.
+- When several items stand out, each has to be looked at in turn: nothing stands out.
+
+
+## 5.3 · No clear next step
+
+::: {.ux-example name="started" before="Two forms, two equal buttons, labels stacked above the fields" after="One card for the game, the words aligned with their answers, one primary button" try="Find the next step" principle="Related things grouped; one primary action per screen" metric="First-click success"}
+:::
+
+## 5.4 · Primary button: left or right?
+
+| Where | Primary button |
+|---|---|
+| Windows dialogs | First: OK, then Cancel |
+| macOS and iOS dialogs | Last: Cancel, then OK |
+| Steps of a flow | Next on the right, in reading direction |
+| Web forms | No platform rule; often aligned with the fields |
+
+- Neither order is better: users trip on a button that is not where habit expects it.[^ok-cancel] Follow the platform, and be consistent.
+- A primary button is found by how it looks, not where it is: it is the one that stands out.
+
+[^ok-cancel]: J. Nielsen, ["OK–Cancel or Cancel–OK? The trouble with buttons"](https://www.nngroup.com/articles/ok-cancel-or-cancel-ok/), Nielsen Norman Group, 2008.
+
+## 6.1 · Movement and choice
+
+```{=html}
+<svg viewBox="0 0 900 190" style="width: 100%; max-height: 230px" role="img" aria-label="A small far target and a large near target">
+  <g font-family="system-ui, sans-serif" font-size="18" fill="#55606b">
+    <path d="M40 60 l0 34 l9 -8 l7 15 l6 -3 l-7 -15 l12 -1 z" fill="#1d2329"/>
+    <line x1="80" y1="80" x2="740" y2="80" stroke="#9aa5b1" stroke-dasharray="6 6"/>
+    <rect x="745" y="68" width="46" height="24" rx="4" fill="#b3261e"/>
+    <text x="400" y="65" text-anchor="middle">far and small: slow</text>
+    <path d="M40 130 l0 34 l9 -8 l7 15 l6 -3 l-7 -15 l12 -1 z" fill="#1d2329"/>
+    <line x1="80" y1="150" x2="200" y2="150" stroke="#9aa5b1" stroke-dasharray="6 6"/>
+    <rect x="205" y="122" width="190" height="56" rx="6" fill="#1a7f37"/>
+    <text x="420" y="156">near and large: fast</text>
+  </g>
+</svg>
+```
+
+| | Law | Where |
+|---|---|---|
+| Pointing at a target[^fitts-hci] | <span style="white-space: nowrap">T = a + b · log₂(D / W + 1)</span> | T: time to point; D: distance; W: width of the target; a, b: constants measured for a device |
+| Choosing between n options | <span style="white-space: nowrap">T = b · log₂(n + 1)</span> | T: time to decide; n: number of equally likely options; b: a constant measured for a person |
+
+The fastest target is the one that needs no pointing at all: the key under the finger.
+
+[^fitts-hci]: The form used in human-computer interaction: I. S. MacKenzie, ["Fitts' law as a research and design tool in human-computer interaction"](https://doi.org/10.1207/s15327051hci0701_3), Human-Computer Interaction 7(1), 1992.
+
+## 6.2 · The mouse is required
+
+::: {.ux-example name="keyboard" before="Nothing is focused: the mouse is needed for the email, for each new game and for the first word" after="Play and then the first word are focused; Enter moves to the next word and submits after the last" try="Click into a version, then play with the keyboard only" principle="No pointing is the fastest pointing" metric="Key presses and clicks per game"}
+:::
+
+## 7.1 · Slips and mistakes
+
+- **Slip**: the right intention, the wrong action. Meaning to click "Submit", hitting "Start game", losing the answers.
+- **Mistake**: the action is as intended, but the intention is wrong. Believing there is no time limit, taking a break, coming back to a lost game.
+
+| | Slip | Mistake |
+|---|---|---|
+| Cause | Habit, attention elsewhere | A wrong mental model (3&nbsp;·&nbsp;Mental models) |
+| Happens to | Experts too | Anyone the system did not explain itself to |
+| Design answer | Hard to do, easy to undo | Show how the system works |
+
+Errors are not carelessness: their kinds are known and can be designed for.
+
+
+## 7.2 · Answers lost in one click
+
+::: {.ux-example name="restart" before="“Start game” replaces the words and clears the typed answers without asking" after="“New words” asks first, and only when answers were typed" try="Ask for a new game" principle="Slips are made hard to do and easy to undo" metric="Restart rate"}
+:::
+
+## 7.3 · Confirm only when needed
+
+- A confirmation on every action is clicked through without reading: it becomes part of the action.
+- Where an action can be undone, undo is better than a question.
+- The words of a game cannot be brought back, so a question is asked: once, and only when answers were typed.
+
+## 8.1 · Attention is narrow
+
+- A change outside the centre of attention is easily missed, even a large one.
+- People busy with a task do not notice what they are not looking for.[^gorillas]
+- Feedback belongs where the eyes already are: at the thing that was just typed or clicked.
+
+[^gorillas]: D. J. Simons, C. F. Chabris, ["Gorillas in our midst: Sustained inattentional blindness for dynamic events"](https://doi.org/10.1068/p281059), Perception 28(9), 1999.
+
+## 8.2 · One result for three words
+
+::: {.ux-example name="wrong-word" before="One message for the whole game, below the form" after="Every word is marked; the cursor moves to the word to fix" try="Submit both: one word has a typo" principle="Feedback where the eyes already are" metric="Attempts per game"}
+:::
+
+## 9.1 · Three limits of waiting
+
+| Response within | How it is felt | What the user interface owes |
+|---|---|---|
+| **0.1 s** | Instant: "I did it" | Nothing |
+| **1 s** | A delay, but the train of thought holds | A sign that the action was taken |
+| **10 s** | Attention is at its limit | Progress, and a way out |
+
+The limits have been described since 1968.[^response-times] Users prefer a system that shows progress while they wait.
+
+[^response-times]: J. Nielsen, ["Response time limits"](https://www.nngroup.com/articles/response-times-3-important-limits/), Nielsen Norman Group, 1993.
+
+## 9.2 · Silent waiting, silent failure
+
+::: {.ux-example name="slow-network" before="Nothing changes while waiting, and a failed request shows nothing at all" after="“Checking…” at once, “Still checking…” after 1 s, an error that keeps the answers" try="Submit both: the server is slow and the first request fails" principle="Show that work is in progress after 1 s; never fail silently" metric="Silent-failure rate"}
+:::
+
+## 9.3 · Every request has four states
+
+| State | Before | After |
+|---|---|---|
+| Waiting, under 1 s | Nothing changes | The button says "Checking…" and is disabled |
+| Slow, over 1 s | Nothing changes | "Still checking…" |
+| Failed | Nothing changes | What happened, and the typed answers are kept |
+| Done | The result | The result |
+
+The happy path is one state of four. The other three are designed, or they are left to chance.
+
+## 9.4 · An invisible time limit
+
+::: {.ux-example name="time-limit" before="The limit is not shown; a late answer is reported as wrong" after="A countdown that turns red, and “Time ran out” the moment it ends" try="Wait for 20 seconds, then submit both" principle="Visibility of system status" metric="Expired-game rate"}
+:::
+
+## 10.1 · Errors: explained or repeated
+
+- An error message is read at the worst moment: something did not work, and the person is not sure why.
+- A mistake comes from a wrong model of the system. A message that does not correct the model leads to the same mistake again.
+- A useful message names what happened, says what it means for the person, and offers the next step.[^heuristics]
+
+
+## 10.2 · One message for every error
+
+::: {.ux-example name="lost-game" before="Correct answers are reported as wrong" after="The real cause, what it means, and a “New game” button" try="Submit both: every answer is correct, but the server has lost the game" principle="A message per cause, with the next step" metric="Completion rate"}
+:::
+
+## 10.3 · Four causes, four messages
+
+| Cause | Before | After |
+|---|---|---|
+| A wrong word | "Some translations are wrong, try again" | "2 of 3 correct. Fix the marked word and check again." |
+| The time is over | "Some translations are wrong, try again" | "Time ran out. These words can no longer be checked. No experience was lost." |
+| The game is lost | "Some translations are wrong, try again" | "This game is no longer available. Saved experience is safe." |
+| No connection | Nothing | "Could not reach the server. Your answers are kept." |
+
+"Try again" can never work for the second and the third cause.
+
+## 10.4 · The API limits the screen
+
+| | API before | API after |
+|---|---|---|
+| Result | One yes or no for the whole game | A result for every word |
+| Failure | Every failure is "no" | Each cause has its own status code |
+| Rules | Only in the code | Sent to the user interface |
+| Player | An email is needed to start | A game is played first, its experience claimed afterwards |
+
+Half of the fixes in this lecture needed the API to change, not only the screen.
+
+## 11.1 · The peak and the end
+
+- An experience is judged afterwards by its most intense moment and by its end, not by the average and hardly by its length.[^peak-end]
+- Effort grows as a goal gets closer: customers of a café bought coffee more often the closer they were to a free one.[^goal-gradient]
+- The last screen decides whether there is a next time.
+
+[^peak-end]: D. Kahneman, B. L. Fredrickson, C. A. Schreiber, D. A. Redelmeier, ["When more pain is preferred to less: Adding a better end"](https://doi.org/10.1111/j.1467-9280.1993.tb00589.x), Psychological Science 4(6), 1993.
+[^goal-gradient]: R. Kivetz, O. Urminsky, Y. Zheng, ["The goal-gradient hypothesis resurrected: Purchase acceleration, illusionary goal progress, and customer retention"](https://doi.org/10.1509/jmkr.43.1.39), Journal of Marketing Research 43(1), 2006.
+
+## 11.2 · An ending without a next step
+
+::: {.ux-example name="ending" before="The words disappear; only the XP total is left" after="A summary, progress to the next level, and “Play again” focused" try="Submit both, then play again" principle="Design the end; show the distance to the next goal" metric="Second-game rate"}
+:::
+
+## 12.1 · Ten usability heuristics
+
+Jakob Nielsen's list (1994): ten rules of thumb distilled from 249 usability problems found in real projects.
+
+| | Heuristic | In the word game |
+|---|---|---|
+| 1 | Visibility of system status | The countdown, "Checking…" |
+| 2 | Match between the system and the real world | "10 XP per word", in the words of the player |
+| 3 | User control and freedom | "Keep playing", "Not you?" |
+| 4 | Consistency and standards | Enter submits; one look for the primary button |
+| 5 | Error prevention | An empty word is caught before it is sent |
 
 ***
 
-![Three lenses of design thinking](https://public-images.interaction-design.org/tags/td-three-lenses-of-design-thinking.png)
+| | Heuristic | In the word game |
+|---|---|---|
+| 6 | Recognition rather than recall | The rules on the screen, the remembered email |
+| 7 | Flexibility and efficiency of use | A whole game from the keyboard |
+| 8 | Aesthetic and minimalist design | One primary action per screen |
+| 9 | Help users recognize, diagnose and recover from errors | A message per cause, with the next step |
+| 10 | Help and documentation | None needed: the rules fit on the first screen |
 
-*Image by [© Interaction Design Foundation](https://www.interaction-design.org/literature/topics/design-thinking), CC BY-SA 4.0.*
+## 12.2 · Where the heuristics come from
 
-#### Alternative frameworks
+- The list is a summary of data: a factor analysis of 249 usability problems found in real projects.[^heuristics]
+- Each heuristic belongs to a side of the action cycle: roughly, 1 and 9 close the gulf of evaluation, 2 to 8 the gulf of execution.
+- **Heuristic evaluation**: a few people go through every screen with the list. It is cheap and finds many problems, but only the ones the reviewers can imagine.
 
-- The Double Diamond by the Design Council
-- Inspire, Ideate, Implement by IDEO
-- Head, Heart and Hand by the American Institution of Graphic Arts (AIGA)
+[^heuristics]: J. Nielsen, ["Enhancing the explanatory power of usability heuristics"](https://doi.org/10.1145/191666.191729), CHI '94; the list itself: ["10 usability heuristics for user interface design"](https://www.nngroup.com/articles/ten-usability-heuristics/).
 
-## UI
+## 12.3 · Where the science is weaker
 
-UI design is about making interfaces beautiful and intuitive.
+| Often repeated | What the research says |
+|---|---|
+| "No more than 7 ± 2 menu items" | The number is about recalling items from memory; a menu is on the screen. Newer estimates of the capacity are about 4.[^cowan] |
+| "More choice makes people give up" | The famous jam study did not hold up: a meta-analysis of 50 experiments found an average effect of about zero.[^choice-meta] |
+| "5 users find 85 % of the problems" | True on average in the projects studied, where one user found 31 % of the problems; the share differs a lot between projects.[^five-users] |
 
-UI involves choosing colors, typography, layouts, and interactions.
+A guideline is treated like a code metric: a reason to look closer, not a verdict.
 
-::: {.content-visible unless-format="revealjs"}
-## References
+[^choice-meta]: B. Scheibehenne, R. Greifeneder, P. M. Todd, ["Can there ever be too many options? A meta-analytic review of choice overload"](https://doi.org/10.1086/651235), Journal of Consumer Research 37(3), 2010.
+[^five-users]: J. Nielsen, ["Why you only need to test with 5 users"](https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/), Nielsen Norman Group, 2000.
 
-- https://www.interaction-design.org/literature/topics/design-thinking
-- https://lawsofux.com/
-- https://web.stanford.edu/~mshanks/MichaelShanks/files/509554.pdf
-:::
+## 13.1 · Goal, question, metric
+
+The approach of the [software construction lecture](09-software-construction.qmd#goal-question-metric), applied to the word game: a metric is useful only when it answers a question that matters.
+
+| Goal | Question | Metric |
+|---|---|---|
+| Visitors become players | How many visitors start a game? | Start rate |
+| Players finish the games they start | How many started games are won? | Completion rate |
+| Mistakes are easy to fix | How many tries does a game take? | Attempts per game |
+| Playing is quick | What does one game cost? | Time on task, key presses, clicks |
+| Players come back | Is a second game started? | Second-game rate |
+
+## 13.2 · Three groups of metrics
+
+| | Gulf of execution | Gulf of evaluation | Reflective level |
+|---|---|---|---|
+| ISO 9241-11 | **Efficiency** | **Effectiveness** | **Satisfaction** |
+| Metrics | Time on task, key presses, clicks, first-click success, start rate, restart rate | Completion rate, attempts per game, expired-game rate, silent-failure rate | Second-game rate, weekend return rate |
+| Measured by | Events the product logs; time on task also with a stopwatch or a model of the user | Events the product logs | Events the product logs |
+
+No questionnaire is needed: the product logs what players do (a game started, answers checked, a game won), and each metric is computed from those counts.
+
+## 13.3 · The keystroke-level model
+
+| Operator | What it is | Time[^klm] |
+|---|---|--:|
+| K | A key press of an average typist | 0.28 s |
+| P | Pointing at a target with the mouse | 1.10 s |
+| B | Pressing and releasing the mouse button | 0.20 s[^kieras] |
+| H | Moving a hand between the keyboard and the mouse | 0.40 s |
+| M | Mentally preparing the next step | 1.35 s |
+
+The time of an expert is predicted by counting the operators a task needs, before any user is asked.
+
+[^klm]: S. K. Card, T. P. Moran, A. Newell, ["The keystroke-level model for user performance time with interactive systems"](https://doi.org/10.1145/358886.358895), Communications of the ACM 23(7), 1980, figure 1; K is the time of an average non-secretary typist (40 words per minute).
+[^kieras]: The 1980 model counts a button press as a key press; the separate value for the mouse button is from D. Kieras, *Using the Keystroke-Level Model to Estimate Execution Times*, University of Michigan, 2001.
+
+## 13.4 · The cost of two games
+
+- The task: win two games in a row, as an expert who knows every answer and never makes a mistake.
+- Every key press, click, hand move and mental step of both versions is counted, and timed with the operators above.
+
+| Version | Key presses | Clicks | Hand moves | Mental steps | Predicted time |
+|---|--:|--:|--:|--:|--:|
+| Before | 50 | 4 | 5 | 11 | 36.1 s |
+| After, as a guest | 36 | 0 | 1 | 8 | 21.3 s |
+| After, experience saved | 52 | 1 | 3 | 10 | 30.6 s |
+
+## 13.5 · What the cost shows
+
+- The mouse is not needed any more: 4 clicks and 5 hand moves became 0 and 1.
+- Saving the experience still costs an email, but after the first win, not before the first game.
+- The numbers are a prediction for an expert. They say nothing about a person who sees the game for the first time.
+
+## 14.1 · Counting in the product
+
+```{=html}
+<svg viewBox="0 0 900 314" style="width: 100%; max-height: 340px" role="img" aria-label="A funnel: every step of the game keeps fewer players than the one before">
+<g font-family="system-ui, sans-serif" font-size="20">
+  <rect x="280" y="10" width="560" height="46" rx="6" fill="#1f5fbf"/>
+  <text x="250" y="40" text-anchor="end" fill="#1d2329">Page opened</text>
+  <text x="560" y="40" text-anchor="middle" fill="white" font-weight="600">1000</text>
+  <rect x="386" y="66" width="347" height="46" rx="6" fill="#1f5fbf"/>
+  <text x="250" y="96" text-anchor="end" fill="#1d2329">Game started</text>
+  <text x="560" y="96" text-anchor="middle" fill="white" font-weight="600">620</text>
+  <text x="870" y="96" text-anchor="end" fill="#55606b">−38 %</text>
+  <rect x="409" y="122" width="302" height="46" rx="6" fill="#1f5fbf"/>
+  <text x="250" y="152" text-anchor="end" fill="#1d2329">Answers checked</text>
+  <text x="560" y="152" text-anchor="middle" fill="white" font-weight="600">540</text>
+  <text x="870" y="152" text-anchor="end" fill="#55606b">−13 %</text>
+  <rect x="445" y="178" width="230" height="46" rx="6" fill="#1f5fbf"/>
+  <text x="250" y="208" text-anchor="end" fill="#1d2329">Game won</text>
+  <text x="560" y="208" text-anchor="middle" fill="white" font-weight="600">410</text>
+  <text x="870" y="208" text-anchor="end" fill="#55606b">−24 %</text>
+  <rect x="496" y="234" width="129" height="46" rx="6" fill="#b3261e"/>
+  <text x="250" y="264" text-anchor="end" fill="#1d2329">Second game started</text>
+  <text x="560" y="264" text-anchor="middle" fill="white" font-weight="600">230</text>
+  <text x="870" y="264" text-anchor="end" fill="#b3261e" font-weight="600">−44 %</text>
+  <text x="870" y="310" text-anchor="end" font-size="15" fill="#55606b">Example numbers. Right: the share lost since the step above.</text>
+</g>
+</svg>
+```
+
+- A funnel: every step loses people. The step that loses the most is where the next design work goes.
+- Only the server sees every game, so that is where they are counted: started, won, out of time, with the tries and the time of each.
+- In the [monitoring lecture](13-monitoring.qmd) numbers like these are sent to a metrics system and drawn as dashboards.
+
+## 14.2 · Five games, counted
+
+Two games won at the first try, one at the second, one out of time, one abandoned:
+
+| Metric | Value |
+|---|--:|
+| Games started | 5 |
+| Games won | 3 |
+| Games out of time | 1 |
+| Completion rate | 60 % |
+| First-try rate | 67 % |
+| Attempts per won game | 1.33 |
+| Median time to win | 40 s |
+
+The median is used, not the mean: one player who left for a coffee would move the mean.
+
+## 14.3 · From a goal to a metric: HEART
+
+| | Goal | Signal | Metric |
+|---|---|---|---|
+| **H**appiness | Playing feels good | A win at the first try | First-try rate |
+| **E**ngagement | Players play a lot | Games per visit | Games started per player per day |
+| **A**doption | Visitors become players | A first game is started | Start rate |
+| **R**etention | Players come back | A game in a later week | Share of players active after 7 days |
+| **T**ask success | Players finish the games they start | A started game is won | Completion rate, median time to win |
+
+Developed at Google to choose a few metrics for a product, starting from its goals.[^heart]
+
+[^heart]: K. Rodden, H. Hutchinson, X. Fu, ["Measuring the user experience on a large scale: User-centered metrics for web applications"](https://doi.org/10.1145/1753326.1753687), CHI '10.
+
+## 14.4 · Performance is user experience
+
+| Core Web Vital | What the person notices | Good, for 75 % of visits |
+|---|---|---|
+| **LCP**, Largest Contentful Paint | When the main content is there | ≤ 2.5 s |
+| **INP**, Interaction to Next Paint | How fast the page reacts to a click or a key | ≤ 200 ms |
+| **CLS**, Cumulative Layout Shift | Whether things jump while being read or clicked | ≤ 0.1 |
+
+The limits of waiting again, as numbers a browser can measure.[^web-vitals] They are measured with Lighthouse, in the developer tools of Chrome.
+
+[^web-vitals]: Google, ["Web Vitals"](https://web.dev/articles/vitals).
+
+## 15.1 · Goodhart's law, again
+
+>When a measure becomes a target, it ceases to be a good measure.
+
+| Metric | How it is gamed |
+|---|---|
+| Completion rate | Easier words |
+| Second-game rate | The next game starts by itself |
+| Retention | Streaks lost after one missed day; notifications that blame |
+| Time in the product | A slower, more confusing interface |
+| Sign-ups | The email wall is put back |
+
+Designs that work against the person using them are called **dark patterns**; they were found on 11 % of 11 000 shopping websites.[^dark-patterns]
+
+[^dark-patterns]: A. Mathur et al., ["Dark patterns at scale: Findings from a crawl of 11K shopping websites"](https://doi.org/10.1145/3359183), Proceedings of the ACM on Human-Computer Interaction 3(CSCW), 2019.
+
+## 15.2 · What was not measured
+
+- The cost of the task is predicted by a model of an expert. No person was timed.
+- The five games of the metrics example are made up, not real players.
+- Whether the new messages are understood, and whether the email is given more willingly after a win, is a hypothesis.
+- An automatic accessibility check (axe-core) finds no problem in either version: it finds what is broken, not what is unusable.
+
+Models and heuristics find problems cheaply. Only people using the product show whether they were solved.
+
+## 16.1 · Summary
+
+| Level | What is known | Measured as |
+|---|---|---|
+| **Visceral** | Looks are judged in 50 ms, and bias the judgement of usability | Not a measure of usability |
+| **Gulf of execution** | Mental models, grouping, emphasis, movement, slips | Efficiency |
+| **Gulf of evaluation** | Narrow attention, limits of waiting, errors explained | Effectiveness |
+| **Reflective** | The peak and the end, the goal gradient | Satisfaction |
+
+- People have known limits. An interface is designed for them, or against them.
+- Several fixes needed the API to change, not only the screen.
+- What is claimed about usability can be measured.
+
+## 16.2 · For the team project
+
+1. The main task of the product is walked through the action cycle: where can a person fail to *do* it, where can they fail to *see what happened*?
+1. Three problems are fixed. For each: the stage, the principle, a screenshot before and after.
+1. One metric of the product is counted from what users do, not asked.
+
+## 16.3 · Further material
+
+- A case study of an app design, to explore in Figma: [link to Figma](https://www.figma.com/design/kGTVt2mugpQb986YV0NAew/UX%2FUI-Design-lecture-Case-Study?node-id=0-1&t=tnyH4SnsTfqEBkfK-1).
+- The slides of the earlier version of this lecture: [link to OneDrive](https://vult-my.sharepoint.com/:b:/g/personal/tomas_smagurauskas_mif_vu_lt/EZWLl--Gq6lOpLP-Qd_JJasBszzkDmX2S7_jZZI4N9YJNA?e=WUAyD6) (a VU login is needed).
+- [Laws of UX](https://lawsofux.com/): a catalogue of the principles, with sources.
+- [Interaction Design Foundation: Design Thinking](https://www.interaction-design.org/literature/topics/design-thinking).

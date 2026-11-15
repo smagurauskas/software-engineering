@@ -38,3 +38,6 @@ filters:
   # Runs before Quarto's own filters, so the file name header is added too.
   - path: assets/include-region.lua
     at: pre-ast
+  # Fills ::: {.ux-example name="..."} blocks with playable before/after examples
+  # of the word game (see 10-ui-ux/).
+  - assets/ux-example.lua

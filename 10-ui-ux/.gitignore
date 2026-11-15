@@ -1,0 +1,3 @@
+# Built by `npm run build` in WordGame.Ux.Web
+WordGame.Ux.Web/dist-examples/
+node_modules/

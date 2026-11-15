@@ -14,6 +14,10 @@ markdown with a small amount of front matter).
 - [Quarto CLI](https://quarto.org/docs/get-started/) — renders pages and slides
 - [.NET 10 SDK](https://dotnet.microsoft.com/download) — runs the lecture code
 - Python 3 — runs the verification script (no packages needed)
+- [Node.js](https://nodejs.org) 22+ — only for the lectures with a web frontend
+  (`07-testing/`, `10-ui-ux/`). The UI/UX lecture embeds playable examples: run
+  `npm install && npm run build` in `10-ui-ux/WordGame.Ux.Web` before rendering
+  it, otherwise the examples are left empty (with a warning)
 
 ## Working with the material
 

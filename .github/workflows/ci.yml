@@ -13,6 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: quarto-dev/quarto-actions/setup@v2
+      # The UI/UX lecture embeds playable examples: one script, inlined by assets/ux-example.lua
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Build the examples of the UI/UX lecture
+        working-directory: 10-ui-ux/WordGame.Ux.Web
+        run: npm ci && npm run build
       - name: Render site (pages + slides)
         run: quarto render
       - uses: actions/upload-artifact@v4
