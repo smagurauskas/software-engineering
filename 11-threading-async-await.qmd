@@ -1,1064 +1,1259 @@
 ---
 title: "Multi-threading, async and await"
-verify: none # contains a deliberate deadlock demo that never terminates
+verify: run # thread scheduling makes output order and timings differ between runs
+format:
+  revealjs:
+    # Every `##` heading is a slide: this lecture has no section title slides
+    slide-level: 2
 ---
 
-## Threads
+## 1.1 · Concurrency, parallelism and asynchrony
 
-A thread is a lightweight unit of execution within a process. It allows a program to perform multiple tasks simultaneously, which can be useful for improving performance and responsiveness.
+| Term | Meaning | Example |
+|---|---|---|
+| **Concurrency** | Several tasks are in progress during the same period of time, possibly taking turns on a single CPU core | A web server handling many requests |
+| **Parallelism** | Several tasks are executed at the same instant, on different CPU cores | Resizing 1000 images on 8 cores |
+| **Asynchrony** | The caller is not blocked while an operation (usually I/O) runs; no extra thread is needed | Waiting for a database query without holding a thread |
 
-### History
-According to 1945 von Newmann architecture computer has one of each:
-- processor (processing unit),
-- controller(control unit),
-- memory and I/O mechanism.
+## 1.2 · Which tool for which work
 
-Central processor (CPU) consists of controller and processor.
+| Kind of work | Example | Tool |
+|---|---|---|
+| I/O-bound | HTTP call, database query, file read | `async` / `await` |
+| CPU-bound, must not freeze the UI | Image filter in a desktop app | `await Task.Run(...)` |
+| CPU-bound, data-parallel | Process every item of a large array | `Parallel.For`, PLINQ |
+| Many I/O operations, a few at a time | Call an API for 1000 ids, 10 at a time | `Parallel.ForEachAsync`, `SemaphoreSlim` |
+| Recurring work in a web app | Remove expired games every minute | `BackgroundService` |
 
-Since there is only one processor, all the programs are synchronous.
+## 2.1 · Threads
 
-Programs that we write are typically read and executed in a top-to-down sequential fashion.
+- A thread is an independent path of execution within a process.
+- All threads of a process share its memory (the heap).
+- Each thread has its own stack.
 
-Problem is that if one actions is long running, then all other actions have to wait for that long running one to complete. This creates "freezes", which we would like to avoid.
+## 2.2 · History
 
-Solution - threads.
+- Early computers (von Neumann architecture, 1945) had a single processing unit and executed one instruction stream.
+- Operating systems introduced **time slicing**: the CPU is switched between threads many times per second, so several programs appear to run at once on one core.
+- Since the mid-2000s, CPU clock speeds have barely grown; more cores are added instead. A single-threaded program uses only one of them.
 
-### How threading helps?
+## 2.3 · How threading helps
 
-Multi-threading allows to perform several operations simultaneously. If there is only a single processor available, it doesn't mean that the operation will happen faster, but, for example, it will allow to perform 1 computation operation and other operation that updates the progress on the screen simultaneously.
+- **Responsiveness**: a desktop or mobile app keeps the UI thread free while long work is done on another thread.
+- **Throughput**: a web server handles many requests at once. With async I/O, a waiting request does not hold a thread, so a limited thread pool serves more requests.
+- **Speed**: a large computation is split into chunks that are executed in parallel on several cores.
 
-For desktop or mobile apps multithreading can allow UI to remain responsive while the calculation is going on in the background. For web applications (like ASP.NET) asynchronous programming can be used to free up limited pool of HTTP request handling threads.
+On a single core, threads do not make computation faster; they only allow switching between tasks.
 
-If there is a large computation needed and there are several CPUs available, then it is theoretically quicker to split workload into several smaller chunks (threads) and run them in parallel.
+## 2.4 · `Thread` in C\#
 
-### `Thread` in C#
-
-In C# you can create a new thread using the Thread class. Once you have created a thread, you can start it using the Start method. The code inside the thread will then execute concurrently with the main thread of the program.
-
-The `Thread` and other related classes can be found in `System.Threading` namespace.
-
-```{.csharp}
-using System.Threading;
-```
-
-#### Helper `ProgressBar` class
-
-Code here is not related to the lecture, but nice for illustrating the progress in following examples.
-
-```{.csharp}
-// Code here is not related to the lecture, but nice for illustrating the progress in following examples.
-
-using System;
-using Microsoft.DotNet.Interactive.Formatting;
-
-public class ProgressBar
-{
-    private int _total;
-    private int _current;
-    private readonly DisplayedValue _displayable = display("");
-
-    public ProgressBar(int total)
-    {
-        _total = total;
-        _current = 0;
-    }
-
-    public void Increment(int delta = 1)
-    {
-        _current++;
-        Draw();
-    }
-
-    public void Report(int current)
-    {
-        _current = current;
-        Draw();
-    }
-
-    private void Draw()
-    {
-        var progressString = "[";
-        int progress = (int)((float)_current / _total * 100);
-        for (int i = 0; i < 100; i += 2)
-        {
-            if (i < progress)
-                progressString += "=";
-            else
-                progressString += " ";
-        }
-        progressString += $"] {progress}%\r";
-
-        _displayable.Update(progressString);
-    }
-}
-
-
-// Sample usage:
-var bar = new ProgressBar(100);
-for (int i = 0; i < 100; i++)
-{
-    bar.Increment();
-    Thread.Sleep(100);
-}
-```
-
-#### Simple `Thread` example
+`Thread` (in `System.Threading`) is created with a delegate, started with `Start()` and waited for with `Join()`.
 
 ```{.csharp}
-display(Environment.ProcessorCount);
+const int Steps = 20;
+var completedSteps = 0;
 
-// create a progress bar
-const int MAX = 100;
-int current = 0;
-
-// create a thread for CPU-bound task
-var cpuThread = new Thread(() =>
+// Long-running work: each step takes 50 ms
+var worker = new Thread(() =>
 {
-    var bar = new ProgressBar(MAX);
-
-    for (; current < MAX; current++)
+    for (var i = 0; i < Steps; i++)
     {
-        // simulate a CPU-bound task
-        Thread.Sleep(100);
+        Thread.Sleep(50);
+        Interlocked.Increment(ref completedSteps);
     }
-
-    bar.Report(MAX);
 });
 
-// create a thread for reporting progress
-var progressThread = new Thread(() =>
+// Progress is reported by another thread while the work runs
+var reporter = new Thread(() =>
 {
-    var bar = new ProgressBar(MAX);
-
-    while (current < MAX)
+    while (Volatile.Read(ref completedSteps) < Steps)
     {
-        bar.Report(current);
-        Thread.Sleep(1000);
+        Console.WriteLine($"Progress: {Volatile.Read(ref completedSteps) * 100 / Steps}%");
+        Thread.Sleep(200);
     }
-
-    bar.Report(MAX);
+    Console.WriteLine("Progress: 100%");
 });
 
-// start the threads
-cpuThread.Start();
-progressThread.Start();
+worker.Start();
+reporter.Start();
 
-cpuThread.Join();
-progressThread.Join();
+worker.Join();
+reporter.Join();
 ```
 
-#### Threads in .NET
+## 2.5 · Threads in a .NET application
 
-All .NET applications have threads, most common:
-- Garbage Collector thread: self explanatory
-- Finalizer thread: finalize (destructor) methods execution.
-- Main thread: starts entry method of the program.
-- UI thread: WinForms, WPF or Windows Store app has this thread. Responsible for UI changes
+Every .NET process has several threads, for example:
 
-Threads are either main or background. By default all the threads are created as background threads. Only the entry thread is created as main thread. When all the main threads finishes - the application exits.
+- **Main thread**: runs `Main` (or the top-level statements).
+- **Thread pool threads**: run tasks, timers, `async` continuations and ASP.NET Core requests.
+- **Finalizer thread**: runs finalizers (`~ClassName()`) of collected objects.
+- **Background garbage collection thread**: collects memory while the application keeps running.
+- **UI thread** (WinForms, WPF, MAUI): the only thread allowed to update UI controls.
 
-#### Common `Thread` methods and properties
+## 2.6 · Foreground and background threads
+
+- A **foreground** thread keeps the process alive: the process exits only when all foreground threads have finished.
+- A **background** thread is stopped abruptly when the last foreground thread ends.
+- `new Thread(...)` creates a foreground thread by default; `IsBackground = true` changes that.
+- Thread pool threads are background threads.
+
+```{.csharp}
+var created = new Thread(() => { });
+Console.WriteLine($"New thread is background: {created.IsBackground}");
+
+ThreadPool.QueueUserWorkItem(_ =>
+    Console.WriteLine($"Thread pool thread is background: {Thread.CurrentThread.IsBackground}"));
+
+Thread.Sleep(100);
+```
+
+## 2.7 · Common `Thread` members
 
 - `Start()`: starts the thread.
-- `Join()`: waits for the thread to complete.
-- `Sleep()`: pauses the current thread for a specified amount of time. It **blocks the CPU** "thread" that is executing this sleep operation.
-- `IsAlive`: returns `true` if the thread is still running.
-- `Name`: gets or sets the name of the thread.
-- `Priority`: gets or sets the priority of the thread.
-- `CurrentThread`: gets the currently executing thread.
+- `Join()`: waits for the thread to finish. `Join(TimeSpan)` returns `false` if it did not finish in time.
+- `Thread.Sleep()`: pauses the **current thread**. The CPU core is given to other threads, but the sleeping thread itself can do nothing else.
+- `IsAlive`: `true` while the thread is running.
+- `Name`, `ManagedThreadId`: identify the thread, e.g. in logs.
+- `IsBackground`: foreground or background thread.
+- `Priority`: a hint to the operating system scheduler; rarely needed.
+- `Thread.CurrentThread`: the thread executing the current code.
+- `Abort()`: not supported since .NET Core; it throws `PlatformNotSupportedException`. Threads are stopped cooperatively with a `CancellationToken`.
 
-- `Abort()`: *Obsolete*. Was marked `Obsoleted` and should no longer be used. Recommended alternative `CancellationToken`.
+## 2.8 · Naming threads
 
 ```{.csharp}
-// Start(): starts the thread.
-
-display(Thread.CurrentThread.Name);
-
-Thread tStart = new Thread(() =>
+var named = new Thread(() =>
+    Console.WriteLine($"Running on '{Thread.CurrentThread.Name}', id {Thread.CurrentThread.ManagedThreadId}"))
 {
-    display(Thread.CurrentThread.Name);
-    display("Thread started");
-}) {
     Name = "MyWorkerThread"
 };
 
-tStart.Start();
+Console.WriteLine($"Main thread id: {Thread.CurrentThread.ManagedThreadId}");
+named.Start();
+named.Join();
 ```
 
+## 2.9 · Waiting with `Join`
+
 ```{.csharp}
-Thread tJoin = new Thread(() =>
+var background = new Thread(() =>
 {
-    for (int i = 0; i < 200; i++)
+    for (var i = 0; i < 5; i++)
     {
         Thread.Sleep(100);
-        display($"Background thread: {i}");
+        Console.WriteLine($"Worker thread: {i}");
     }
 });
 
-tJoin.Start();
+background.Start();
 
-for (int i = 0; i < 100; i++)
+for (var i = 0; i < 3; i++)
 {
     Thread.Sleep(100);
-    display($"Main thread: {i}");
+    Console.WriteLine($"Main thread: {i}");
 }
 
-tJoin.Join();
+// Blocks the main thread until the worker finishes
+background.Join();
+Console.WriteLine("Both finished");
 ```
 
+## 2.10 · `IsAlive` and `Join` with a timeout
+
 ```{.csharp}
-// Sleep(): pauses the current thread for a specified amount of time.
-Thread tSleep = new Thread(() =>
+var sleeper = new Thread(() => Thread.Sleep(500));
+sleeper.Start();
+Console.WriteLine($"Is alive after Start: {sleeper.IsAlive}");
+
+var finishedInTime = sleeper.Join(TimeSpan.FromMilliseconds(100));
+Console.WriteLine($"Finished within 100 ms: {finishedInTime}");
+
+sleeper.Join();
+Console.WriteLine($"Is alive after Join: {sleeper.IsAlive}");
+```
+
+## 2.11 · Thread pool
+
+- Creating a thread is expensive: an operating system object, around 1 MB of reserved stack, and start-up time.
+- The **thread pool** keeps a set of reusable threads and gives them work items from a queue.
+- `Task.Run`, `Parallel`, timers, `async` continuations and ASP.NET Core requests all use the thread pool.
+- The pool starts with about as many threads as there are cores and adds more only gradually when all of them are busy.
+- A blocked pool thread is wasted. When many are blocked, new work waits in the queue: **thread pool starvation**.
+
+```{.csharp}
+ThreadPool.GetMinThreads(out var minWorkers, out _);
+ThreadPool.GetMaxThreads(out var maxWorkers, out _);
+Console.WriteLine($"Min worker threads: {minWorkers}, max: {maxWorkers}");
+
+ThreadPool.QueueUserWorkItem(_ =>
+    Console.WriteLine($"Is thread pool thread: {Thread.CurrentThread.IsThreadPoolThread}"));
+
+Thread.Sleep(100);
+```
+
+## 2.12 · Thread blocking
+
+```{.csharp}
+var actionQueue = new ConcurrentQueue<Action>();
+for (var i = 0; i < 10; i++)
 {
-    for (int i = 0; i < 5; i++)
-    {
-        display($"Thread {Thread.CurrentThread.ManagedThreadId} running");
-        Thread.Sleep(1000);
-    }
-});
+    var id = i;
+    actionQueue.Enqueue(i % 2 == 0
+        ? () => Console.WriteLine($"Action {id}: quick")
+        : () =>
+        {
+            Console.WriteLine($"Action {id}: waiting...");
+            Thread.Sleep(500); // e.g. a synchronous database call
+        });
+}
 
-tSleep.Start();
-tSleep.Join();
-```
-
-```{.csharp}
-// IsAlive: returns true if the thread is still running.
-Thread tAlive = new Thread(() =>
-{
-    Thread.Sleep(5000);
-});
-
-tAlive.Start();
-display($"Thread is alive: {tAlive.IsAlive}");
-```
-
-```{.csharp}
-// Name: gets or sets the name of the thread.
-Thread tNamed = new Thread(() =>
-{
-    display($"Thread name: {Thread.CurrentThread.Name}");
-});
-
-tNamed.Name = "MyThread";
-tNamed.Start();
-```
-
-```{.csharp}
-// Priority: gets or sets the priority of the thread.
-Thread tPrioritised = new Thread(() =>
-{
-    display($"Thread priority: {Thread.CurrentThread.Priority}");
-});
-
-tPrioritised.Priority = ThreadPriority.Highest;
-tPrioritised.Start();
-```
-
-```{.csharp}
-// CurrentThread: gets the currently executing thread.
-Thread tId = new Thread(() =>
-{
-    display($"Current thread: {Thread.CurrentThread.ManagedThreadId}");
-});
-
-tId.Start();
-```
-
-### Thread blocking
-
-Thread blocking happens when thread that is not doing anything in particular (i.e. `Sleep`ing) is wasting the thread, because it cannot execute anything else at that moment. In this example there is a pool of 2 threads, that takes and executes actions from queue. If there is a `Thread.Sleep()`, it just waits without pickup up any other action, although theoretically it could, because CPU is not doing anything while the thread sleeps.
-
-```{.csharp}
-using System.Threading;
-using System.Collections.Concurrent;
-
-// Let's say we have a pool of 2 threads.
-
-var concurrentQueue = new ConcurrentQueue<Action>();
+var blockingStopwatch = Stopwatch.StartNew();
 
 var pool = new Thread[2];
-
 for (var i = 0; i < pool.Length; i++)
 {
     pool[i] = new Thread(() =>
+    {
+        while (actionQueue.TryDequeue(out var action))
         {
-            while (true)
-            {
-                if (concurrentQueue.TryDequeue(out var action))
-                {
-                    action();
-                }
-                else
-                {
-                    Thread.Sleep(1);
-                }
-            }
+            action();
         }
-    );
+    });
     pool[i].Start();
 }
 
-for (var i = 0; i < 100; i++)
-{
-    if (i % 2 == 0)
-    {
-        concurrentQueue.Enqueue(() => display("Hello"));
-    }
-    else
-    {
-        concurrentQueue.Enqueue(() => 
-            { 
-                display("Sleeping...");
-                Thread.Sleep(1000);
-            }
-        );
-    }
-}
-
-pool[0].Join();
-pool[1].Join();
-```
-
-## `lock`
-
-A monitor is a synchronization mechanism that allows multiple threads to access a shared resource in a mutually exclusive way, using the `lock` keyword. When a thread enters a monitor, it acquires a lock on the shared resource, and other threads are blocked from entering the locked section until the lock is released.
-
-```{.csharp}
-class Counter {
-    private int count = 0;
-    private object lockObject = new object();
-
-    public void Increment() {
-        lock (lockObject) {
-            count++;
-        }
-    }
-
-    public void Decrement() {
-        lock (lockObject) {
-            count--;
-        }
-    }
-
-    public int GetCount() {
-        lock (lockObject) {
-            return count;
-        }
-    }
-}
-```
-
-- To `lock` a part of the code, a "lock object" has to be provided (`lockObject` in the example above).
-- `lockObject` can be any reference type.
-- Most common practice is to create new `object` type field in the class where the monitor is needed.
-- When multiple `lock`s are using the same reference of "lock object", then only 1 of them will be "unlocked" at any given time. 
-- `lockObject` has no relation to the resource that is being locked. The example above has no guarantees and nothing to with access the `lockObject` field. Only the `count` field is locked.
-
-```{.csharp}
-using System.Threading;
-
-Counter counter = new Counter();
-Thread t1 = new Thread(() => {
-    for (int i = 0; i < 1000000; i++) {
-        counter.Increment();
-    }
-});
-Thread t2 = new Thread(() => {
-    for (int i = 0; i < 1000000; i++) {
-        counter.Decrement();
-    }
-});
-
-t1.Start();
-t2.Start();
-t1.Join();
-t2.Join();
-display(counter.GetCount());
-
-// Try commenting out the lock statements in the cell above and see what happens
-```
-
-Since the monitor is released manually, we need to make sure that it would be released even if the exception is thrown. That's why good practice would be to wrap `Monitor` sections in `try catch finally` blocks.
-
-## `Monitor` class
-
-`Monitor` class provides similar functionality to `lock`, but the methods needs to be called explicitly.
-
-```csharp
-var locker = new object();
-
-Monitor.Enter(locker);
-Console.WriteLine("Enetered");
-Monitor.Exit(locker);
-
-// is equivalent to
-
-lock (locker)
-{
-    Console.WriteLine("Enetered");
-}
-```
-
-```{.csharp}
-using System.Threading;
-
-class Counter {
-    private int count = 0;
-    private object lockObject = new object();
-
-    public void Increment() {
-        Monitor.Enter(lockObject);
-        try {
-            count++;
-        }
-        finally {
-            Monitor.Exit(lockObject);
-        }
-    }
-
-    public void Decrement() {
-        Monitor.Enter(lockObject);
-        try {
-            count--;
-        }
-        finally {
-            Monitor.Exit(lockObject);
-        }
-    }
-
-    public int GetCount() {
-        Monitor.Enter(lockObject);
-        try {
-            return count;
-        }
-        finally {
-            Monitor.Exit(lockObject);
-        }
-    }
-}
-```
-
-```{.csharp}
-using System.Threading;
-
-Counter counter = new Counter();
-Thread t1 = new Thread(() => {
-    for (int i = 0; i < 1000000; i++) {
-        counter.Increment();
-    }
-});
-Thread t2 = new Thread(() => {
-    for (int i = 0; i < 1000000; i++) {
-        counter.Decrement();
-    }
-});
-
-t1.Start();
-t2.Start();
-t1.Join();
-t2.Join();
-display(counter.GetCount());
-
-// Try commenting out the lock statements in the cell above and see what happens
-```
-
-## Deadlocks
-
-A deadlock is a state in which some special situation (usuall circular dependency) creates a loop that program cannot simply exit out on it's own.
-
-An example using the `lock`:
-
-```{.csharp}
-using System;
-using System.Threading;
-
-class BankAccount
-{
-    public string Name { get; set; }
-    public decimal Balance { get; set; }
-    private readonly object lockObject = new object();
-
-    public BankAccount(string name, decimal balance)
-    {
-        Name = name;
-        Balance = balance;
-    }
-
-    public void Transfer(BankAccount target, decimal amount)
-    {
-        display($"{Thread.CurrentThread.Name}: Attempting to lock {Name}");
-        lock (lockObject)
-        {
-            display($"{Thread.CurrentThread.Name}: Locked {Name}");
-            Thread.Sleep(100); // Simulate some work
-
-            // Now try to lock the target account
-            display($"{Thread.CurrentThread.Name}: Attempting to lock {target.Name}");
-            lock (target.lockObject)
-            {
-                display($"{Thread.CurrentThread.Name}: Locked {target.Name}");
-
-                if (Balance >= amount)
-                {
-                    Balance -= amount;
-                    target.Balance += amount;
-                    display($"{Thread.CurrentThread.Name}: Transferred {amount} from {Name} to {target.Name}");
-                }
-            }
-            display($"{Thread.CurrentThread.Name}: Released lock for {target.Name}");
-        }
-        display($"{Thread.CurrentThread.Name}: Released locks for {Name} and {target.Name}");
-    }
-}
-
-var account1 = new BankAccount("Account1", 1000);
-var account2 = new BankAccount("Account2", 1000);
-
-// Thread 1: Transfer from Account1 to Account2
-var thread1 = new Thread(() =>
-{
-    account1.Transfer(account2, 100);
-})
-{
-    Name = "Thread-1"
-};
-
-// Thread 2: Transfer from Account2 to Account1 (reverse direction)
-var thread2 = new Thread(() =>
-{
-    account2.Transfer(account1, 200);
-})
-{
-    Name = "Thread-2"
-};
-
-thread1.Start();
-thread2.Start();
-
-// These will never complete due to deadlock
-thread1.Join();
-thread2.Join();
-```
-
-### Avoiding deadlocks with `Monitor.Wait` and `Monitor.Pulse`
-
-`Monitor` class has 2 more methods available: `Wait` and `Pulse`, which allow to extra synchronization capabilities in such cases.
-
-`Wait` will allow to enter the threads waiting for `Monitor.Enter`.
-`Pulse` will allow threads that are `Wait`ing to resume execution.
-
-```{.csharp}
-using System.Threading;
-
-var locker = new object();
-
-var t1 = new Thread(() =>
-{
-    display("Thread 1 is waiting for the lock.");
-    Monitor.Enter(locker);
-    display("Thread 1 acquired the lock.");
-    
-    Thread.Sleep(2000);
-
-    display("Thread 1 is waiting for a signal.");
-
-    Monitor.Wait(locker);
-
-    display("Thread 1 received the signal.");
-
-    Monitor.Exit(locker);
-    display("Thread 1 released the lock.");
-});
-
-var t2 = new Thread(() =>
-{
-    display("Thread 2 is waiting for the lock.");
-    Monitor.Enter(locker);
-
-    display("Thread 2 acquired the lock.");
-    
-    Monitor.Pulse(locker);
-
-    display("Thread 2 sent the signal.");
-
-    Monitor.Exit(locker);
-    display("Thread 2 released the lock.");
-});
-
-t1.Start();
-Thread.Sleep(1000); // Ensure t1 starts first
-t2.Start();
-
-t1.Join();
-t2.Join();
-```
-
-In this example below calling `Monitor.Wait` and `Monitor.Pulse` allows to resolve the deadlock situation, by temporary releasing the monitor and allowing other thread to enter the critical section.
-
-```{.csharp}
-using System;
-using System.Threading;
-
-class BankAccountWithMonitor
-{
-    public string Name { get; set; }
-    public decimal Balance { get; set; }
-    private readonly object lockObject = new object();
-
-    public BankAccountWithMonitor(string name, decimal balance)
-    {
-        Name = name;
-        Balance = balance;
-    }
-
-    public void Transfer(BankAccountWithMonitor target, decimal amount)
-    {
-        display($"{Thread.CurrentThread.Name}: Attempting to acquire {Name}");
-
-
-        Monitor.Enter(lockObject);
-        Thread.Sleep(5000);
-        try
-        {
-            while (!Monitor.TryEnter(target.lockObject))
-            {
-                display($"{Thread.CurrentThread.Name}: {target.Name} is in use, waiting...");
-                Monitor.Wait(lockObject);
-                display($"{Thread.CurrentThread.Name}: {target.Name} is now available.");
-                Thread.Sleep(10);
-            }
-
-            display($"{Thread.CurrentThread.Name}: Acquired {target.Name}");
-
-            target.Balance += amount;
-            Balance -= amount;
-
-            display($"{Thread.CurrentThread.Name}: Transferred {amount} from {Name} to {target.Name}");
-        }
-        finally
-        {
-            display($"{Thread.CurrentThread.Name}: Released locks for {Name} and {target.Name}");
-            Monitor.Pulse(lockObject);
-            Monitor.Pulse(target.lockObject);
-            Monitor.Exit(target.lockObject);
-            Monitor.Exit(lockObject);
-        }
-    }
-}
-
-var account1 = new BankAccountWithMonitor("Account1", 1000);
-var account2 = new BankAccountWithMonitor("Account2", 1000);
-
-// Thread 1: Transfer from Account1 to Account2
-var thread1 = new Thread(() =>
-{
-    Thread.Sleep(1000);
-    account1.Transfer(account2, 100);
-})
-{
-    Name = "Thread-1"
-};
-
-// Thread 2: Transfer from Account2 to Account1 (reverse direction)
-var thread2 = new Thread(() =>
-{
-    account2.Transfer(account1, 200);
-})
-{
-    Name = "Thread-2"
-};
-
-thread1.Start();
-thread2.Start();
-
-thread1.Join();
-thread2.Join();
-
-// Balances
-display($"Final Balance of {account1.Name}: {account1.Balance}");
-display($"Final Balance of {account2.Name}: {account2.Balance}");
-```
-
-## `Task`, `async` and `await`
-
-- Task represents an asynchronous operation or a promise that something is going to be done after the task completes.
-- You can think of the class `Task` like a wrapper over some workflow.
-- `Task`s are used in conjunction with `async` and `await` keywords.
-
-### `async` and `await`
-
-The `async` keyword is used to define an asynchronous method. An asynchronous method is a method that can be executed in a non-blocking way, allowing the calling thread to continue executing other code while the asynchronous method is running.
-
-In practice marking method as `async` enables the usage of `await` keyword inside that method and implicitly wraps the output of the method inside a `Task` type.
-
-Depending if the method is `void` or not, then after making it async it will return:
-- `Task` if it was`void`, meaning it didn't return anything.
-- `Task<TResult>` if it were to return `TResult`.
-
-```{.csharp}
-using System;
-using System.Threading.Tasks;
-
-display("Starting async method");
-await MethodAsync();
-display("Async method completed");
-
-async Task MethodAsync()
-{
-    display("Entering async method");
-    await Task.Delay(1000);
-    display("Exiting async method");
-}
-```
-
-#### Parallelization example
-
-Assume there are 2 things that needs to be done:
-- Some calculation that is slow (~1s).
-- Calling some API.
-
-In this case calling API technically does not involve active computation, but rather just waiting for HTTP response.
-
-```{.csharp}
-// Without using tasks and doing everything synchronously
-
-using System.Threading;
-using System.Net.Http;
-using System.Diagnostics;
-
-var noTaskStopwatch = Stopwatch.StartNew();
-
-int SlowCalculation()
-{
-    // Assume this is calculating something
-    Thread.Sleep(1000);
-    return 42;    
-}
-
-using (var client = new HttpClient())
-{
-    var response = await client.GetAsync("https://swapi.dev/api/people/1/");
-    var content = await response.Content.ReadAsStringAsync();
-    display(content);
-}
-
-SlowCalculation();
-
-noTaskStopwatch.Stop();
-display($"No task stopwatch: {noTaskStopwatch.ElapsedMilliseconds}");
-```
-
-```{.csharp}
-// Parallelizing with tasks
-
-var taskStopwatch = Stopwatch.StartNew();
-
-async Task SlowCalculationAsync()
-{
-    await Task.Delay(1000);
-    display("Slow calculation completed");
-}
-
-var slowRunningCalculationTask = SlowCalculationAsync();
-
-var callApiTask = async() => {
-    using (var client = new HttpClient())
-    {
-        var response = await client.GetAsync("https://swapi.dev/api/people/1/");
-        var content = await response.Content.ReadAsStringAsync();
-        display(content);
-    }
-};
-
-await Task.WhenAll(slowRunningCalculationTask, callApiTask());
-
-taskStopwatch.Stop();
-display($"Task stopwatch: {taskStopwatch.ElapsedMilliseconds}");
-```
-
-### Non blocking delay
-
-`Thread.Sleep()` is unattractive option to introduce delays into code, because it blocks CPU that is executing the sleep. Blocking meaning that the CPU, while doing nothing with `Sleep` action itself, will not execute any other workloads either.
-
-Instead use `Task.Delay()`. It will achieve the same thing, but the CPU will be able to execute other things, while the delay is being waited out.
-
-```{.csharp}
-display(DateTime.Now);
-
-await Task.Delay(2000);
-
-display(DateTime.Now);
-```
-
-Referring to the "Thread blocking" example that was shown above, the code below does pretty much the same, but uses `async`, `await` and non-blocking `Task.Delay()` to waste time. Notice, that looking at the output, all the actions are handled quicker.
-
-```{.csharp}
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using System.Threading;
-
-var concurrentQueue = new ConcurrentQueue<Task>();
-
-var threads = new Thread[2];
-
-for (var i = 0; i < threads.Length; i++)
-{
-    threads[i] = new Thread(async () =>
-        {
-            while (true)
-            {
-                if (concurrentQueue.TryDequeue(out var action))
-                {
-                    await action;
-                }
-                else
-                {
-                    await Task.Delay(1);
-                }
-            }
-        }
-    );
-    threads[i].Start();
-}
-
-for (var i = 0; i < 100; i++)
-{
-    if (i % 2 == 0)
-    {
-        concurrentQueue.Enqueue(Task.Run(() => display("Hello")));
-    }
-    else
-    {
-        concurrentQueue.Enqueue(Task.Run(async () => 
-            { 
-                display("Sleeping...");
-                await Task.Delay(1000);
-            }
-        ));
-    }
-}
-
-foreach (var thread in threads)
+foreach (var thread in pool)
 {
     thread.Join();
 }
+
+Console.WriteLine($"Took {blockingStopwatch.ElapsedMilliseconds} ms");
 ```
 
-### Some of `Task` methods
+## 3.1 · Race conditions
+
+- A **race condition** is a bug where the result depends on the timing of threads.
+- The most common forms:
+  - **lost update**: two threads read, modify and write the same value;
+  - **check-then-act**: a condition is checked, and another thread changes it before the action.
+- They are hard to find: the code passes tests and fails under load.
+
+## 3.2 · Lost update
+
+`count++` is three steps: read, add, write. Two threads can read the same value, and one of the updates is lost.
 
 ```{.csharp}
-// Task.WhenAny
-
-async Task PrintSomethingAsync()
+class UnsafeCounter
 {
-    display("Entering async method");
-    for (var i = 0; i < 10; i++) {
-        await Task.Delay(1000);
-        display("Printing in async method");
-    }
-    display("Exiting async method");
+    private int _count;
+
+    public void Increment() => _count++;
+    public void Decrement() => _count--;
+    public int Count => _count;
 }
 
-display("Starting async method");
-var printSomethingTask = PrintSomethingAsync();
-display("Async method started");
-
-var continued = printSomethingTask.ContinueWith(task => {
-    display("Continuation task started");
-    display($"Continuation task status: {task.Status}");
-    display("Continuation task completed");
+var unsafeCounter = new UnsafeCounter();
+var incrementer = new Thread(() =>
+{
+    for (var i = 0; i < 1_000_000; i++)
+    {
+        unsafeCounter.Increment();
+    }
+});
+var decrementer = new Thread(() =>
+{
+    for (var i = 0; i < 1_000_000; i++)
+    {
+        unsafeCounter.Decrement();
+    }
 });
 
-await continued;
+incrementer.Start();
+decrementer.Start();
+incrementer.Join();
+decrementer.Join();
+
+// 0 is expected, but almost every run prints something else
+Console.WriteLine(unsafeCounter.Count);
 ```
 
-```{.csharp}
-// Task.WhenAll
+## 3.3 · Check-then-act
 
-async Task Wait1000()
-{
-    display("Waiting 1000ms");
-    await Task.Delay(1000);
-    display("Waited 1000ms");
-}
+- Checking a condition and acting on it are two separate steps; another thread can act in between.
+- A thread-safe collection does not help: each call is safe, but the combination is not.
+- The word game from lecture 7 has this pattern in `GameService.CompleteGame` (`Find`, then `Remove`): two simultaneous submissions both get experience.
 
-async Task Wait2000()
-{
-    display("Waiting 2000ms");
-    await Task.Delay(2000);
-    display("Waited 2000ms");
-}
-
-async Task Wait3000()
-{
-    display("Waiting 3000ms");
-    await Task.Delay(3000);
-    display("Waited 3000ms");
-}
-
-var wait1000 = Wait1000();
-var wait2000 = Wait2000();
-var wait3000 = Wait3000();
-
-display("Waiting for tasks to complete");
-await Task.WhenAll(wait1000, wait2000, wait3000);
-display("All tasks completed");
-```
+## 3.4 · Check-then-act in code
 
 ```{.csharp}
-// Task.WhenEach
+var games = new ConcurrentDictionary<string, string>();
+games["player@example.com"] = "game-1";
+var awarded = 0;
+var start = new Barrier(2);
 
-async Task Wait1000()
+void CompleteGame()
 {
-    display("Waiting 1000ms");
-    await Task.Delay(1000);
-    display("Waited 1000ms");
-}
+    start.SignalAndWait(); // both threads continue at the same moment
 
-async Task Wait2000()
-{
-    display("Waiting 2000ms");
-    await Task.Delay(2000);
-    display("Waited 2000ms");
-}
-
-async Task Wait3000()
-{
-    display("Waiting 3000ms");
-    await Task.Delay(3000);
-    display("Waited 3000ms");
-}
-
-var wait1000 = Wait1000();
-var wait2000 = Wait2000();
-var wait3000 = Wait3000();
-
-display("Waiting for tasks to complete");
-
-// Will work in .NET 9
-await foreach (var task in Task.WhenEach(wait1000, wait2000, wait3000))
-{
-    display($"Task completed: {task}");
-}
-```
-
-### Starting a task
-
-If a `Task` is just created, it won't immediately start by itself.
-
-```{.csharp}
-var task = new Task(() => display("Hello"));
-
-// To start the task, you need to call the `Start` method.
-display("Task not started yet");
-task.Start();
-
-// Make sure the task has completed
-await task;
-```
-
-```{.csharp}
-// Alternatively, you can use the `Run` method to create and start a task immediately.
-await Task.Run(() => display("Hello"));
-```
-
-### `Task` execution switching
-
-Example takes 100 tasks (assuming, that ordinary CPU will have less cores), which forces schedule to switch between `Task` execution. Then it maps when which task was executing. There are plenty of `await`s inside inside the tasks, so context switching would be provoked.
-
-```{.csharp}
-using System;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
-
-var tasks = new Task[100];
-
-var queue = new ConcurrentQueue<int>();
-
-for (var i = 0; i < tasks.Length; i++)
-{
-    var isolated = i % 2;
-
-    tasks[i] = Task.Run(async () =>
+    // Check...
+    if (games.ContainsKey("player@example.com"))
     {
-        for (var j = 0; j < 100; j++)
+        Thread.Sleep(10); // e.g. checking the answers
+        // ...then act
+        games.TryRemove("player@example.com", out _);
+        Interlocked.Increment(ref awarded);
+    }
+}
+
+var firstSubmission = new Thread(CompleteGame);
+var secondSubmission = new Thread(CompleteGame);
+firstSubmission.Start();
+secondSubmission.Start();
+firstSubmission.Join();
+secondSubmission.Join();
+
+Console.WriteLine($"Experience awarded {awarded} times");
+```
+
+## 3.5 · Making check-then-act atomic
+
+`TryRemove` checks and removes in one atomic step, so only one thread can succeed.
+
+```{.csharp}
+games["player@example.com"] = "game-1";
+awarded = 0;
+start = new Barrier(2);
+
+void CompleteGameAtomically()
+{
+    start.SignalAndWait();
+
+    if (games.TryRemove("player@example.com", out _))
+    {
+        Interlocked.Increment(ref awarded);
+    }
+}
+
+firstSubmission = new Thread(CompleteGameAtomically);
+secondSubmission = new Thread(CompleteGameAtomically);
+firstSubmission.Start();
+secondSubmission.Start();
+firstSubmission.Join();
+secondSubmission.Join();
+
+Console.WriteLine($"Experience awarded {awarded} times");
+```
+
+## 3.6 · Ways to avoid race conditions
+
+| Approach | Tools |
+|---|---|
+| No shared mutable state | Immutable objects, data owned by a single thread |
+| Atomic operations | `Interlocked`, single calls of concurrent collections (`TryRemove`, `GetOrAdd`) |
+| Mutual exclusion | `lock`, `SemaphoreSlim` |
+| Message passing | `Channel<T>` |
+
+## 4.1 · `lock`
+
+`lock` allows only one thread at a time into a block of code, a **critical section**. Since .NET 9 the lock object is of the `System.Threading.Lock` type.
+
+```{.csharp}
+class Counter
+{
+    private readonly Lock _lock = new();
+    private int _count;
+
+    public void Increment()
+    {
+        lock (_lock)
         {
-            await Task.Delay(1);
-            queue.Enqueue(isolated);
+            _count++;
         }
-    });
+    }
+
+    public void Decrement()
+    {
+        lock (_lock)
+        {
+            _count--;
+        }
+    }
+
+    public int Count
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _count;
+            }
+        }
+    }
+}
+```
+
+## 4.2 · `lock` in use
+
+```{.csharp}
+var counter = new Counter();
+var lockedIncrementer = new Thread(() =>
+{
+    for (var i = 0; i < 1_000_000; i++)
+    {
+        counter.Increment();
+    }
+});
+var lockedDecrementer = new Thread(() =>
+{
+    for (var i = 0; i < 1_000_000; i++)
+    {
+        counter.Decrement();
+    }
+});
+
+lockedIncrementer.Start();
+lockedDecrementer.Start();
+lockedIncrementer.Join();
+lockedDecrementer.Join();
+
+Console.WriteLine(counter.Count);
+```
+
+## 4.3 · Rules for `lock`
+
+- The lock object only marks the critical section; it has no connection to the data. `_count` is protected only because every access to it is inside `lock (_lock)`.
+- The lock object is `private readonly`. Never lock on `this`, a `Type` or a string: other code can lock on them too.
+- Before .NET 9, any reference type was used: `private readonly object _lock = new();`.
+- Critical sections are kept short. Unknown code (callbacks, events) is not called while holding a lock.
+- `await` is not allowed inside `lock` (compile error CS1996). `SemaphoreSlim` is used instead.
+
+## 4.4 · `Monitor` class
+
+`lock` on an `object` is compiled to `Monitor` calls inside `try`/`finally`:
+
+```csharp
+lock (locker)
+{
+    Console.WriteLine("Entered");
 }
 
-await Task.WhenAll(tasks);
-
-var longestConsecutiveStreak = 0;
-var currentStreak = 0;
-var previous = -1;
-
-while (queue.TryDequeue(out var isolated))
+// is compiled to approximately
+var lockTaken = false;
+try
 {
-    if (isolated == previous)
+    Monitor.Enter(locker, ref lockTaken);
+    Console.WriteLine("Entered");
+}
+finally
+{
+    if (lockTaken)
     {
-        currentStreak++;
+        Monitor.Exit(locker);
+    }
+}
+```
+
+- `finally` releases the lock even if an exception is thrown.
+- `lock` on the `Lock` type is compiled to `Lock.EnterScope()` instead.
+
+## 4.5 · `Monitor.TryEnter`
+
+`Monitor` is used directly when waiting has to be limited: `Monitor.TryEnter(locker, timeout)` returns `false` instead of waiting forever. `Lock.TryEnter` does the same.
+
+```{.csharp}
+var resource = new object();
+
+var holder = new Thread(() =>
+{
+    lock (resource)
+    {
+        Thread.Sleep(500);
+    }
+});
+holder.Start();
+Thread.Sleep(50); // lets the holder take the lock first
+
+if (Monitor.TryEnter(resource, TimeSpan.FromMilliseconds(100)))
+{
+    try
+    {
+        Console.WriteLine("Lock acquired");
+    }
+    finally
+    {
+        Monitor.Exit(resource);
+    }
+}
+else
+{
+    Console.WriteLine("Lock not acquired within 100 ms");
+}
+
+holder.Join();
+```
+
+## 4.6 · Signalling with `Monitor.Wait` and `Monitor.Pulse`
+
+`Wait` and `Pulse` are not a deadlock tool. They are used when a thread waits for a condition that another thread makes true (a **condition variable**).
+
+- `Monitor.Wait(locker)`: releases the lock and blocks until pulsed, then takes the lock again.
+- `Monitor.Pulse(locker)`: wakes up one waiting thread; `PulseAll` wakes up all of them.
+- Both are called while holding the lock.
+- The condition is checked in a `while` loop: a pulse sent before `Wait` is lost, and a woken thread has to check again.
+
+## 4.7 · `Wait` and `Pulse` in code
+
+```{.csharp}
+var gate = new object();
+var items = new Queue<int>();
+
+var consumerThread = new Thread(() =>
+{
+    for (var received = 0; received < 3; received++)
+    {
+        int item;
+        lock (gate)
+        {
+            while (items.Count == 0)
+            {
+                Monitor.Wait(gate); // releases the lock while waiting
+            }
+            item = items.Dequeue();
+        }
+        Console.WriteLine($"Consumed {item}");
+    }
+});
+consumerThread.Start();
+
+for (var i = 1; i <= 3; i++)
+{
+    Thread.Sleep(100);
+    lock (gate)
+    {
+        items.Enqueue(i);
+        Console.WriteLine($"Produced {i}");
+        Monitor.Pulse(gate);
+    }
+}
+
+consumerThread.Join();
+```
+
+## 4.8 · `Interlocked`
+
+`Interlocked` provides atomic operations on single variables: no other thread can see the operation half done.
+
+- `Increment`, `Decrement`, `Add`: change an `int` or `long` and return the new value.
+- `Exchange`: sets a new value and returns the old one.
+- `CompareExchange`: sets a new value only if the current value equals the expected one, and returns the original value. Lock-free algorithms are built on it.
+- `Read`: reads a 64-bit value atomically (needed on 32-bit platforms).
+
+`Volatile.Read` and `Volatile.Write` make sure that a value written by one thread is seen by the others, without being cached or reordered.
+
+## 4.9 · `Interlocked` in use
+
+```{.csharp}
+class InterlockedCounter
+{
+    private int _count;
+
+    public void Increment() => Interlocked.Increment(ref _count);
+    public void Decrement() => Interlocked.Decrement(ref _count);
+    public int Count => Volatile.Read(ref _count);
+}
+
+var interlockedCounter = new InterlockedCounter();
+var atomicIncrementer = new Thread(() =>
+{
+    for (var i = 0; i < 1_000_000; i++)
+    {
+        interlockedCounter.Increment();
+    }
+});
+var atomicDecrementer = new Thread(() =>
+{
+    for (var i = 0; i < 1_000_000; i++)
+    {
+        interlockedCounter.Decrement();
+    }
+});
+
+atomicIncrementer.Start();
+atomicDecrementer.Start();
+atomicIncrementer.Join();
+atomicDecrementer.Join();
+
+Console.WriteLine(interlockedCounter.Count);
+```
+
+## 4.10 · `CompareExchange`
+
+```{.csharp}
+var highScore = 0;
+
+void ReportScore(int score)
+{
+    int current;
+    do
+    {
+        current = Volatile.Read(ref highScore);
+        if (score <= current)
+        {
+            return;
+        }
+    }
+    // Retried if another thread changed highScore after it was read
+    while (Interlocked.CompareExchange(ref highScore, score, current) != current);
+}
+
+Parallel.For(0, 1000, i => ReportScore(i % 997));
+Console.WriteLine($"High score: {highScore}");
+```
+
+## 4.11 · Immutable data
+
+- Data that never changes is safe to share between threads without any locks.
+- A `record` with init-only properties is immutable; `with` creates a changed copy.
+- `System.Collections.Immutable` provides `ImmutableList<T>`, `ImmutableDictionary<TKey, TValue>` and others.
+- An update replaces the reference to the whole object, e.g. with `Interlocked.Exchange`.
+- The word game `Game` is a record for this reason.
+
+```{.csharp}
+record GameState(string Player, int Score);
+
+var state = new GameState("player@example.com", 0);
+
+// Other threads can keep using the old object; it never changes
+var updated = state with { Score = 30 };
+
+Console.WriteLine(state);
+Console.WriteLine(updated);
+```
+
+## 5.1 · Concurrent collections
+
+Thread-safe collections in `System.Collections.Concurrent`:
+
+- `ConcurrentDictionary<TKey, TValue>`: a dictionary.
+- `ConcurrentQueue<T>`: first in, first out.
+- `ConcurrentStack<T>`: last in, first out.
+- `ConcurrentBag<T>`: an unordered collection, optimized for threads that both add and take items. It is not a replacement for `List<T>`: there is no order and no indexing.
+
+Each single method call is atomic; a combination of calls is not (see check-then-act). Enumerating does not throw if the collection is changed at the same time.
+
+## 5.2 · `ConcurrentDictionary`
+
+- `TryAdd`: adds the pair only if the key is missing; returns `false` and changes nothing if it exists.
+- `TryGetValue`, `TryRemove`: get or remove the value if the key exists.
+- `TryUpdate(key, newValue, expected)`: updates only if the current value equals `expected`.
+- `GetOrAdd`, `AddOrUpdate`: check and change in one call. The factory delegate can run more than once when threads race (only one result is stored), so it must not have side effects.
+- The indexer `dict[key] = value` adds or overwrites.
+
+`Try...` methods return `false` instead of throwing, because the state can change between a check and the call.
+
+## 5.3 · `ConcurrentDictionary` in use
+
+```{.csharp}
+var fruits = new ConcurrentDictionary<int, string>();
+
+fruits.TryAdd(1, "Apple");
+fruits.TryAdd(2, "Banana");
+Console.WriteLine($"Adding an existing key: {fruits.TryAdd(1, "Avocado")}, value stays {fruits[1]}");
+
+// Updated only if the current value is still "Banana"
+fruits.TryUpdate(2, "Blueberry", "Banana");
+
+var cherry = fruits.GetOrAdd(3, key => "Cherry");
+fruits.AddOrUpdate(1, "Apricot", (key, old) => old + " pie");
+
+if (fruits.TryRemove(3, out var removedFruit))
+{
+    Console.WriteLine($"Removed key 3, which had value {removedFruit}");
+}
+
+foreach (var (key, fruit) in fruits.OrderBy(pair => pair.Key))
+{
+    Console.WriteLine($"{key}: {fruit}");
+}
+```
+
+## 5.4 · Counting words in parallel
+
+```{.csharp}
+var words = "the cat and the dog and the bird".Split(' ');
+var wordCounts = new ConcurrentDictionary<string, int>();
+
+// Read, add one and write in a single atomic call
+Parallel.ForEach(words, word => wordCounts.AddOrUpdate(word, 1, (_, count) => count + 1));
+
+foreach (var (word, count) in wordCounts.OrderBy(pair => pair.Key))
+{
+    Console.WriteLine($"{word}: {count}");
+}
+```
+
+## 5.5 · `ConcurrentQueue<T>` and `ConcurrentStack<T>`
+
+- `Enqueue(T)` / `Push(T)`: adds an item.
+- `TryDequeue(out T)` / `TryPop(out T)`: removes and returns an item, if there is one.
+- `TryPeek(out T)`: returns the next item without removing it.
+
+```{.csharp}
+var queue = new ConcurrentQueue<string>();
+queue.Enqueue("Apple");
+queue.Enqueue("Banana");
+
+if (queue.TryDequeue(out var dequeued))
+{
+    Console.WriteLine($"Dequeued: {dequeued}");
+}
+
+var stack = new ConcurrentStack<string>();
+stack.Push("Apple");
+stack.Push("Banana");
+
+if (stack.TryPop(out var popped))
+{
+    Console.WriteLine($"Popped: {popped}");
+}
+```
+
+## 5.6 · `ConcurrentBag<T>`
+
+- `Add(T)`: adds an item.
+- `TryTake(out T)`: removes and returns some item; which one is not defined.
+
+```{.csharp}
+var bag = new ConcurrentBag<string>();
+
+Parallel.For(0, 5, i => bag.Add($"Item {i}"));
+
+if (bag.TryTake(out var taken))
+{
+    Console.WriteLine($"Took: {taken}");
+}
+
+Console.WriteLine($"Items left: {bag.Count}");
+```
+
+## 6.1 · Deadlocks
+
+A **deadlock** is a state where two or more threads each wait for a resource held by another, so none of them can continue. It happens only when all four conditions hold (Coffman, 1971):
+
+1. **Mutual exclusion**: a resource is held by one thread at a time.
+2. **Hold and wait**: a thread holds one resource while waiting for another.
+3. **No preemption**: a resource cannot be taken away from a thread.
+4. **Circular wait**: threads wait for each other in a cycle.
+
+Breaking any one condition prevents deadlocks. Usually the circular wait is broken.
+
+## 6.2 · Deadlock example
+
+```{.csharp}
+class BankAccount(int id, decimal balance)
+{
+    private readonly Lock _lock = new();
+
+    public int Id { get; } = id;
+    public decimal Balance { get; private set; } = balance;
+
+    public void Transfer(BankAccount target, decimal amount)
+    {
+        lock (_lock)
+        {
+            Console.WriteLine($"{Thread.CurrentThread.Name}: locked account {Id}");
+            Thread.Sleep(100); // gives the other thread time to lock its account
+
+            Console.WriteLine($"{Thread.CurrentThread.Name}: waiting for account {target.Id}");
+            lock (target._lock)
+            {
+                Balance -= amount;
+                target.Balance += amount;
+            }
+        }
+    }
+}
+```
+
+## 6.3 · Running into the deadlock
+
+```{.csharp}
+var account1 = new BankAccount(1, 1000);
+var account2 = new BankAccount(2, 1000);
+
+// Opposite directions: each thread holds one lock and waits for the other.
+// Background threads, so that the stuck threads do not keep the process alive.
+var transfer1 = new Thread(() => account1.Transfer(account2, 100)) { Name = "Thread-1", IsBackground = true };
+var transfer2 = new Thread(() => account2.Transfer(account1, 200)) { Name = "Thread-2", IsBackground = true };
+
+transfer1.Start();
+transfer2.Start();
+
+// Join() would wait forever; with a timeout the deadlock is detected
+var transfer1Done = transfer1.Join(TimeSpan.FromSeconds(1));
+var transfer2Done = transfer2.Join(TimeSpan.FromSeconds(1));
+Console.WriteLine(transfer1Done && transfer2Done ? "Completed" : "Deadlocked");
+```
+
+## 6.4 · Avoiding deadlocks with lock ordering
+
+All threads take the locks in the same order, so a circular wait is impossible.
+
+```{.csharp}
+class OrderedBankAccount(int id, decimal balance)
+{
+    private readonly Lock _lock = new();
+    public int Id { get; } = id;
+    public decimal Balance { get; private set; } = balance;
+
+    public void Transfer(OrderedBankAccount target, decimal amount)
+    {
+        // The account with the smaller id is always locked first
+        var (first, second) = Id < target.Id ? (this, target) : (target, this);
+
+        lock (first._lock)
+        {
+            Thread.Sleep(100);
+            lock (second._lock)
+            {
+                Balance -= amount;
+                target.Balance += amount;
+            }
+        }
+    }
+}
+```
+
+## 6.5 · Lock ordering in use
+
+```{.csharp}
+var ordered1 = new OrderedBankAccount(1, 1000);
+var ordered2 = new OrderedBankAccount(2, 1000);
+
+var orderedTransfer1 = new Thread(() => ordered1.Transfer(ordered2, 100));
+var orderedTransfer2 = new Thread(() => ordered2.Transfer(ordered1, 200));
+orderedTransfer1.Start();
+orderedTransfer2.Start();
+orderedTransfer1.Join();
+orderedTransfer2.Join();
+
+Console.WriteLine($"Account 1: {ordered1.Balance}, account 2: {ordered2.Balance}");
+```
+
+## 6.6 · Other ways to avoid deadlocks
+
+- Hold only one lock at a time.
+- Wait with a timeout (`TryEnter`), release everything and retry.
+- Databases detect deadlocks between transactions themselves and abort one of them (see transactions in lecture 8).
+
+## 7.1 · `Task`
+
+- `Task` represents an operation that completes in the future (a promise). `Task<TResult>` also produces a value.
+- A task is not a thread. A task waiting for I/O uses no thread at all; CPU work in a task runs on a thread pool thread.
+- Tasks returned by `async` methods are already running ("hot").
+- The result of a task is waited for with `await`.
+
+## 7.2 · `async` and `await`
+
+- `async` allows `await` inside the method and wraps the result in a task:
+  - `void` becomes `Task`;
+  - `TResult` becomes `Task<TResult>`.
+- An `async` method runs **synchronously**, on the caller's thread, until the first `await` of an unfinished task. Only then does the caller get the task back and continue.
+- When the awaited operation completes, the rest of the method (the **continuation**) is run. In console apps and ASP.NET Core it runs on a thread pool thread, possibly a different one.
+
+```{.csharp}
+async Task MethodAsync()
+{
+    Console.WriteLine($"Entered the method on thread {Environment.CurrentManagedThreadId}");
+    await Task.Delay(100);
+    Console.WriteLine($"Resumed on thread {Environment.CurrentManagedThreadId}");
+}
+
+Console.WriteLine($"Calling on thread {Environment.CurrentManagedThreadId}");
+var methodTask = MethodAsync();
+Console.WriteLine("Got the task back, the method is still waiting");
+await methodTask;
+Console.WriteLine("Method completed");
+```
+
+## 7.3 · How `await` works
+
+The compiler rewrites an `async` method into a **state machine**:
+
+- each `await` is a point where the method can pause;
+- if the awaited task is already complete, execution simply continues;
+- otherwise the local variables and the position are saved, a continuation is registered on the task, and the method returns;
+- when the task completes, the continuation resumes the method from the saved position.
+
+While an I/O operation (network, disk) is awaited, **no thread** waits for it: the operating system notifies .NET when it is done.
+
+## 7.4 · `await` step by step
+
+```{mermaid}
+sequenceDiagram
+    participant Caller
+    participant Method as MethodAsync
+    participant OS as Timer / I/O
+    Caller->>Method: call (runs synchronously until await)
+    Method->>OS: starts the operation
+    Method-->>Caller: returns an unfinished Task
+    Note over Caller: continues with other work
+    Note over OS: no thread waits for the operation
+    OS->>Method: completed: the rest of the method runs
+    Method-->>Caller: Task completed
+```
+
+## 7.5 · How the completion gets back
+
+- The operation is handed over together with the task that has to be completed:
+  - `Task.Delay` registers a timer in the runtime's timer queue;
+  - I/O is passed to the operating system (network card, disk driver).
+- When it finishes, the operating system queues a completion notification: I/O completion ports on Windows, `epoll` on Linux, `kqueue` on macOS.
+- A few runtime threads wait for these notifications for all operations at once and mark the matching task as completed.
+- Completing a task queues its continuation to the thread pool (or to the UI thread, through the `SynchronizationContext`).
+- A thread pool thread takes it from the queue and runs the rest of the method.
+
+```{mermaid}
+flowchart LR
+    Device["Timer / network card / disk"] --> OS["OS completion queue"]
+    OS --> Poller["Runtime I/O thread"]
+    Poller --> Task["Task completed"]
+    Task --> Queue["Thread pool queue"]
+    Queue --> Rest["Rest of the method runs"]
+```
+
+## 7.6 · `async void`
+
+- An `async void` method cannot be awaited: the caller cannot know when it has finished.
+- It is used only for event handlers, whose signature is fixed. Everywhere else `Task` is returned.
+
+```{.csharp}
+async void SaveVoidAsync()
+{
+    await Task.Delay(100);
+    Console.WriteLine("Saved");
+}
+
+SaveVoidAsync(); // there is no task to await
+Console.WriteLine("Caller continues before saving has finished");
+
+// The only way to wait is to guess how long it takes
+Thread.Sleep(200);
+```
+
+```{.csharp}
+async Task SaveAsync()
+{
+    await Task.Delay(100);
+    Console.WriteLine("Saved");
+}
+
+await SaveAsync();
+Console.WriteLine("Caller continues after saving");
+```
+
+## 7.7 · Exceptions in `async void`
+
+An exception thrown in an `async void` method cannot be caught by the caller: there is no task to store it in, so it crashes the process.
+
+```csharp
+async void FailVoidAsync()
+{
+    await Task.Delay(10);
+    throw new InvalidOperationException("Save failed");
+}
+
+try
+{
+    FailVoidAsync(); // returns at the first await
+}
+catch (InvalidOperationException)
+{
+    // Never reached: the exception is thrown later, on a thread pool thread,
+    // and the whole process crashes
+}
+```
+
+## 7.8 · Exceptions in `async Task`
+
+- An exception thrown in an `async Task` method is stored in its task and thrown again when the task is awaited.
+- A task that is never awaited hides its exception.
+
+```{.csharp}
+async Task FailAsync(string message)
+{
+    await Task.Delay(10);
+    throw new InvalidOperationException(message);
+}
+
+try
+{
+    await FailAsync("Save failed");
+}
+catch (InvalidOperationException e)
+{
+    Console.WriteLine($"Caught: {e.Message}");
+}
+```
+
+## 7.9 · Exceptions with `Task.WhenAll`
+
+`await Task.WhenAll(...)` throws only the **first** exception; all of them are in `task.Exception` (an `AggregateException`).
+
+```{.csharp}
+var all = Task.WhenAll(FailAsync("first"), FailAsync("second"));
+
+try
+{
+    await all;
+}
+catch (InvalidOperationException e)
+{
+    Console.WriteLine($"Caught: {e.Message}");
+    Console.WriteLine($"All errors: {string.Join(", ", all.Exception!.InnerExceptions.Select(x => x.Message))}");
+}
+```
+
+## 7.10 · Hidden `async void`
+
+An `async` lambda passed as an `Action` is `async void` too, with the same problems:
+
+```csharp
+// Thread takes an Action: the thread ends at the first await,
+// and an exception after it crashes the process
+new Thread(async () => await SaveAsync()).Start();
+
+// List<T>.ForEach takes an Action<T>: ForEach returns before any player is notified
+players.ForEach(async player => await NotifyAsync(player));
+
+// Fixed: the lambdas return tasks, which are awaited
+await Task.WhenAll(players.Select(player => NotifyAsync(player)));
+```
+
+## 7.11 · Running operations at the same time
+
+```{.csharp}
+int SlowCalculation()
+{
+    // Keeps one core busy for 500 ms
+    var busy = Stopwatch.StartNew();
+    while (busy.ElapsedMilliseconds < 500)
+    {
+    }
+    return 42;
+}
+
+async Task<string> CallApiAsync()
+{
+    await Task.Delay(500); // stands in for an HTTP call
+    return "{ \"name\": \"Luke Skywalker\" }";
+}
+
+var sequentialStopwatch = Stopwatch.StartNew();
+var apiResponse = await CallApiAsync();
+var calculation = SlowCalculation();
+Console.WriteLine($"One after another: {sequentialStopwatch.ElapsedMilliseconds} ms");
+```
+
+## 7.12 · Starting both before awaiting
+
+```{.csharp}
+var concurrentStopwatch = Stopwatch.StartNew();
+
+// Both are started before either of them is awaited
+var apiTask = CallApiAsync();
+var calculationTask = Task.Run(SlowCalculation);
+
+await Task.WhenAll(apiTask, calculationTask);
+Console.WriteLine($"Calculation: {await calculationTask}, API: {await apiTask}");
+Console.WriteLine($"At the same time: {concurrentStopwatch.ElapsedMilliseconds} ms");
+```
+
+- `Task.Run` is needed for the calculation: it has no `await`, so calling it directly would run it synchronously.
+- Real HTTP calls use an `HttpClient` from `IHttpClientFactory`. A `new HttpClient()` per call exhausts the available sockets under load.
+
+## 7.13 · Non-blocking delay
+
+- `Thread.Sleep()` blocks the current thread.
+- `await Task.Delay()` registers a timer and releases the thread; the method continues when the time has passed.
+
+100 operations that each wait for 100 ms:
+
+```{.csharp}
+var sleepStopwatch = Stopwatch.StartNew();
+// Each wait occupies a thread pool thread; the pool has to add threads one by one
+await Task.WhenAll(Enumerable.Range(0, 100).Select(_ => Task.Run(() => Thread.Sleep(100))));
+Console.WriteLine($"Thread.Sleep: {sleepStopwatch.ElapsedMilliseconds} ms, thread pool grew to {ThreadPool.ThreadCount} threads");
+
+var delayStopwatch = Stopwatch.StartNew();
+// No thread is occupied while waiting: all 100 timers run at the same time
+await Task.WhenAll(Enumerable.Range(0, 100).Select(_ => Task.Delay(100)));
+Console.WriteLine($"Task.Delay: {delayStopwatch.ElapsedMilliseconds} ms");
+```
+
+## 7.14 · Thread blocking example with `Task.Delay`
+
+The same 10 actions as on slide 2.12 (Thread blocking), with `await Task.Delay` instead of `Thread.Sleep`:
+
+```{.csharp}
+var asyncStopwatch = Stopwatch.StartNew();
+var startingThreads = new ConcurrentDictionary<int, bool>();
+
+async Task RunActionAsync(int id)
+{
+    startingThreads.TryAdd(Environment.CurrentManagedThreadId, true);
+    if (id % 2 == 0)
+    {
+        Console.WriteLine($"Action {id}: quick");
     }
     else
     {
-        currentStreak = 1;
-    }
-
-    previous = isolated;
-
-    if (currentStreak > longestConsecutiveStreak)
-    {
-        longestConsecutiveStreak = currentStreak;
+        Console.WriteLine($"Action {id}: waiting...");
+        await Task.Delay(500); // e.g. an async database call
     }
 }
 
-display(longestConsecutiveStreak);
+await Task.WhenAll(Enumerable.Range(0, 10).Select(id => RunActionAsync(id)));
+
+Console.WriteLine($"Took {asyncStopwatch.ElapsedMilliseconds} ms, started by {startingThreads.Count} thread(s)");
 ```
 
-### CancellationToken
+## 7.15 · Starting a task
 
-`CancellationToken` is an object that can be passed to signal asynchronous operation that it needs to stop. Most of that standard APIs that are async have overloads for methods that accept the `CancellationToken`. It considered a good practice to pipe through the token when possible to these methods.
+- A task returned by an `async` method is already running.
+- `Task.Run` queues the work to the thread pool and returns a running task.
+- `new Task(...)` creates an unstarted ("cold") task that needs `Start()`. It is almost never needed.
 
 ```{.csharp}
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-async Task DoWorkAsync(CancellationToken cancellationToken)
-{
-    display("Starting work");
-    for (int i = 0; i < 10; i++)
-    {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            display("Work cancelled");
-            return;
-        }
-        display($"Working on item {i}");
-        await Task.Delay(1000);
-    }
-    display("Work completed");
-}
-
-var cancellationTokenSource = new CancellationTokenSource();
-var cancellationToken = cancellationTokenSource.Token;
-
-var task = DoWorkAsync(cancellationToken);
-
-// Cancel the task after 5 seconds
-await Task.Delay(5000);
-cancellationTokenSource.Cancel();
-
-await task;
+await Task.Run(() => Console.WriteLine($"Running on thread pool thread: {Thread.CurrentThread.IsThreadPoolThread}"));
 ```
 
-### Working around the `Task`s
+```{.csharp}
+var coldTask = new Task(() => Console.WriteLine("Cold task running"));
+Console.WriteLine($"Status before Start: {coldTask.Status}");
+coldTask.Start();
+await coldTask;
+```
 
-There are going to be cases when you need to return a `Task` because of an interface or similar constraint, but the code you are writing does not involve any asynchronism. In such cases it is possible to synthetically create `Task` with the methods/properties:
-- `Task.FromResult()` can be used to wrap any response into task.
-- `Task.CompletedTask` can be used to return `void`.
+## 7.16 · Where continuations run
+
+- 100 tasks do not need 100 threads: the continuations are run by a few thread pool threads.
+- In UI apps the continuation returns to the UI thread (through the `SynchronizationContext`), so controls can be updated after `await`.
+- Console apps and ASP.NET Core have no `SynchronizationContext`; continuations run on any thread pool thread.
+
+```{.csharp}
+var usedThreads = new ConcurrentDictionary<int, bool>();
+
+var manyTasks = Enumerable.Range(0, 100).Select(async _ =>
+{
+    for (var j = 0; j < 10; j++)
+    {
+        await Task.Delay(1);
+        usedThreads.TryAdd(Environment.CurrentManagedThreadId, true);
+    }
+});
+
+await Task.WhenAll(manyTasks);
+Console.WriteLine($"100 tasks ran on {usedThreads.Count} threads");
+```
+
+## 7.17 · `ConfigureAwait(false)`
+
+- `await task.ConfigureAwait(false)` tells that the continuation does not need to return to the original context (e.g. the UI thread).
+- It is used in library code (NuGet packages), which may be called from UI apps.
+- Application code in ASP.NET Core does not need it, as there is no `SynchronizationContext`.
+
+## 8.1 · `Task.WhenAll` and `Task.WhenAny`
+
+```{.csharp}
+async Task<int> WaitAsync(int milliseconds)
+{
+    await Task.Delay(milliseconds);
+    return milliseconds;
+}
+
+// Waits for all tasks; results are in the order of the tasks, not of completion
+int[] results = await Task.WhenAll(WaitAsync(300), WaitAsync(100), WaitAsync(200));
+Console.WriteLine($"All completed: {string.Join(", ", results)}");
+```
+
+```{.csharp}
+var slowOperation = WaitAsync(1000);
+var timeout = Task.Delay(200);
+
+// Waits for the first task to complete
+var winner = await Task.WhenAny(slowOperation, timeout);
+Console.WriteLine(winner == timeout ? "Timed out" : "Completed in time");
+```
+
+## 8.2 · `Task.WhenEach`
+
+Since .NET 9, `Task.WhenEach` returns the tasks in the order they complete, as an async stream that is read with `await foreach`:
+
+```{.csharp}
+var waits = new[] { WaitAsync(300), WaitAsync(100), WaitAsync(200) };
+
+await foreach (var completedTask in Task.WhenEach(waits))
+{
+    Console.WriteLine($"Completed after {await completedTask} ms");
+}
+```
+
+## 8.3 · `CancellationToken`
+
+- A `CancellationToken` signals an operation that it should stop. It is created by a `CancellationTokenSource`.
+- Most async APIs accept a token; it is passed down through every method.
+- A cancelled operation throws `OperationCanceledException`, and its task ends in the `Canceled` state.
+- CPU-bound loops call `cancellationToken.ThrowIfCancellationRequested()`.
+
+## 8.4 · Cancelling work
+
+```{.csharp}
+async Task DoWorkAsync(CancellationToken cancellationToken)
+{
+    for (var i = 0; i < 10; i++)
+    {
+        Console.WriteLine($"Working on item {i}");
+        // The token is passed on, so the delay itself is cancelled
+        await Task.Delay(100, cancellationToken);
+    }
+    Console.WriteLine("Work completed");
+}
+
+using (var source = new CancellationTokenSource())
+{
+    source.CancelAfter(TimeSpan.FromMilliseconds(350));
+    var work = DoWorkAsync(source.Token);
+    try
+    {
+        await work;
+    }
+    catch (OperationCanceledException)
+    {
+        Console.WriteLine($"Work cancelled, task status: {work.Status}");
+    }
+}
+```
+
+## 8.5 · Cancellation in ASP.NET Core
+
+An endpoint parameter of type `CancellationToken` is cancelled when the client disconnects (`HttpContext.RequestAborted`):
+
+```csharp
+app.MapGet("/leaderboard", async (WordGameContext db, CancellationToken cancellationToken) =>
+    await db.Users
+        .OrderByDescending(u => u.Experience)
+        .Take(10)
+        .ToListAsync(cancellationToken));
+```
+
+## 8.6 · Tasks without asynchrony
+
+When a method has to return a `Task` (e.g. because of an interface), but has nothing to wait for, a completed task is created:
+
+- `Task.FromResult(value)` wraps a value into a completed `Task<T>`.
+- `Task.CompletedTask` is a completed `Task` without a value.
 
 ```{.csharp}
 Task<bool> TaskWithResultAsync()
@@ -1071,38 +1266,77 @@ Task TaskWithoutResultAsync()
     return Task.CompletedTask;
 }
 
-display("Starting async method with result");
 var taskResult = await TaskWithResultAsync();
-display($"Async method with result completed with result {taskResult}");
-display("Async method with result completed");
+Console.WriteLine($"Completed with result {taskResult}");
 
-display("Starting async method without result");
 await TaskWithoutResultAsync();
-display("Async method without result completed");
+Console.WriteLine("Completed without result");
 ```
 
-### When you need to use `Task`, but there is `async` scope around
+## 8.7 · `ValueTask`
 
-This is considered a bad practice and should be avoided, but it would work for the problem at hand.
+- `ValueTask<T>` is an alternative for methods that usually complete synchronously, e.g. returning a cached value.
+- It avoids allocating a `Task`.
+- A `ValueTask` may be awaited only once.
+- `Task` is the default choice.
 
-### `SemaphoreSlim`
+## 8.8 · Blocking on async code
 
-`SemaphoreSlim` is another class that allows to do synchornization in `async` contexts. It works by limiting amount of threads that can enter a critical section at any given time.
+- `.Result`, `.Wait()` and `.GetAwaiter().GetResult()` block the current thread until a task completes ("sync over async").
+- It is avoided: once a method is `async`, its callers become `async` too ("async all the way").
+- In UI apps (and the old ASP.NET) it causes a **deadlock**: the UI thread waits for the task, and the task's continuation waits for the UI thread.
+- In ASP.NET Core there is no deadlock, but each waiting request holds a thread pool thread, which leads to thread pool starvation under load.
+- `.Result` and `.Wait()` wrap exceptions in `AggregateException`; `.GetAwaiter().GetResult()` does not.
 
 ```{.csharp}
-using System.Threading;
+async Task<int> DelayAndReturnAsync(int value)
+{
+    await Task.Delay(100);
+    return value;
+}
 
-var semaphore = new SemaphoreSlim(6);
+// Works in a console app, but the thread is blocked for 100 ms
+var blockedResult = DelayAndReturnAsync(42).GetAwaiter().GetResult();
+Console.WriteLine($"Result: {blockedResult}");
+```
 
-async Task AccessCriticalSectionAsync(SemaphoreSlim semaphore, string id)
+## 8.9 · Deadlock in a UI app
+
+```csharp
+// WinForms: this click handler never completes
+private void Button_Click(object sender, EventArgs e)
+{
+    // The UI thread blocks here, waiting for the task...
+    var value = DelayAndReturnAsync(42).Result;
+    resultLabel.Text = value.ToString();
+}
+// ...while the continuation after `await Task.Delay` waits for the UI thread.
+
+// Fixed: the event handler is async (async void is allowed for event handlers)
+private async void Button_Click(object sender, EventArgs e)
+{
+    var value = await DelayAndReturnAsync(42);
+    resultLabel.Text = value.ToString();
+}
+```
+
+## 9.1 · `SemaphoreSlim`
+
+- `SemaphoreSlim` limits how many operations can be inside a section at the same time.
+- `WaitAsync()` waits without blocking a thread, so it works in `async` code.
+- It is released in `finally`, so that an exception does not leave it taken.
+
+```{.csharp}
+var semaphore = new SemaphoreSlim(2); // at most 2 at a time
+
+async Task AccessLimitedResourceAsync(int id)
 {
     await semaphore.WaitAsync();
     try
     {
-        // Critical section
-        display($"Task {id} entered critical section");
-        await Task.Delay(1000); // Simulate work
-        display($"Task {id} leaving critical section");
+        Console.WriteLine($"Task {id} entered");
+        await Task.Delay(200);
+        Console.WriteLine($"Task {id} leaving");
     }
     finally
     {
@@ -1110,402 +1344,248 @@ async Task AccessCriticalSectionAsync(SemaphoreSlim semaphore, string id)
     }
 }
 
-var tasks = new Task[5];
-for (var i = 0; i < tasks.Length; i++)
-{
-    tasks[i] = AccessCriticalSectionAsync(semaphore, i.ToString());
-}
-
-await Task.WhenAll(tasks);
+var semaphoreStopwatch = Stopwatch.StartNew();
+await Task.WhenAll(Enumerable.Range(1, 5).Select(id => AccessLimitedResourceAsync(id)));
+Console.WriteLine($"5 tasks of 200 ms, 2 at a time: {semaphoreStopwatch.ElapsedMilliseconds} ms");
 ```
 
-## Interlocked
+## 9.2 · `SemaphoreSlim` as an async lock
 
-`Interlocked` class provides atomic methods for simple operations on most basic types. Operations being atomic means that they are thread-safe, so multiple threads can call them in parallel and they would work predictably. Main methods of `Interlocked` class:
-
-- `Add`: Adds two 32-bit integers and replaces the first integer with the sum, as an atomic operation.
-- `CompareExchange`: Compares two 32-bit integers for equality and, if they are equal, replaces one of the values.
-- `Decrement`: Decrements a specified variable and stores the result, as an atomic operation.
-- `Exchange`: Sets a 32-bit signed integer to a specified value and returns the original value, as an atomic operation.
-- `Increment`: Increments a specified variable and stores the result, as an atomic operation.
-- `Read`: Reads and returns the value of a 32-bit signed integer, as an atomic operation.
-- `Write`: Writes a 32-bit signed integer value to a specified address, as an atomic operation.
+`await` cannot be used inside `lock`. `SemaphoreSlim(1, 1)` lets only one operation in at a time and allows `await` inside:
 
 ```{.csharp}
-using System.Threading;
-
-class Counter {
-    private int count = 0;
-
-    public void Increment() {
-        Interlocked.Increment(ref count);
-    }
-
-    public void Decrement() {
-        Interlocked.Decrement(ref count);
-    }
-
-    public int GetCount() {
-        return count;
-    }
-}
-
-Counter counter = new Counter();
-Thread t1 = new Thread(() => {
-    for (int i = 0; i < 1000000; i++) {
-        counter.Increment();
-    }
-});
-Thread t2 = new Thread(() => {
-    for (int i = 0; i < 1000000; i++) {
-        counter.Decrement();
-    }
-});
-
-t1.Start();
-t2.Start();
-t1.Join();
-t2.Join();
-display(counter.GetCount());
-```
-
-```{.csharp}
-async Task<int> DelayAndReturnAsync(int value)
+class ScoreBoard
 {
-    await Task.Delay(TimeSpan.FromSeconds(1));
-    return value;
-}
+    private readonly SemaphoreSlim _mutex = new(1, 1);
+    private int _total;
 
-var task = DelayAndReturnAsync(42);
-var result = task.Result;
-
-display($"Result: {result}");
-```
-
-```{.csharp}
-async Task<int> DelayAndReturnAsync(int value)
-{
-    await Task.Delay(TimeSpan.FromSeconds(1));
-    return value;
-}
-
-var task = DelayAndReturnAsync(42);
-
-display("Waiting for task to complete");
-task.Wait();
-display("Task completed");
-```
-
-## Concurrent collections
-
-Concurrent collections are a set of thread-safe collections that can be accessed by multiple threads simultaneously in predictable manner. 
-
-- `ConcurrentDictionary<TKey, TValue>`: A thread-safe dictionary equivalent.
-- `ConcurrentBag<T>`: A thread-safe list equivalent.
-- `ConcurrentQueue<T>`: A thread-safe queue equivalent.
-- `ConcurrentStack<T>`: A thread-safe stack equivalent.
-
-These collections provide methods that are similar to their non-concurrent counterparts but are not the same. Usually methods provided have less convenient interfaces at the cost of being thread safe.
-
-### ConcurrentDictionary
-
-Key methods:
-- `TryAdd(TKey, TValue)`: Adds a key-value pair to the dictionary if the key does not already exist, or updates a key-value pair in the dictionary if the key already exists.
-- `TryGetValue(TKey, out TValue)`: Gets the value associated with the specified key.
-- `TryRemove(TKey, out TValue)`: Removes the value with the specified key from the dictionary.
-
-
-Notice the difference between `Dictionary<,>` class - methods are prefixed with `Try`. All `Try...` methods returns a `bool` which indicates if the operation has succeeded. If the operation is impossible because some other thread modified the collection, it would simply return `false`. 
-
-```{.csharp}
-using System.Collections.Concurrent;
-
-var dict = new ConcurrentDictionary<int, string>();
-
-// add some key-value pairs to the dictionary
-dict.TryAdd(1, "Apple");
-dict.TryAdd(2, "Banana");
-dict.TryAdd(3, "Cherry");
-
-if (dict.TryGetValue(2, out var value))
-{
-    display($"The value associated with key 2 is {value}.");
-}
-
-// update the value associated with a key
-dict.TryUpdate(3, "Grape", "Cherry");
-
-// remove a key-value pair from the dictionary
-if (dict.TryRemove(1, out var removedValue))
-{
-    display($"Removed key 1, which had value {removedValue}.");
-}
-
-// iterate over the key-value pairs in the dictionary
-foreach (var kvp in dict)
-{
-    display($"Key {kvp.Key} has value {kvp.Value}.");
-}
-```
-
-### ConcurrentBag<T>
-
-`ConcurrentBag` allows you to throw objects into it, without caring about their ordering. You can take out random elements out of it, or iterate through all of them.
-
-Key methods:
-- `Add(T)`: Adds an object to the bag.
-- `TryTake(out T)`: Attempts to remove and return an object from the bag.
-
-```{.csharp}
-using System.Collections.Concurrent;
-
-var bag = new ConcurrentBag<string>();
-
-// add some items to the bag
-bag.Add("Apple");
-bag.Add("Banana");
-bag.Add("Cherry");
-
-// retrieve items from the bag
-if (bag.TryTake(out var item1))
-{
-    display($"Took item: {item1}.");
-}
-
-bag.Add("Dragonfruit");
-
-if (bag.TryTake(out var item2))
-{
-    display($"Took item: {item2}.");
-}
-
-// iterate over the items in the bag
-foreach (var item in bag)
-{
-    display($"Item in bag: {item}.");
-}
-```
-
-### ConcurrentQueue<T>
-
-Key methods:
-- `Enqueue(T)`: Adds an object to the end of the queue.
-- `TryDequeue(out T)`: Attempts to remove and return the object at the beginning of the queue.
-
-```{.csharp}
-using System.Collections.Concurrent;
-
-var queue = new ConcurrentQueue<string>();
-
-// add some items to the queue
-queue.Enqueue("Apple");
-queue.Enqueue("Banana");
-queue.Enqueue("Cherry");
-
-// try to dequeue an item from the queue
-if (queue.TryDequeue(out var item))
-{
-    display($"Dequeued item: {item}.");
-}
-
-queue.Enqueue("Dragonfruit");
-
-// try to peek at the next item in the queue
-if (queue.TryPeek(out var nextItem))
-{
-    display($"Next item in queue: {nextItem}.");
-}
-
-// iterate over the items in the queue
-foreach (var q in queue)
-{
-    display($"Item in queue: {q}.");
-}
-```
-
-### ConcurrentStack<T>
-
-Key methods:
-- `Push(T)`: Adds an object to the top of the stack.
-- `TryPop(out T)`: Attempts to remove and return the object at the top of the stack.
-
-```{.csharp}
-using System.Collections.Concurrent;
-
-var stack = new ConcurrentStack<string>();
-
-// add some items to the stack
-stack.Push("Apple");
-stack.Push("Banana");
-stack.Push("Cherry");
-
-// try to pop an item from the stack
-if (stack.TryPop(out var item))
-{
-    display($"Popped item: {item}.");
-}
-
-stack.Push("Dragonfruit");
-
-// try to peek at the next item in the stack
-if (stack.TryPeek(out var nextItem))
-{
-    display($"Next item in stack: {nextItem}.");
-}
-
-// iterate over the items in the stack
-foreach (var s in stack)
-{
-    display($"Item in stack: {s}.");
-}
-```
-
-## Task parallel library
-
-The Task Parallel Library (TPL) allows to use parallelism in your code without having to explicitly deal with threading as tasks.
-
-```{.csharp}
-// Degree of parallelism is limited by the number of processors available.
-
-Environment.ProcessorCount.Display();
-```
-
-```{.csharp}
-// Create an array of numbers
-int[] numbers = { 1, 2, 3, 4, 5 };
-
-// Use Parallel.ForEach to process each number in parallel
-Parallel.ForEach(numbers, number =>
-{
-    // Process the number here
-    display($"Processing number: {number}");
-});
-```
-
-```{.csharp}
-class TheClass
-{
-    public int TheProperty { get; set; }
-}
-
-var myList = new List<TheClass>();
-
-for (int i = 0; i < 100_000_000; i++)
-{
-    var obj = new TheClass { TheProperty = i };
-    myList.Add(obj);
-}
-```
-
-```{.csharp}
-using System;
-using System.Diagnostics;
-
-var stopwatch = new Stopwatch();
-stopwatch.Start();
-
-for (int i = 0; i < myList.Count; i++)
-{
-    myList[i].TheProperty = myList[i].TheProperty + 1;
-}
-
-stopwatch.Stop();
-TimeSpan executionTime = stopwatch.Elapsed;
-
-display($"Execution time: {executionTime.TotalSeconds} seconds");
-```
-
-```{.csharp}
-using System;
-using System.Diagnostics;
-
-var stopwatch = new Stopwatch();
-stopwatch.Start();
-
-Parallel.For(0, myList.Count, i =>
-{
-    myList[(int)i].TheProperty = myList[(int)i].TheProperty + 1;
-});
-
-stopwatch.Stop();
-TimeSpan executionTime = stopwatch.Elapsed;
-
-display($"Execution time: {executionTime.TotalSeconds} seconds");
-```
-
-```{.csharp}
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-
-var stopwatch = new Stopwatch();
-stopwatch.Start();
-
-Parallel.ForEach(
-    myList, 
-    new ParallelOptions {
-        MaxDegreeOfParallelism = 6,
-    }, 
-    obj =>
+    public async Task AddAsync(int points)
     {
-        obj.TheProperty = obj.TheProperty + 1;
+        await _mutex.WaitAsync();
+        try
+        {
+            var current = _total;
+            await Task.Delay(1); // e.g. saving to a database
+            _total = current + points;
+        }
+        finally
+        {
+            _mutex.Release();
+        }
+    }
+
+    public int Total => _total;
+}
+
+var board = new ScoreBoard();
+await Task.WhenAll(Enumerable.Range(0, 20).Select(_ => board.AddAsync(10)));
+Console.WriteLine($"Total: {board.Total}");
+```
+
+## 9.3 · Async streams
+
+- `IAsyncEnumerable<T>` is a sequence whose items arrive asynchronously, one at a time.
+- It is produced with `yield return` in an `async` method and read with `await foreach`.
+- EF Core queries can be read this way (`AsAsyncEnumerable()`), and ASP.NET Core can stream them in a response.
+
+```{.csharp}
+async IAsyncEnumerable<int> ReadScoresAsync()
+{
+    for (var page = 1; page <= 3; page++)
+    {
+        await Task.Delay(100); // e.g. the next page from a database
+        yield return page * 10;
+    }
+}
+
+await foreach (var score in ReadScoresAsync())
+{
+    Console.WriteLine($"Score: {score}");
+}
+```
+
+## 9.4 · Channels
+
+`System.Threading.Channels` is an asynchronous producer/consumer queue:
+
+- the writer and the reader both `await`: no polling and no blocked threads;
+- a bounded channel makes the writer wait while it is full (**back-pressure**);
+- a typical use is events from many requests processed by one background worker.
+
+## 9.5 · Channels in use
+
+```{.csharp}
+using System.Threading.Channels;
+
+var channel = Channel.CreateBounded<string>(capacity: 2);
+
+var producer = Task.Run(async () =>
+{
+    for (var i = 1; i <= 5; i++)
+    {
+        await channel.Writer.WriteAsync($"guess {i}"); // waits while the channel is full
+        Console.WriteLine($"Produced guess {i}");
+    }
+    channel.Writer.Complete();
+});
+
+var consumer = Task.Run(async () =>
+{
+    // Ends when the writer is completed and all items are read
+    await foreach (var guess in channel.Reader.ReadAllAsync())
+    {
+        await Task.Delay(100); // slow processing
+        Console.WriteLine($"Processed {guess}");
+    }
+});
+
+await Task.WhenAll(producer, consumer);
+```
+
+## 9.6 · Background work in ASP.NET Core
+
+- A `BackgroundService` runs long-running work: it is started with the application and stopped through `stoppingToken` on shutdown.
+- `PeriodicTimer` is awaited for each tick, so runs never overlap.
+- It is registered with `builder.Services.AddHostedService<ExpiredGameCleaner>()`.
+- Hosted services are singletons: a scoped service such as a `DbContext` is taken from a new scope created with `IServiceScopeFactory`.
+- An unhandled exception in `ExecuteAsync` stops the whole application, so errors inside the loop are caught and logged.
+- In a real-time app, a background service can push updates to clients through SignalR (`IHubContext`).
+
+## 9.7 · `BackgroundService` example
+
+```csharp
+public class ExpiredGameCleaner(IGameStore games, TimeProvider time, ILogger<ExpiredGameCleaner> logger)
+    : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(1), time);
+
+        while (await timer.WaitForNextTickAsync(stoppingToken))
+        {
+            // RemoveStartedBefore would be a new method of the lecture 7 game store
+            var removed = games.RemoveStartedBefore(time.GetUtcNow() - GameService.TimeLimit);
+            logger.LogInformation("Removed {Count} expired games", removed);
+        }
+    }
+}
+```
+
+## 9.8 · `PeriodicTimer`
+
+```{.csharp}
+var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+var ticks = 0;
+
+while (ticks < 3 && await timer.WaitForNextTickAsync())
+{
+    ticks++;
+    Console.WriteLine($"Tick {ticks}");
+}
+
+timer.Dispose();
+```
+
+## 10.1 · Task parallel library
+
+- `Parallel.For` and `Parallel.ForEach` split work across thread pool threads and block the caller until all of it is done.
+- They speed up only CPU-bound work with enough work per item; for small items the overhead is bigger than the gain.
+- The body runs on several threads at once, so shared state needs `Interlocked`, a lock or a concurrent collection.
+- **Amdahl's law**: the sequential part limits the speed-up. If 90% of the work is parallel, 8 cores give at most $1 / (0.1 + 0.9 / 8) \approx 4.7$ times.
+- One `Stopwatch` run is not a measurement; BenchmarkDotNet is used for that (lecture 15).
+
+## 10.2 · Counting primes sequentially
+
+```{.csharp}
+bool IsPrime(int n)
+{
+    if (n < 2)
+    {
+        return false;
+    }
+
+    for (var divisor = 2; divisor * divisor <= n; divisor++)
+    {
+        if (n % divisor == 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+const int Limit = 3_000_000;
+
+var sequentialPrimesStopwatch = Stopwatch.StartNew();
+var sequentialCount = 0;
+for (var i = 0; i < Limit; i++)
+{
+    if (IsPrime(i))
+    {
+        sequentialCount++;
+    }
+}
+Console.WriteLine($"Sequential: {sequentialCount} primes in {sequentialPrimesStopwatch.ElapsedMilliseconds} ms");
+```
+
+## 10.3 · Counting primes with `Parallel.For`
+
+```{.csharp}
+var parallelStopwatch = Stopwatch.StartNew();
+var parallelCount = 0;
+
+Parallel.For(0, Limit, i =>
+{
+    if (IsPrime(i))
+    {
+        // parallelCount++ here would lose updates
+        Interlocked.Increment(ref parallelCount);
+    }
+});
+
+Console.WriteLine($"Parallel: {parallelCount} primes in {parallelStopwatch.ElapsedMilliseconds} ms");
+```
+
+## 10.4 · `Parallel.ForEachAsync`
+
+For many I/O operations with a limit on how many run at the same time:
+
+```{.csharp}
+var fetchStopwatch = Stopwatch.StartNew();
+
+await Parallel.ForEachAsync(
+    Enumerable.Range(1, 10),
+    new ParallelOptions { MaxDegreeOfParallelism = 3 },
+    async (id, cancellationToken) =>
+    {
+        await Task.Delay(100, cancellationToken); // e.g. an HTTP call for one id
+        Console.WriteLine($"Fetched {id}");
     });
 
-stopwatch.Stop();
-TimeSpan executionTime = stopwatch.Elapsed;
-
-display($"Execution time: {executionTime.TotalSeconds} seconds");
+Console.WriteLine($"10 calls, 3 at a time: {fetchStopwatch.ElapsedMilliseconds} ms");
 ```
 
-## PLINQ
+## 10.5 · PLINQ
 
-PLINQ (Parallel LINQ) is an extension of LINQ (Language-Integrated Query) that enables parallel execution of LINQ queries.
+- PLINQ (Parallel LINQ) executes LINQ queries in parallel: `.AsParallel()`.
+- The same rules apply: CPU-heavy work, lambdas without side effects.
+- Results are unordered by default; `.AsOrdered()` keeps the source order at some cost.
+- `.WithDegreeOfParallelism(n)` limits the number of threads.
 
 ```{.csharp}
-using System;
-using System.Diagnostics;
-using System.Linq;
+var plinqStopwatch = Stopwatch.StartNew();
+var plinqCount = Enumerable.Range(0, Limit).AsParallel().Count(IsPrime);
+Console.WriteLine($"PLINQ: {plinqCount} primes in {plinqStopwatch.ElapsedMilliseconds} ms");
 
-var stopwatch = new Stopwatch();
-stopwatch.Start();
-
-var filteredList = myList
-    .Where(obj => obj.TheProperty % 2 == 0)
-    .Select(x => new TheClass { TheProperty = x.TheProperty })
-    .ToList();
-
-stopwatch.Stop();
-TimeSpan executionTime = stopwatch.Elapsed;
-
-display($"Execution time: {executionTime.TotalSeconds} seconds");
+var firstPrimes = Enumerable.Range(0, 50).AsParallel().AsOrdered().Where(IsPrime).Take(5);
+Console.WriteLine($"First primes: {string.Join(", ", firstPrimes)}");
 ```
 
-```{.csharp}
-using System;
-using System.Diagnostics;
-using System.Linq;
+## 11.2 · Further reading
 
-var stopwatch = new Stopwatch();
-stopwatch.Start();
-
-var filteredList = myList
-    .AsParallel()
-    .WithDegreeOfParallelism(6)
-    .Where(obj => obj.TheProperty % 2 == 0)
-    .Select(x => new TheClass { TheProperty = x.TheProperty })
-    .ToList();
-
-stopwatch.Stop();
-TimeSpan executionTime = stopwatch.Elapsed;
-
-display($"Execution time: {executionTime.TotalSeconds} seconds");
-```
-
-## Exercises
-
-1. Compile a simplest program that has `async` and `await` used. Decompile that binary using a tool like [`ILSpy`](https://github.com/icsharpcode/ILSpy). Select C# language version before introduction of `async` and `await` keywords, that is C# 4 or lower. Try to figure how `await` is being implemented.
-1. Write an `AsyncQueue<T>` class. `Dequeue` returns `Task<T>` instead of `T`. The returned task only completes when there is an element available for dequeueing present in the queue.
-
-## Further reading
-
-- https://github.com/davidfowl/AspNetCoreDiagnosticScenarios/blob/master/AsyncGuidance.md
+- [Stephen Toub: How async/await really works in C#](https://devblogs.microsoft.com/dotnet/how-async-await-really-works/)
+- [Stephen Cleary: There is no thread](https://blog.stephencleary.com/2013/11/there-is-no-thread.html)
+- [David Fowler: Async guidance for ASP.NET Core](https://github.com/davidfowl/AspNetCoreDiagnosticScenarios/blob/master/AsyncGuidance.md)
+- [Joseph Albahari: Threading in C#](https://www.albahari.com/threading/)
+- [Microsoft: Asynchronous programming scenarios](https://learn.microsoft.com/dotnet/csharp/asynchronous-programming/async-scenarios)
+- [Microsoft: Channels](https://learn.microsoft.com/dotnet/core/extensions/channels)
